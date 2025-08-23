@@ -1,0 +1,16 @@
+# local runtime files
+./vite
+./cache
+dist/
+node_modules/
+
+# lockfiles
+# (with carret dependencies there is no use of having them in git)
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+deno.lock
+bun.lock
+
+# do not force pnpm-specific file in possible checkouts
+pnpm-workspace.yaml
