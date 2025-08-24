@@ -1,6 +1,5 @@
-import { readFileSync } from 'node:fs'
-import { createRequire } from 'node:module'
-import { dirname, join, resolve  } from 'node:path'
+import { access, constants, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 
 /** 
  * Expects path to file template in `"package:relative/path/to/file"` format and splits it into `{ pkg, file }`. 
@@ -24,12 +23,14 @@ export function parseTemplatePath(input: string): { pkg: string; file: string } 
 
 /**
  * Resolve a package's installed root directory *from the target app*.
+ * Package name can be scoped.
  * Works with npm/yarn/pnpm, hoisting or not.
  */
 export function resolvePackagePath(packageName: string): string {
+  const appDir = process.cwd()
+
   // 1. check if it is not called from itself during development
   try {
-    const appDir = process.cwd()
     const appPkgJsonPath = join(appDir, 'package.json')
     const txt = readFileSync(appPkgJsonPath, 'utf8')
     const appPkg = JSON.parse(txt);
@@ -37,15 +38,23 @@ export function resolvePackagePath(packageName: string): string {
       return appDir
     }
   } catch (err) {
-    // no package.json at CWD — carry on to resolver
+    console.error(err)
   }
 
   // 2. resolve within installed node_modules
   try {
-    const requireFromApp = createRequire(resolve(process.cwd(), 'package.json'))
-    const pkgJsonPath = requireFromApp.resolve(`${packageName}/package.json`)
-    return dirname(pkgJsonPath)
-  } catch {
-    throw new Error(`Cannot find package "${packageName}" from ${process.cwd()}. Make sure it's installed or linked in this project.`)
+    const nmRoot = join(appDir, 'node_modules', ...packageName.split('/'))
+    const nmPkgJson = join(nmRoot, 'package.json')
+    console.log(nmPkgJson)
+    access(nmPkgJson, constants.R_OK, (err) => { 
+      if (err) {
+        throw new Error(`Cannot access "${nmPkgJson}"`)
+      }
+    })
+    return nmRoot
+  } catch (err) {
+    console.error(err)
   }
+    
+  throw new Error(`Cannot find package "${packageName}" from ${process.cwd()}. Make sure it's installed or linked in this project.`)
 }
