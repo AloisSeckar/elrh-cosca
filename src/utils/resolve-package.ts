@@ -1,5 +1,6 @@
-import { dirname, resolve } from 'node:path'
+import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
+import { dirname, join, resolve  } from 'node:path'
 
 /** 
  * Expects path to file template in `"package:relative/path/to/file"` format and splits it into `{ pkg, file }`. 
@@ -25,8 +26,26 @@ export function parseTemplatePath(input: string): { pkg: string; file: string } 
  * Resolve a package's installed root directory *from the target app*.
  * Works with npm/yarn/pnpm, hoisting or not.
  */
-export function resolvePackagePath(pkg: string): string {
-  const requireFromApp = createRequire(resolve(process.cwd(), 'package.json'))
-  const pkgJsonPath = requireFromApp.resolve(`${pkg}/package.json`)
-  return dirname(pkgJsonPath)
+export function resolvePackagePath(packageName: string): string {
+  // 1. check if it is not called from itself during development
+  try {
+    const appDir = process.cwd()
+    const appPkgJsonPath = join(appDir, 'package.json')
+    const txt = readFileSync(appPkgJsonPath, 'utf8')
+    const appPkg = JSON.parse(txt);
+    if (appPkg?.name === packageName) {
+      return appDir
+    }
+  } catch (err) {
+    // no package.json at CWD — carry on to resolver
+  }
+
+  // 2. resolve within installed node_modules
+  try {
+    const requireFromApp = createRequire(resolve(process.cwd(), 'package.json'))
+    const pkgJsonPath = requireFromApp.resolve(`${packageName}/package.json`)
+    return dirname(pkgJsonPath)
+  } catch {
+    throw new Error(`Cannot find package "${packageName}" from ${process.cwd()}. Make sure it's installed or linked in this project.`)
+  }
 }

@@ -10,7 +10,8 @@ async function main() {
   console.log('User input:', input)
 
   console.log('\nTest createFileFromTemplate')
-  await createFileFromTemplate('vite:README.md', 'test.file')
+  await createFileFromTemplate('vite:README.md', 'test.file1')
+  await createFileFromTemplate('elrh-cosca:README.md', 'test.file2')
 
   console.log('\nTest updateJsonFile')
   await updateJsonFile('package.json', 'scripts', { 'cosca' : 'cosca' })
