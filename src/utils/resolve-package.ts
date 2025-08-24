@@ -1,5 +1,5 @@
-import path from 'path'
-import { createRequire } from 'module'
+import { dirname, resolve } from 'node:path'
+import { createRequire } from 'node:module'
 
 /** 
  * Expects path to file template in `"package:relative/path/to/file"` format and splits it into `{ pkg, file }`. 
@@ -26,7 +26,7 @@ export function parseTemplatePath(input: string): { pkg: string; file: string } 
  * Works with npm/yarn/pnpm, hoisting or not.
  */
 export function resolvePackagePath(pkg: string): string {
-  const requireFromApp = createRequire(path.resolve(process.cwd(), 'package.json'))
+  const requireFromApp = createRequire(resolve(process.cwd(), 'package.json'))
   const pkgJsonPath = requireFromApp.resolve(`${pkg}/package.json`)
-  return path.dirname(pkgJsonPath)
+  return dirname(pkgJsonPath)
 }

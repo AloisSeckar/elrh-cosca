@@ -1,11 +1,22 @@
 #!/usr/bin/env node
 
-// test script for createFileFromTemplate function
+// manual test script for COSCA functions
 
-import { createFileFromTemplate } from '../dist/elrh-cosca.cjs'
+import { createFileFromTemplate, promptUser, updateJsonFile, updateTextFile } from '../dist/elrh-cosca.mjs'
 
 async function main() {
+  console.log('Test promptUser')
+  const input = await promptUser('Is it today?')
+  console.log('User input:', input)
+
+  console.log('\nTest createFileFromTemplate')
   await createFileFromTemplate('vite:README.md', 'test.file')
+
+  console.log('\nTest updateJsonFile')
+  await updateJsonFile('package.json', 'scripts', { 'cosca' : 'cosca' })
+
+  console.log('\nTest updateTextFile')
+  await updateTextFile('.gitignore', ['# COSCA'])
 }
 
 main().catch((err) => {

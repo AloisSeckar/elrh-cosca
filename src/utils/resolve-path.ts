@@ -1,5 +1,5 @@
-import { fileURLToPath } from 'url'
-import { dirname } from 'path'
+import { fileURLToPath } from 'node:url'
+import { dirname } from 'node:path'
 
 // Node will inject __filename/__dirname in CJS builds
 declare const __filename: string

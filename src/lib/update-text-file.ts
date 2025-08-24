@@ -1,5 +1,5 @@
-import path from 'path'
-import { existsSync, readFileSync, writeFileSync } from 'fs'
+import { resolve } from 'node:path'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { promptUser } from './prompt-user.js'
 
 export async function updateTextFile(
@@ -9,7 +9,7 @@ export async function updateTextFile(
     `This will update '${pathToFile}' file. Continue?`,
   )
   if (shouldUpdate) {
-    const textFilePath = path.resolve(process.cwd(), pathToFile)
+    const textFilePath = resolve(process.cwd(), pathToFile)
     if (!existsSync(textFilePath)) {
       console.warn(`No '${pathToFile}' found in project root — skipping updates.`)
       return

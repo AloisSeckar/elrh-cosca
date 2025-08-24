@@ -1,5 +1,5 @@
-import path from 'path'
-import { existsSync, readFileSync, writeFileSync } from 'fs'
+import { resolve } from 'node:path'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { promptUser } from './prompt-user.js'
 
 // so-far only allows adding into existing key at the top level of the JSON tree
@@ -13,7 +13,7 @@ export async function updateJsonFile(
     `This will update '${pathToFile}' file. Continue?`,
   )
   if (shouldUpdate) {
-    const jsonFilePath = path.resolve(process.cwd(), pathToFile)
+    const jsonFilePath = resolve(process.cwd(), pathToFile)
     if (!existsSync(jsonFilePath)) {
       console.warn(`No '${pathToFile}' found in project root — skipping updates.`)
       return

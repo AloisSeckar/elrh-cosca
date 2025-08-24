@@ -14,11 +14,11 @@ export default defineConfig({
     },
     rollupOptions: {
       external: [
-          'fs', 
-          'module',
-          'path',
-          'readline',
-          'url',
+          'node:fs', 
+          'node:module',
+          'node:path',
+          'node:readline',
+          'node:url',
       ],
       output: {
         exports: 'named',

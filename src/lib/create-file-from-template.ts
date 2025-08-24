@@ -1,5 +1,5 @@
-import path from 'path'
-import { existsSync, copyFileSync } from 'fs'
+import { resolve } from 'node:path'
+import { existsSync, copyFileSync } from 'node:fs'
 import { promptUser } from './prompt-user'
 import { parseTemplatePath, resolvePackagePath } from '../utils/resolve-package'
 
@@ -12,9 +12,9 @@ export async function createFileFromTemplate(
   if (shouldCreate) {
     const { pkg, file } = parseTemplatePath(templateFile);
     const packagePath = resolvePackagePath(pkg);
-    const templatePath = path.resolve(packagePath, file)
+    const templatePath = resolve(packagePath, file)
 
-    const targetPath = path.resolve(process.cwd(), targetFile)
+    const targetPath = resolve(process.cwd(), targetFile)
 
     if (!existsSync(templatePath)) {
       console.error(`Template file not found at ${templatePath}`)
