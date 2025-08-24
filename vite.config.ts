@@ -15,6 +15,7 @@ export default defineConfig({
     rollupOptions: {
       external: [
           'fs', 
+          'module',
           'path',
           'readline',
           'url',

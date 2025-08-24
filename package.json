@@ -5,6 +5,9 @@
   "files": [
     "dist"
   ],
+  "bin": {
+    "cosca": "test/cosca-test.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/types/index.d.ts",
