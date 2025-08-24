@@ -17,6 +17,7 @@ export default defineConfig({
           'fs', 
           'path',
           'readline',
+          'url',
       ],
       output: {
         exports: 'named',
