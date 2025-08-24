@@ -1,20 +1,21 @@
 {
   "name": "elrh-cosca",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "files": [
     "dist"
   ],
-  "main": "./dist/elrh-cosca.cjs",
-  "module": "./dist/elrh-cosca.mjs",
-  "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/types/index.d.ts",
-      "import": "./dist/elrh-cosca.cjs",
-      "require": "./dist/elrh-cosca.mjs"
+      "import": "./dist/elrh-cosca.mjs",
+      "require": "./dist/elrh-cosca.cjs",
+      "default": "./dist/elrh-cosca.mjs"
     }
   },
+  "main": "./dist/elrh-cosca.cjs",
+  "module": "./dist/elrh-cosca.mjs",
+  "types": "./dist/types/index.d.ts",
   "scripts": {
     "dev": "vite",
     "build": "pnpm install && vitest run && tsc && vite build",
