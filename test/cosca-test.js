@@ -2,7 +2,9 @@
 
 // manual test script for COSCA functions
 
-import { createFileFromTemplate, promptUser, updateJsonFile, updateTextFile } from '../dist/elrh-cosca.mjs'
+import { 
+  createFileFromTemplate, promptUser, updateConfigFile, updateJsonFile, updateTextFile 
+} from '../dist/elrh-cosca.mjs'
 
 async function main() {
   console.log('Test promptUser')
@@ -12,6 +14,9 @@ async function main() {
   console.log('\nTest createFileFromTemplate')
   await createFileFromTemplate('vite:README.md', 'test.file1')
   await createFileFromTemplate('elrh-cosca:README.md', 'test.file2')
+
+  console.log('\nTest updateConfigFile')
+  await updateConfigFile('test/cosca-test-config.ts', { cosca: { exists: true, data: ['some', 'other'], 'raw': 'war'}})
 
   console.log('\nTest updateJsonFile')
   await updateJsonFile('package.json', 'scripts', { 'cosca' : 'cosca' })
