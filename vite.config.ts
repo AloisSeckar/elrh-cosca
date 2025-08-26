@@ -9,11 +9,12 @@ export default defineConfig({
     lib: { 
       entry: resolve(__dirname, 'src/main.ts'), 
       name: 'elrh-cosca',
-      formats: ['es', 'cjs'],
-      fileName: (format) => format === 'es' ? 'elrh-cosca.mjs' : 'elrh-cosca.cjs',
+      formats: ['es'],
+      fileName: () => 'elrh-cosca.mjs',
     },
     rollupOptions: {
       external: [
+          'fs', // due to `magicast` package
           'node:fs', 
           'node:module',
           'node:path',

@@ -12,6 +12,7 @@ The **"COSCA"** abbreviation stands for **CO**de **SCA**ffolding which points ou
 List of available functions:
 - `createFileFromTemplate`
 - `promptUser`
+- `updateConfigFile`
 - `updateJsonFile`
 - `updateTextFile`
 
