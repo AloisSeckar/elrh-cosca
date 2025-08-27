@@ -25,17 +25,41 @@ export async function updateConfigFile(
   if (shouldUpdate) {
     const absPath = resolve(process.cwd(), pathToFile)
 
-     // load the file as a Magicast module (.ts/.js/.mjs)
+    // load the file as a Magicast module (.ts/.js/.mjs)
     const module = await loadFile(absPath)
     
-    // default export must be present
-    const defaultExport = (module.exports as any)?.default
-    if (!defaultExport) {
-      throw new Error(`No default export found in ${pathToFile}`)
+    // evaluate config object
+    // 1. try default export first
+    let configExport = (module.exports as any)?.default
+    // 2. check for single named export
+    if (!configExport) {
+      const exportKeys = Object.keys(module.exports)
+      if (exportKeys.length === 1) {
+        configExport = (module.exports as any)[exportKeys[0]]
+      }
+    }
+    // 3. check for CommonJS module.exports
+    // TODO currently not available
+    if (!configExport && typeof module.exports === 'object' && module.exports !== null) {
+      // this is how to recognize we are in CommonJS syntax file
+      // however plain `configExport = module.exports` doesn't allow to access
+      // the actual contents of the config object (newConfig is merged in the file,
+      // but outside of the module.exports key)
+      // because of the proxied nature of `module.exports` it is difficult to reason
+      // with its structure and guess how to reference it (if it is even possible)
+      // to solve this, traversing via `module.$ast` would probably be required
+      // but it is not very straightforward because of the complex structure and
+      // conditioned TypeScript definitions...
+      // for now I put further efforts on hold - CONTRIBUTIONS WELCOME!
+      throw new Error(`It is currently not possible to handle CommonJS module.exports syntax of ${pathToFile}`)
+    }
+    console.log(configExport)
+    if (!configExport) {
+      throw new Error(`No suitable config export found in ${pathToFile}`)
     }
 
     // config object might be wrapped inside a function call or be a plain object itself
-    const oldConfig = defaultExport.$type === 'function-call' ? defaultExport.$args?.[0] : defaultExport
+    const oldConfig = configExport.$type === 'function-call' ? configExport.$args?.[0] : configExport 
     if (!oldConfig || typeof oldConfig !== 'object') {
       throw new Error(`Could not access config object in ${pathToFile}`)
     }
