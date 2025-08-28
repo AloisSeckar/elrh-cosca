@@ -33,9 +33,6 @@ export async function updateJsonFile(
     let modified = false
 
     for (const [key, value] of Object.entries(newValues)) {
-      if (typeof value === 'string') {
-
-      }
       if (json[jsonKey][key] !== value) {
         json[jsonKey][key] = value
         modified = true
