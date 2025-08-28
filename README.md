@@ -9,16 +9,96 @@ The **"COSCA"** abbreviation stands for **CO**de **SCA**ffolding which points ou
 
 `npm install elrh-cosca` to include into your project.
 
-List of available functions:
-- `createFileFromTemplate`
-- `promptUser`
-- `updateConfigFile`
-- `updateJsonFile`
-- `updateTextFile`
+**List of available functions:**
+
+### `createFileFromTemplate`
+
+```ts
+async function createFileFromTemplate(
+  templateFile: string, targetFile: string, force: boolean = false
+): Promise<void>
+```
+
+Takes a path to a template file from your project and will create a fresh copy in target project when invoked. 
+
+Path to `templateFile` must be prefixed with the package name to allow proper resolution, e.g. `your-package:path/to/template`. The package name can be scoped.
+
+Path to `targetFile` is relative to `process.cwd()` which allows consumers to run `npx your-script` in their project roots during development.
+
+By default the function asks for confirmation before attempting to create the file and if the file with the same name as `targetFile` is detected. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts.
+
+### `promptUser`
+
+```ts
+export async function promptUser(question: string): Promise<boolean>
+```
+
+Prints out a `question` to the console and waits for the input. Returns `true` when `y` is pressed and `false` otherwise.
+
+### `updateConfigFile`
+
+```ts
+async function updateConfigFile(
+  pathToFile: string, newConfig: Record<string | number | symbol, any>, force: boolean = false
+): Promise<void>
+```
+
+Prints out a `question` to the console and waits for the input. Returns `true` when `y` is pressed and `false` otherwise.
+
+### `updateConfigFile`
+
+```ts
+async function updateConfigFile(
+  pathToFile: string, newConfig: Record<string | number | symbol, any>, force: boolean = false
+): Promise<void>
+```
+
+Takes a path to a configuration file and updates it with the provided `newConfig` object. 
+
+Path to `targetFile` is relative to `process.cwd()`. The file currently must use ESM format with either `default` or named export of **exactly one** configuration object or function call with a configuration object as its argument.
+
+The merger is performed using [unjs/magicast](https://github.com/unjs/magicast). It should:
+- preserve comments
+- work recursively to allow deep-merge
+- extend existing object with new keys from `newConfig`
+- overwrite keys with same name with values from `newConfig`
+- create a unique-union in case of arrays
+Please [report](https://github.com/AloisSeckar/elrh-cosca/issues) any logical flaws and issues of the process.
+
+By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts.
+
+### `updateJsonFile`
+
+```ts
+async function updateJsonFile(
+  pathToFile: string, jsonKey: string, newValues: Record<string, string>, force: boolean = false
+): Promise<void>
+```
+
+Takes a path to a JSON file and injects `newValues` under `jsonKey` key.
+
+Path to `targetFile` is relative to `process.cwd()`. The file must be a valid JSON file. It is parsed using plain `JSON.parse`.
+
+Currently it only allows adding new values under top-level keys. If the `jsonKey` exists, new values are merged into existing ones. Otherwise, new key is added. The function tracks if any real change was made and notifies the user if not.
+
+By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts.
+
+### `updateTextFile`
+
+```ts
+export async function updateTextFile(
+    pathToFile: string, rowsToAdd: string[], force: boolean = false
+): Promise<void>
+```
+
+Takes a path to a plain text file and injects `rowsToAdd` at the end of the file, **providing they are not already present in the file**. The function tracks if any real change was made and notifies the user if not.
+
+By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts.
 
 ## Tech stack
 
-- Developed with [TypeScript](https://www.typescriptlang.org/)
+- Developed with [TypeScript](https://www.typescriptlang.org/) in mind
+- Using [magicast](https://github.com/unjs/magicast) for parsing files
 - Build with [Vite](https://vitejs.dev/)
 - Tested with [Vitest](https://vitest.dev/)
 
