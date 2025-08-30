@@ -15,8 +15,9 @@ export default defineConfig({
     rollupOptions: {
       external: [
           'fs', // due to `magicast` package
-          'node:fs', 
+          'node:fs',
           'node:module',
+          'node:os',
           'node:path',
           'node:readline',
           'node:url',
