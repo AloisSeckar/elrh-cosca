@@ -1,0 +1,17 @@
+{
+  "string-key": "value",
+  "number-key": 1,
+  "bool-key": true,
+  "array-key": [
+    "value"
+  ],
+  "object-key": {
+    "nested-key": "value"
+  },
+  "cosca": {
+    "testKey1": "value",
+    "testKey2": 2,
+    "testKey3": true,
+    "testKey4": "value2"
+  }
+}

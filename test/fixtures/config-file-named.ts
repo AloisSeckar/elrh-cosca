@@ -1,5 +1,4 @@
-export default {
-  cosca: {
+export const config = {
     // this comment must be preserved
     stringKey: 'value',
     numberKey: 1,
@@ -11,5 +10,4 @@ export default {
       // this comment must be preserved
       nestedKey: 'value',
     },
-  },
 }
