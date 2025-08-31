@@ -1,14 +1,6 @@
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
-import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { beforeEach, describe, expect, test } from 'vitest'
 import { updateTextFile } from '../src/main'
-
-// move to helper file if more test files use it
-function readFileContents(dir: string, file: string): string[] {
-    const source = join(dir, file)
-    const content = readFileSync(source, 'utf8')
-    return content.replace(/\r\n/g, '\n').split('\n')
-}
+import { getConsoleSpy, readNormalizedFile } from './cosca-test-utils'
 
 describe('Test updateTextFile function', () => {
 
@@ -17,31 +9,27 @@ describe('Test updateTextFile function', () => {
 
   beforeEach(() => {
     wd = process.env.WORKSPACE_DIR!
-    spy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    spy = getConsoleSpy('log')
   })
 
   test('should be defined', () => {
     expect(updateTextFile).toBeDefined()
   })
 
-  test('should add the new line', () => {
+  test('should add the new line', async () => {
     updateTextFile(`${wd}/test-file.txt`, ['Row 3'], true)
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
-    const lines = readFileContents(wd, 'test-file.txt')
-    expect(lines).toHaveLength(5) // function adds +1 new line
-    expect(lines[3]).toBe('Row 3')
+    await expect(readNormalizedFile(wd, 'test-file.txt')).toMatchFileSnapshot('snapshots/updated-test-file.txt')
   })
 
-  test('should not add new same line again', () => {
+  test('should not add new same line again', async () => {
     updateTextFile(`${wd}/test-file.txt`, ['Row 3'], true)
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
 
-    const lines = readFileContents(wd, 'test-file.txt')
-    expect(lines).toHaveLength(5)
-    expect(lines[3]).toBe('Row 3')
+    await expect(readNormalizedFile(wd, 'test-file.txt')).toMatchFileSnapshot('snapshots/updated-test-file.txt')
   })
 
 })

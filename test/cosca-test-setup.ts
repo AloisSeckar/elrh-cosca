@@ -4,9 +4,9 @@ import { join } from 'node:path';
 
 export default async function () {
   // setup (runs before all tests)
-  // copy /test/src into temp folder
+  // copy /test/fixtures into temp folder
   const workspace = mkdtempSync(join(tmpdir(), 'cosca-'))
-  const fixtures = join(process.cwd(), 'test', 'src')
+  const fixtures = join(process.cwd(), 'test', 'fixtures')
   cpSync(fixtures, workspace, { recursive: true })
   process.env.WORKSPACE_DIR = workspace
     console.error(workspace)
