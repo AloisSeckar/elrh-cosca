@@ -64,11 +64,24 @@ export async function updateConfigFile(
       throw new Error(`Could not access config object in ${pathToFile}`)
     }
 
+    // track changes (save before)
+    const oldSnapshot = JSON.stringify(oldConfig)
+
     // defu-like merge (note: arguments order swapped here)
     deepMergeObject(oldConfig, newConfig)
 
-    // write the result back into the source file
-    const { code } = generateCode(module)
-    writeFileSync(absPath, code, 'utf8')
+    // track changes (get after)
+    const newSnapshot = JSON.stringify(oldConfig)
+
+    // if config was changed write the result back into the source file
+    if (oldSnapshot !== newSnapshot) {
+      const { code } = generateCode(module)
+      writeFileSync(absPath, code, 'utf8')
+      console.log(`'${pathToFile}' file updated.`)
+    } else {
+      console.log(`'${pathToFile}' file already up to date.`)
+    }
+  } else {
+    console.log(`Updating '${pathToFile}' skipped.`)
   }
 }
