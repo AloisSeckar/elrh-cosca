@@ -53,7 +53,7 @@ export async function updateConfigFile(
       // for now I put further efforts on hold - CONTRIBUTIONS WELCOME!
       throw new Error(`It is currently not possible to handle CommonJS module.exports syntax of ${pathToFile}`)
     }
-    console.log(configExport)
+    // config object is required
     if (!configExport) {
       throw new Error(`No suitable config export found in ${pathToFile}`)
     }
