@@ -71,7 +71,7 @@ By default the function asks for confirmation before attempting to alter the `ta
 
 ```ts
 async function updateJsonFile(
-  pathToFile: string, jsonKey: string, newValues: Record<string, string>, force: boolean = false
+  pathToFile: string, jsonKey: string, newValues: Record<string | number | symbol, any>, force: boolean = false
 ): Promise<void>
 ```
 
