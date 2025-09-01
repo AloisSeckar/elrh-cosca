@@ -20,6 +20,7 @@ export default defineConfig({
           'node:os',
           'node:path',
           'node:readline',
+          'node:stream',
           'node:url',
       ],
       output: {
