@@ -21,15 +21,23 @@ describe('Test updateTextFile function', () => {
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
-    await expect(readNormalizedFile(wd, 'text-file.txt')).toMatchFileSnapshot('snapshots/updated-text-file.txt')
+    await expect(readNormalizedFile(wd, 'text-file.txt')).toMatchFileSnapshot('snapshots/updated-text-file-1.txt')
   })
 
-  test('should not add new same line again', async () => {
+  test('should not add same line again', async () => {
     await updateTextFile(`${wd}/text-file.txt`, ['Row 3'], true)
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
 
-    await expect(readNormalizedFile(wd, 'text-file.txt')).toMatchFileSnapshot('snapshots/updated-text-file.txt')
+    await expect(readNormalizedFile(wd, 'text-file.txt')).toMatchFileSnapshot('snapshots/updated-text-file-1.txt')
+  })
+
+  test('should add new line but ignore existing', async () => {
+    await updateTextFile(`${wd}/text-file.txt`, ['Row 4', 'Row 3'], true)
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
+
+    await expect(readNormalizedFile(wd, 'text-file.txt')).toMatchFileSnapshot('snapshots/updated-text-file-2.txt')
   })
 
 })

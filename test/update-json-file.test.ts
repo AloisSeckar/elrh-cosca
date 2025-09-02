@@ -40,4 +40,12 @@ describe('Test updateJsonFile function', () => {
     await expect(readNormalizedFile(wd, 'json-file.json')).toMatchFileSnapshot('snapshots/updated-json-file-2.json')
   })
 
+  test('should add nested key', async () => {
+    await updateJsonFile(`${wd}/json-file.json`, 'cosca', { testKey5: { nestedKey: 'nested' } }, true)
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
+
+    await expect(readNormalizedFile(wd, 'json-file.json')).toMatchFileSnapshot('snapshots/updated-json-file-3.json')
+  })
+
 })
