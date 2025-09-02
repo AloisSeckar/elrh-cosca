@@ -102,6 +102,8 @@ By default the function asks for confirmation before attempting to alter the `ta
 - Build with [Vite](https://vitejs.dev/)
 - Tested with [Vitest](https://vitest.dev/)
 
+See [Changelog](https://github.com/AloisSeckar/elrh-cosca/blob/main/CHANGELOG.md) for project history and development.
+
 ## Report bugs & contact
 
 Use GitHub issues to report bugs / propose enhancements / give feedback:
