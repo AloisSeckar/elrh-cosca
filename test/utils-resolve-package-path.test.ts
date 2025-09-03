@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from 'vitest'
 import { resolvePackagePath } from '../src/main'
-import { getConsoleSpy, getPromptSpy } from './cosca-test-utils'
+import { getConsoleSpy } from './cosca-test-utils'
 
 describe('Test resolvePackagePath function', () => {
 

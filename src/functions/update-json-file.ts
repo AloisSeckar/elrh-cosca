@@ -1,6 +1,6 @@
 import { resolve } from 'node:path'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { promptUser } from '../utils/prompt-user.js'
+import { promptUser } from '../terminal/prompt-user.js'
 
 // so-far only allows adding into existing key at the top level of the JSON tree
 // e.g. "scripts" or "pnpm" in package.json

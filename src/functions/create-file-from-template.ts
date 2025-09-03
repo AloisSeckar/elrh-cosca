@@ -1,6 +1,6 @@
 import { resolve } from 'node:path'
 import { existsSync, copyFileSync } from 'node:fs'
-import { promptUser } from '../utils/prompt-user'
+import { promptUser } from '../terminal/prompt-user'
 import { parseQualifiedPath } from '../utils/parse-qualified-path'
 import { resolvePackagePath } from '../utils/resolve-package-path'
 

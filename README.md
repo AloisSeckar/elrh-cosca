@@ -11,7 +11,7 @@ The **"COSCA"** abbreviation stands for **CO**de **SCA**ffolding which points ou
 
 `npm install elrh-cosca` to include into your project.
 
-### List of available functions
+### List of file-manipulation functions
 
 #### `createFileFromTemplate`
 
@@ -89,7 +89,7 @@ Takes a path to a plain text file and injects `rowsToAdd` at the end of the file
 
 By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts.
 
-### List of available utils
+### List of terminal helpers
 
 #### `promptUser`
 
@@ -98,6 +98,8 @@ async function promptUser(question: string): Promise<boolean>
 ```
 
 Prints out a `question` to the console and waits for the input. Returns `true` when `y` is pressed and `false` otherwise.
+
+### List of other utils
 
 #### `parseQualifiedPath`
 
