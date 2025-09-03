@@ -1,6 +1,6 @@
 import { resolve } from 'node:path'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { promptUser } from './prompt-user.js'
+import { promptUser } from '../utils/prompt-user.js'
 
 export async function updateTextFile(
     pathToFile: string, rowsToAdd: string[], force: boolean = false

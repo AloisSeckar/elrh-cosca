@@ -2,7 +2,7 @@ import { writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { loadFile, generateCode } from 'magicast'
 import { deepMergeObject } from '../utils/better-deep-merge'
-import { promptUser } from './prompt-user.js'
+import { promptUser } from '../utils/prompt-user.js'
 
 /**
  * Update the single object-literal config found in a file.

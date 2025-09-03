@@ -9,9 +9,9 @@ The **"COSCA"** abbreviation stands for **CO**de **SCA**ffolding which points ou
 
 `npm install elrh-cosca` to include into your project.
 
-**List of available functions:**
+### List of available functions
 
-### `createFileFromTemplate`
+#### `createFileFromTemplate`
 
 ```ts
 async function createFileFromTemplate(
@@ -27,15 +27,7 @@ Path to `targetFile` is relative to `process.cwd()` which allows consumers to ru
 
 By default the function asks for confirmation before attempting to create the file and if the file with the same name as `targetFile` is detected. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts.
 
-### `promptUser`
-
-```ts
-export async function promptUser(question: string): Promise<boolean>
-```
-
-Prints out a `question` to the console and waits for the input. Returns `true` when `y` is pressed and `false` otherwise.
-
-### `updateConfigFile`
+#### `updateConfigFile`
 
 ```ts
 async function updateConfigFile(
@@ -45,7 +37,7 @@ async function updateConfigFile(
 
 Prints out a `question` to the console and waits for the input. Returns `true` when `y` is pressed and `false` otherwise.
 
-### `updateConfigFile`
+#### `updateConfigFile`
 
 ```ts
 async function updateConfigFile(
@@ -67,7 +59,7 @@ Please [report](https://github.com/AloisSeckar/elrh-cosca/issues) any logical fl
 
 By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts.
 
-### `updateJsonFile`
+#### `updateJsonFile`
 
 ```ts
 async function updateJsonFile(
@@ -83,7 +75,7 @@ Currently it only allows adding new values under top-level keys. If the `jsonKey
 
 By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts.
 
-### `updateTextFile`
+#### `updateTextFile`
 
 ```ts
 export async function updateTextFile(
@@ -94,6 +86,16 @@ export async function updateTextFile(
 Takes a path to a plain text file and injects `rowsToAdd` at the end of the file, **providing they are not already present in the file**. The function tracks if any real change was made and notifies the user if not.
 
 By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts.
+
+### List of available utils
+
+#### `promptUser`
+
+```ts
+export async function promptUser(question: string): Promise<boolean>
+```
+
+Prints out a `question` to the console and waits for the input. Returns `true` when `y` is pressed and `false` otherwise.
 
 ## Tech stack
 

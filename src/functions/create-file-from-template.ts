@@ -1,6 +1,6 @@
 import { resolve } from 'node:path'
 import { existsSync, copyFileSync } from 'node:fs'
-import { promptUser } from './prompt-user'
+import { promptUser } from '../utils/prompt-user'
 import { parseTemplatePath, resolvePackagePath } from '../utils/resolve-package'
 
 export async function createFileFromTemplate(
