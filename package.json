@@ -12,11 +12,9 @@
     ".": {
       "types": "./dist/types/index.d.ts",
       "import": "./dist/elrh-cosca.mjs",
-      "require": "./dist/elrh-cosca.cjs",
       "default": "./dist/elrh-cosca.mjs"
     }
   },
-  "main": "./dist/elrh-cosca.cjs",
   "module": "./dist/elrh-cosca.mjs",
   "types": "./dist/types/index.d.ts",
   "scripts": {

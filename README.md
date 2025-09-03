@@ -7,6 +7,8 @@ The **"COSCA"** abbreviation stands for **CO**de **SCA**ffolding which points ou
 
 ## How to use
 
+**NOTE:** The library is **ESM only** and it is advised to use with at least **Node 18**.
+
 `npm install elrh-cosca` to include into your project.
 
 ### List of available functions
