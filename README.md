@@ -80,7 +80,7 @@ By default the function asks for confirmation before attempting to alter the `ta
 #### `updateTextFile`
 
 ```ts
-export async function updateTextFile(
+async function updateTextFile(
     pathToFile: string, rowsToAdd: string[], force: boolean = false
 ): Promise<void>
 ```
@@ -94,10 +94,26 @@ By default the function asks for confirmation before attempting to alter the `ta
 #### `promptUser`
 
 ```ts
-export async function promptUser(question: string): Promise<boolean>
+async function promptUser(question: string): Promise<boolean>
 ```
 
 Prints out a `question` to the console and waits for the input. Returns `true` when `y` is pressed and `false` otherwise.
+
+#### `parseQualifiedPath`
+
+```ts
+function parseQualifiedPath(path: string): { pkg: string; file: string }
+```
+
+Expects path to file in `"package:relative/path/to/file"` format and splits it into `{ pkg, file }`. The package name can be scoped (e.g. `@scope/package`).
+
+#### `resolvePackagePath`
+
+```ts
+function resolvePackagePath(pkg: string): string
+```
+
+Resolve a package's installed root directory *from the target app* - which can be either from within itself during development or from corresponding package dir inside *node_modules*. The package name can be scoped (e.g. `@scope/package`).
 
 ## Tech stack
 

@@ -1,29 +1,9 @@
 import { access, constants, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-/** 
- * Expects path to file template in `"package:relative/path/to/file"` format and splits it into `{ pkg, file }`. 
- * Throws error on invalid input. 
- */
-export function parseTemplatePath(input: string): { pkg: string; file: string } {
-  const idx = input.indexOf(':')
-  if (idx <= 0 || idx === input.length - 1) {
-    throw new Error(
-      `Invalid input "${input}". Expected format is "package:relative/path/to/file".`
-    )
-  }
-  const pkg = input.slice(0, idx).trim()
-  const file = input.slice(idx + 1).replace(/^[/\\]+/, '')
-  // Basic sanity: package names can be scoped (@scope/name) or unscoped
-  if (!pkg || pkg.endsWith('/') || pkg.includes(' ')) {
-    throw new Error(`Invalid package name in templatePath: "${pkg}"`)
-  }
-  return { pkg, file }
-}
-
 /**
  * Resolve a package's installed root directory *from the target app*.
- * Package name can be scoped.
+ * Package name can be scoped (e.g. `@scope/package`).
  * Works with npm/yarn/pnpm, hoisting or not.
  */
 export function resolvePackagePath(packageName: string): string {

@@ -1,7 +1,8 @@
 import { resolve } from 'node:path'
 import { existsSync, copyFileSync } from 'node:fs'
 import { promptUser } from '../utils/prompt-user'
-import { parseTemplatePath, resolvePackagePath } from '../utils/resolve-package'
+import { parseQualifiedPath } from '../utils/parse-qualified-path'
+import { resolvePackagePath } from '../utils/resolve-package-path'
 
 export async function createFileFromTemplate(
   templateFile: string, targetFile: string, force: boolean = false
@@ -10,7 +11,7 @@ export async function createFileFromTemplate(
     `This will create '${targetFile}' file. Continue?`,
   )
   if (shouldCreate) {
-    const { pkg, file } = parseTemplatePath(templateFile);
+    const { pkg, file } = parseQualifiedPath(templateFile);
     const packagePath = resolvePackagePath(pkg);
     const templatePath = resolve(packagePath, file)
 
