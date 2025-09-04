@@ -2,6 +2,16 @@
 
 Overview of the newest features in COSCA.
 
+## 0.2.1
+
+**2025-09-04**
+
+- feat: new `parseQualifiedPath` and `resolvePackagePath` utils exposed
+- refactor: re-organized internal structure
+- refactor: improved error handling logic
+- docs: CHANGELOG added
+- tests: many more new tests added (currently 48)
+
 ## 0.2.0
 
 **2025-09-01**
