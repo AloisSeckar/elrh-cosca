@@ -34,14 +34,20 @@ describe('Test parseQualifiedPath function', () => {
     expect(() => parseQualifiedPath('path')).toThrowError(
       'Invalid input "path". Expected format is "package:relative/path/to/file".'
     )
-    // expect(() => parseQualifiedPath('package:package:path')).toThrowError(
-    //   'Invalid input "path". Expected format is "package:relative/path/to/file".'
-    // )
+    expect(() => parseQualifiedPath('package:package:path')).toThrowError(
+      'Invalid input "package:package:path". Expected format is "package:relative/path/to/file".'
+    )
     expect(() => parseQualifiedPath('package:')).toThrowError(
       'Invalid input "package:". Expected format is "package:relative/path/to/file".'
     )
     expect(() => parseQualifiedPath(':path')).toThrowError(
       'Invalid input ":path". Expected format is "package:relative/path/to/file".'
+    )
+    expect(() => parseQualifiedPath('package/:path')).toThrowError(
+      'Invalid package name in input: "package/".'
+    )
+    expect(() => parseQualifiedPath('pack age:path')).toThrowError(
+      'Invalid package name in input: "pack age".'
     )
   })
 })
