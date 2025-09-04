@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from 'vitest'
 import { promptUser } from '../src/main'
-import { getConsoleSpy, getPromptSpy } from './cosca-test-utils'
+import { getConsoleSpy, setPromptSpy } from './cosca-test-utils'
 
 describe('Test promptUser function', () => {
 
@@ -17,13 +17,13 @@ describe('Test promptUser function', () => {
   })
 
   test('should prompt the user for input and return true', async () => {
-    getPromptSpy('y')
+    setPromptSpy(['y'])
     expect(await promptUser('Is it today?')).toBe(true)
   })
   
   
   test('should prompt the user for input and return false', async () => {
-    getPromptSpy('n')
+    setPromptSpy(['n'])
     expect(await promptUser('Is it today?')).toBe(false)
   })
 })

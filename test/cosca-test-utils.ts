@@ -25,15 +25,16 @@ export function getConsoleSpy(logLevel: 'log' | 'debug' |'info' | 'warn' | 'erro
 }
 
 /**
- * Mocks user input for the `readline.question` method.
- * @param input value expected from the user
+ * Mocks user input(s) for the `readline.question` method.
+ * @param input array of 1+ expected values from the user
  * @returns mocked terminal input
  */
-export function getPromptSpy(input: string) {
-  return vi.spyOn(readline.Interface.prototype, 'question')
+export function setPromptSpy(inputs: string[]) {
+  let call = 0
+  vi.spyOn(readline.Interface.prototype, 'question')
   .mockImplementation((_, cb) => { 
     const fn = cb as (answer: string) => void // explicit typecast required
-    fn(input)
+    fn(inputs[call++])
     return this
   })
 }

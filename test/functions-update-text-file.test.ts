@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from 'vitest'
 import { updateTextFile } from '../src/main'
-import { getConsoleSpy, readNormalizedFile } from './cosca-test-utils'
+import { getConsoleSpy, readNormalizedFile, setPromptSpy } from './cosca-test-utils'
 
 describe('Test updateTextFile function', () => {
 
@@ -14,6 +14,10 @@ describe('Test updateTextFile function', () => {
 
   test('should be defined', () => {
     expect(updateTextFile).toBeDefined()
+  })
+  
+  test('should fail because of non-existent file', async () => {
+    await expect(updateTextFile(`${wd}/unknown`, ['Row 3'], true)).rejects.toThrow(/skipping updates/)
   })
 
   test('should add the new line', async () => {
@@ -37,6 +41,16 @@ describe('Test updateTextFile function', () => {
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
+    await expect(readNormalizedFile(wd, 'text-file.txt')).toMatchFileSnapshot('snapshots/updated-text-file-2.txt')
+  })
+      
+  test('should do nothing when user aborts creating', async () => {
+    setPromptSpy(['n'])
+    await updateTextFile(`${wd}/text-file.json`, ['Row 5'])
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/skipped/))
+
+    // file not updated
     await expect(readNormalizedFile(wd, 'text-file.txt')).toMatchFileSnapshot('snapshots/updated-text-file-2.txt')
   })
 

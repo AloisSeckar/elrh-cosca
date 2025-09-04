@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from 'vitest'
 import { updateConfigFile } from '../src/main'
-import { getConsoleSpy, readNormalizedFile } from './cosca-test-utils'
+import { getConsoleSpy, setPromptSpy, readNormalizedFile } from './cosca-test-utils'
 
 describe('Test updateConfigFile function', () => {
 
@@ -14,6 +14,14 @@ describe('Test updateConfigFile function', () => {
 
   test('should be defined', () => {
     expect(updateConfigFile).toBeDefined()
+  })
+
+  test('should fail because of non-existent file', async () => {
+    await expect(updateConfigFile(`${wd}/uknown`, { testKey1: 0 }, true)).rejects.toThrow(/no such file or directory/)
+  })
+
+  test('should fail because of CJS format', async () => {
+    await expect(updateConfigFile(`${wd}/config-file.cjs`, { testKey1: 0 }, true)).rejects.toThrow(/currently not possible to handle CommonJS/)
   })
 
   test('should add the new key and values (default export)', async () => {
@@ -109,6 +117,16 @@ describe('Test updateConfigFile function', () => {
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
+    await expect(readNormalizedFile(wd, 'config-file-named.ts')).toMatchFileSnapshot('snapshots/updated-config-file-named-4.ts')
+  })
+  
+  test('should do nothing when user aborts creating', async () => {
+    setPromptSpy(['n'])
+    await updateConfigFile(`${wd}/config-file-named.ts`, { testKey5: 0 })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/skipped/))
+
+    // file not updated
     await expect(readNormalizedFile(wd, 'config-file-named.ts')).toMatchFileSnapshot('snapshots/updated-config-file-named-4.ts')
   })
 

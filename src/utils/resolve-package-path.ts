@@ -25,7 +25,6 @@ export function resolvePackagePath(packageName: string): string {
   try {
     const nmRoot = join(appDir, 'node_modules', ...packageName.split('/'))
     const nmPkgJson = join(nmRoot, 'package.json')
-    console.log(nmPkgJson)
     access(nmPkgJson, constants.R_OK, (err) => { 
       if (err) {
         throw new Error(`Cannot access "${nmPkgJson}"`)

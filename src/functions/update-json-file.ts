@@ -23,8 +23,7 @@ export async function updateJsonFile(
     try {
       json = JSON.parse(jsonRaw)
     } catch (err) {
-      console.error(err)
-      throw new Error(`Could not parse '${pathToFile}' — skipping updates.`)
+      throw new Error(`Could not parse '${pathToFile}' — skipping updates.\n${err}`)
     }
 
     json[jsonKey] = json[jsonKey] || {}

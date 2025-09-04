@@ -27,7 +27,7 @@ export async function createFileFromTemplate(
       )
       if (!shouldOverwrite) {
         console.log('Aborted.')
-        process.exit(0)
+        return
       }
     }
 
