@@ -18,8 +18,7 @@ export async function createFileFromTemplate(
     const targetPath = resolve(process.cwd(), targetFile)
 
     if (!existsSync(templatePath)) {
-      console.error(`Template file not found at ${templatePath}`)
-      process.exit(1)
+      throw new Error(`Template file not found at ${templatePath}`)
     }
 
     if (existsSync(targetPath)) {

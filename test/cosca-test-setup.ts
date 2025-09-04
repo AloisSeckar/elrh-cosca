@@ -9,7 +9,6 @@ export default async function () {
   const fixtures = join(process.cwd(), 'test', 'fixtures')
   cpSync(fixtures, workspace, { recursive: true })
   process.env.WORKSPACE_DIR = workspace
-    console.error(workspace)
 
   // teardown (callback runs after all tests)
   // clean up the temp folder

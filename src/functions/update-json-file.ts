@@ -15,17 +15,16 @@ export async function updateJsonFile(
   if (shouldUpdate) {
     const jsonFilePath = resolve(process.cwd(), pathToFile)
     if (!existsSync(jsonFilePath)) {
-      console.warn(`No '${pathToFile}' found in project root — skipping updates.`)
-      return
+      throw new Error(`No '${pathToFile}' found in project root — skipping updates.`)
     }
 
     const jsonRaw = readFileSync(jsonFilePath, 'utf8')
     let json
     try {
       json = JSON.parse(jsonRaw)
-    } catch {
-      console.error(`Could not parse '${pathToFile}' — skipping updates.`)
-      return
+    } catch (err) {
+      console.error(err)
+      throw new Error(`Could not parse '${pathToFile}' — skipping updates.`)
     }
 
     json[jsonKey] = json[jsonKey] || {}
