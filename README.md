@@ -115,6 +115,14 @@ async function promptUser(question: string): Promise<boolean>
 
 Prints out a `question` to the console and waits for the input. Returns `true` when `y` is pressed and `false` otherwise.
 
+#### `showMessage`
+
+```ts
+async function showMessage(message: string, newlines: number = 1): Promise<void>
+```
+
+Prints out a `message` to `process.stdout` and adds the specified number of newlines after it (default is 1).
+
 ### List of other utils
 
 #### `parseQualifiedPath`

@@ -38,3 +38,11 @@ export function setPromptSpy(inputs: string[]) {
     return this
   })
 }
+
+/**
+ * Mocks logging into stdout to spy on the passed arguments.
+ * @returns mocked stdout log method
+ */
+export function getStdoutSpy() {
+  return vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
+}

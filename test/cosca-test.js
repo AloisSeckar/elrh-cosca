@@ -7,6 +7,9 @@ import {
 } from '../dist/elrh-cosca.mjs'
 
 async function main() {
+  console.log('Test showMessage')
+  showMessage('Hello!')
+
   console.log('Test promptUser')
   const input = await promptUser('Is it today?')
   console.log('User input:', input)
