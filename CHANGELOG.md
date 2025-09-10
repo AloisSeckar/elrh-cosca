@@ -2,6 +2,12 @@
 
 Overview of the newest features in COSCA.
 
+## 0.2.2
+
+**2025-09-10**
+
+- feat: new `createFileWebFromTemplate` function for creating files from web templates
+
 ## 0.2.1
 
 **2025-09-04**
