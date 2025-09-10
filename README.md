@@ -123,6 +123,14 @@ async function showMessage(message: string, newlines: number = 1): Promise<void>
 
 Prints out a `message` to `process.stdout` and adds the specified number of newlines after it (default is 1).
 
+#### `showError`
+
+```ts
+async function showError(message: string, newlines: number = 1): Promise<void>
+```
+
+Prints out a `message` to `process.stderr` and adds the specified number of newlines after it (default is 1).
+
 ### List of other utils
 
 #### `parseQualifiedPath`

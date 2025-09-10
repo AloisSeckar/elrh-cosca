@@ -3,12 +3,15 @@
 // manual test script for COSCA functions
 
 import {
-  createFileFromTemplate, createFileFromWebTemplate, promptUser, updateConfigFile, updateJsonFile, updateTextFile 
+  createFileFromTemplate, createFileFromWebTemplate, promptUser, showError, showMessage,
+  updateConfigFile, updateJsonFile, updateTextFile
 } from '../dist/elrh-cosca.mjs'
 
 async function main() {
   console.log('Test showMessage')
   showMessage('Hello!')
+  console.log('Test showMessage')
+  showError('ERROR!')
 
   console.log('Test promptUser')
   const input = await promptUser('Is it today?')
