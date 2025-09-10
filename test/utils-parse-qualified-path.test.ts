@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, test } from 'vitest'
 import { parseQualifiedPath } from '../src/main'
 import { getConsoleSpy } from './cosca-test-utils'
 
-describe('Test parseQualifiedPath function', () => {
+describe('Test parseQualifiedPath util function', () => {
 
   let wd: string = ''
   let spy: any

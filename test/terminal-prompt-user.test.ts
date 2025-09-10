@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, test } from 'vitest'
 import { promptUser } from '../src/main'
 import { getConsoleSpy, setPromptSpy } from './cosca-test-utils'
 
-describe('Test promptUser function', () => {
+describe('Test promptUser terminal helper', () => {
 
   let wd: string = ''
   let spy: any

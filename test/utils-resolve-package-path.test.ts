@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, test } from 'vitest'
 import { resolvePackagePath } from '../src/main'
 import { getConsoleSpy } from './cosca-test-utils'
 
-describe('Test resolvePackagePath function', () => {
+describe('Test resolvePackagePath util function', () => {
 
   let wd: string = ''
   let spy: any
