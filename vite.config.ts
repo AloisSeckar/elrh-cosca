@@ -16,6 +16,7 @@ export default defineConfig({
       external: [
           'fs', // due to `magicast` package
           'node:fs',
+          'node:https',
           'node:module',
           'node:os',
           'node:path',

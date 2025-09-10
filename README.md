@@ -29,6 +29,22 @@ Path to `targetFile` is relative to `process.cwd()` which allows consumers to ru
 
 By default the function asks for confirmation before attempting to create the file and if the file with the same name as `targetFile` is detected. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts.
 
+#### `createFileFromWebTemplate`
+
+```ts
+async function createFileWebFromTemplate(
+  url: string, targetFile: string, force: boolean = false
+): Promise<void>
+```
+
+Gets a file definition from given `url` and will create a fresh copy in target project when invoked. 
+
+Contents of `url` must be accessible via `node:https.get` function and will be fetched as raw string data.
+
+Path to `targetFile` is relative to `process.cwd()` which allows consumers to run `npx your-script` in their project roots during development.
+
+By default the function asks for confirmation before attempting to create the file and if the file with the same name as `targetFile` is detected. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts.
+
 #### `updateConfigFile`
 
 ```ts

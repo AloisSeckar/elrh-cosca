@@ -2,8 +2,8 @@
 
 // manual test script for COSCA functions
 
-import { 
-  createFileFromTemplate, promptUser, updateConfigFile, updateJsonFile, updateTextFile 
+import {
+  createFileFromTemplate, createFileFromWebTemplate, promptUser, updateConfigFile, updateJsonFile, updateTextFile 
 } from '../dist/elrh-cosca.mjs'
 
 async function main() {
@@ -14,6 +14,9 @@ async function main() {
   console.log('\nTest createFileFromTemplate')
   await createFileFromTemplate('vitest:README.md', 'test/snapshots/test.file1')
   await createFileFromTemplate('elrh-cosca:test/fixtures/text-file.txt', 'test/snapshots/test.file2')
+  
+  console.log('\nTest createFileFromWebTemplate')
+  await createFileFromWebTemplate('https://raw.githubusercontent.com/AloisSeckar/nuxt-spec/refs/heads/main/config/vitest.config.ts.template', 'test/snapshots/test.file3')
 
   console.log('\nTest updateConfigFile')
   await updateConfigFile('test/fixtures/config-file-default.ts', { compatibilityDate: '2025-08-26', extends: ['nuxt-iignis'], cosca: { exists: true, data: ['some', 'other'], raw: 'war' } })
@@ -26,6 +29,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error('Error:', err)
+  console.error(err)
   process.exit(1)
 })
