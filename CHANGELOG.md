@@ -2,6 +2,12 @@
 
 Overview of the newest features in COSCA.
 
+## 0.2.3
+
+**2025-09-11**
+
+- feat: new `showMessage` and `showError` terminal helpers
+
 ## 0.2.2
 
 **2025-09-10**
