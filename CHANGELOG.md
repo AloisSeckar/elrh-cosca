@@ -2,6 +2,12 @@
 
 Overview of the newest features in COSCA.
 
+## 0.2.4
+
+**2025-09-11**
+
+- fix: corrected `showMessage` and `showError` export
+
 ## 0.2.3
 
 **2025-09-11**
