@@ -21,7 +21,7 @@
     "dev": "vite",
     "build": "pnpm install && vitest run && tsc && vite build",
     "preview": "vite preview",
-    "release": "pnpm build && pnpm publish",
+    "prepublishOnly": "pnpm build",
     "test": "vitest run"
   },
   "devDependencies": {
