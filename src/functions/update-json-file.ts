@@ -7,10 +7,11 @@ import { promptUser } from '../terminal/prompt-user.js'
 // TODO allow recursive updates on any level (think about using defu)
 
 export async function updateJsonFile(
-  pathToFile: string, jsonKey: string, newValues: Record<string | number | symbol, any>, force: boolean = false
+  pathToFile: string, jsonKey: string, newValues: Record<string | number | symbol, any>, 
+  force: boolean = false, prompt: string = ''
 ): Promise<void> {
   const shouldUpdate = force || await promptUser(
-    `This will update '${pathToFile}' file. Continue?`,
+    prompt || `This will update '${pathToFile}' file. Continue?`,
   )
   if (shouldUpdate) {
     const jsonFilePath = resolve(process.cwd(), pathToFile)

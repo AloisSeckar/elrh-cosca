@@ -17,7 +17,7 @@ The **"COSCA"** abbreviation stands for **CO**de **SCA**ffolding which points ou
 
 ```ts
 async function createFileFromTemplate(
-  templateFile: string, targetFile: string, force: boolean = false
+  templateFile: string, targetFile: string, force: boolean = false, prompt: string = ''
 ): Promise<void>
 ```
 
@@ -27,13 +27,13 @@ Path to `templateFile` must be prefixed with the package name to allow proper re
 
 Path to `targetFile` is relative to `process.cwd()` which allows consumers to run `npx your-script` in their project roots during development.
 
-By default the function asks for confirmation before attempting to create the file and if the file with the same name as `targetFile` is detected. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts.
+By default the function asks for confirmation before attempting to create the file and if the file with the same name as `targetFile` is detected. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passsing a custom `prompt` allows tailoring your own question to the user.
 
 #### `createFileFromWebTemplate`
 
 ```ts
 async function createFileWebFromTemplate(
-  url: string, targetFile: string, force: boolean = false
+  url: string, targetFile: string, force: boolean = false, prompt: string = ''
 ): Promise<void>
 ```
 
@@ -43,23 +43,14 @@ Contents of `url` must be accessible via `node:https.get` function and will be f
 
 Path to `targetFile` is relative to `process.cwd()` which allows consumers to run `npx your-script` in their project roots during development.
 
-By default the function asks for confirmation before attempting to create the file and if the file with the same name as `targetFile` is detected. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts.
+By default the function asks for confirmation before attempting to create the file and if the file with the same name as `targetFile` is detected. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passsing a custom `prompt` allows tailoring your own question to the user.
 
 #### `updateConfigFile`
 
 ```ts
 async function updateConfigFile(
-  pathToFile: string, newConfig: Record<string | number | symbol, any>, force: boolean = false
-): Promise<void>
-```
-
-Prints out a `question` to the console and waits for the input. Returns `true` when `y` is pressed and `false` otherwise.
-
-#### `updateConfigFile`
-
-```ts
-async function updateConfigFile(
-  pathToFile: string, newConfig: Record<string | number | symbol, any>, force: boolean = false
+  pathToFile: string, newConfig: Record<string | number | symbol, any>, 
+  force: boolean = false, prompt: string = ''
 ): Promise<void>
 ```
 
@@ -75,13 +66,14 @@ The merger is performed using [unjs/magicast](https://github.com/unjs/magicast).
 - create a unique-union in case of arrays
 Please [report](https://github.com/AloisSeckar/elrh-cosca/issues) any logical flaws and issues of the process.
 
-By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts.
+By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passsing a custom `prompt` allows tailoring your own question to the user.
 
 #### `updateJsonFile`
 
 ```ts
 async function updateJsonFile(
-  pathToFile: string, jsonKey: string, newValues: Record<string | number | symbol, any>, force: boolean = false
+  pathToFile: string, jsonKey: string, newValues: Record<string | number | symbol, any>, 
+  force: boolean = false, prompt: string = ''
 ): Promise<void>
 ```
 
@@ -91,19 +83,19 @@ Path to `targetFile` is relative to `process.cwd()`. The file must be a valid JS
 
 Currently it only allows adding new values under top-level keys. If the `jsonKey` exists, new values are merged into existing ones. Otherwise, new key is added. The function tracks if any real change was made and notifies the user if not.
 
-By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts.
+By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passsing a custom `prompt` allows tailoring your own question to the user.
 
 #### `updateTextFile`
 
 ```ts
 async function updateTextFile(
-    pathToFile: string, rowsToAdd: string[], force: boolean = false
+    pathToFile: string, rowsToAdd: string[], force: boolean = false, prompt: string = ''
 ): Promise<void>
 ```
 
 Takes a path to a plain text file and injects `rowsToAdd` at the end of the file, **providing they are not already present in the file**. The function tracks if any real change was made and notifies the user if not.
 
-By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts.
+By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passsing a custom `prompt` allows tailoring your own question to the user.
 
 ### List of terminal helpers
 

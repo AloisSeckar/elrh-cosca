@@ -5,10 +5,10 @@ import { parseQualifiedPath } from '../utils/parse-qualified-path'
 import { resolvePackagePath } from '../utils/resolve-package-path'
 
 export async function createFileFromTemplate(
-  templateFile: string, targetFile: string, force: boolean = false
+  templateFile: string, targetFile: string, force: boolean = false, prompt: string = ''
 ): Promise<void> {
   const shouldCreate = force || await promptUser(
-    `This will create '${targetFile}' file. Continue?`,
+    prompt || `This will create '${targetFile}' file. Continue?`,
   )
   if (shouldCreate) {
     const { pkg, file } = parseQualifiedPath(templateFile);

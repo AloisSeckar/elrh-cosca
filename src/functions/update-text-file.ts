@@ -3,10 +3,10 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { promptUser } from '../terminal/prompt-user.js'
 
 export async function updateTextFile(
-    pathToFile: string, rowsToAdd: string[], force: boolean = false
+    pathToFile: string, rowsToAdd: string[], force: boolean = false, prompt: string = ''
 ): Promise<void> {
   const shouldUpdate = force || await promptUser(
-    `This will update '${pathToFile}' file. Continue?`,
+    prompt || `This will update '${pathToFile}' file. Continue?`,
   )
   if (shouldUpdate) {
     const textFilePath = resolve(process.cwd(), pathToFile)

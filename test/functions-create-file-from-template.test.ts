@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { beforeEach, describe, expect, test } from 'vitest'
 import { createFileFromTemplate } from '../src/main'
-import { getConsoleSpy, setPromptSpy, readNormalizedFile } from './cosca-test-utils'
+import { getConsoleSpy, setPromptSpy, readNormalizedFile, getPromptUserSpy } from './cosca-test-utils'
 
 describe('Test createFileFromTemplate function', () => {
 
@@ -68,4 +68,18 @@ describe('Test createFileFromTemplate function', () => {
     await expect(readNormalizedFile(wd, 'npm-file-copy.txt')).toMatchFileSnapshot('snapshots/created-npm-file.txt')
   })
 
+  // test prompting
+
+  test('should not display custom prompt', async () => {
+    const uSpy = getPromptUserSpy()
+    await createFileFromTemplate(`a`, `b`)
+    expect(uSpy).toHaveBeenCalledWith(expect.stringMatching(/This will create/))
+  })
+
+  test('should display custom prompt', async () => {
+    const uSpy = getPromptUserSpy()
+    await createFileFromTemplate(`a`, `b`, false, "Custom prompt")
+    expect(uSpy).toHaveBeenCalledWith(expect.stringMatching(/Custom prompt/))
+  })
+  
 })

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from 'vitest'
 import { updateJsonFile } from '../src/main'
-import { getConsoleSpy, readNormalizedFile, setPromptSpy } from './cosca-test-utils'
+import { getConsoleSpy, getPromptUserSpy, readNormalizedFile, setPromptSpy } from './cosca-test-utils'
 
 describe('Test updateJsonFile function', () => {
 
@@ -64,6 +64,20 @@ describe('Test updateJsonFile function', () => {
 
     // file not updated
     await expect(readNormalizedFile(wd, 'json-file.json')).toMatchFileSnapshot('snapshots/updated-json-file-3.json')
+  })
+  
+  // test prompting
+
+  test('should not display custom prompt', async () => {
+    const uSpy = getPromptUserSpy()
+    await updateJsonFile(`a`, 'b', { testKey6: 0 })
+    expect(uSpy).toHaveBeenCalledWith(expect.stringMatching(/This will update/))
+  })
+
+  test('should display custom prompt', async () => {
+    const uSpy = getPromptUserSpy()
+    await updateJsonFile(`a`, 'b', { testKey6: 0 }, false, "Custom prompt")
+    expect(uSpy).toHaveBeenCalledWith(expect.stringMatching(/Custom prompt/))
   })
 
 })

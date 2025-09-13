@@ -1,7 +1,9 @@
 import readline from 'node:readline'
 import { readFileSync } from 'node:fs'
-import { join } from 'node:path';
-import { vi } from 'vitest';
+import { join } from 'node:path'
+import { vi } from 'vitest'
+
+import * as promptModule from '../src/terminal/prompt-user'
 
 /**
  * Reads a (text) file into the string array.
@@ -35,6 +37,7 @@ export function setPromptSpy(inputs: string[]) {
   .mockImplementation((_, cb) => { 
     const fn = cb as (answer: string) => void // explicit typecast required
     fn(inputs[call++])
+    // @ts-expect-error should add proper type
     return this
   })
 }
@@ -53,4 +56,13 @@ export function getStdoutSpy() {
  */
 export function getStderrSpy() {
   return vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
+}
+
+/**
+ * Mocks call of the promptUser function to capture the displayed question.
+ * @param expectedResult how should the prompt being resolved (default: false)
+ * @returns mocked promptUser function
+ */
+export function getPromptUserSpy(expectedResult: boolean = false) {
+  return vi.spyOn(promptModule, 'promptUser').mockImplementation(() => Promise.resolve(expectedResult))
 }

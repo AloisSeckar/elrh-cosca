@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { beforeEach, describe, expect, test } from 'vitest'
 import { createFileFromWebTemplate } from '../src/main'
-import { getConsoleSpy, setPromptSpy, readNormalizedFile } from './cosca-test-utils'
+import { getConsoleSpy, setPromptSpy, readNormalizedFile, getPromptUserSpy } from './cosca-test-utils'
 
 describe('Test createFileFromWebTemplate function', () => {
 
@@ -50,6 +50,20 @@ describe('Test createFileFromWebTemplate function', () => {
 
     // file not changed
     await expect(readNormalizedFile(wd, 'web-file-copy.txt')).toMatchFileSnapshot('snapshots/created-web-file.txt')
+  })
+  
+  // test prompting
+
+  test('should not display custom prompt', async () => {
+    const uSpy = getPromptUserSpy()
+    await createFileFromWebTemplate(`a`, `b`)
+    expect(uSpy).toHaveBeenCalledWith(expect.stringMatching(/This will create/))
+  })
+
+  test('should display custom prompt', async () => {
+    const uSpy = getPromptUserSpy()
+    await createFileFromWebTemplate(`a`, `b`, false, "Custom prompt")
+    expect(uSpy).toHaveBeenCalledWith(expect.stringMatching(/Custom prompt/))
   })
 
 })

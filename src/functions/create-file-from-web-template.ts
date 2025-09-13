@@ -4,10 +4,10 @@ import { promptUser } from '../terminal/prompt-user'
 import { fetchFile } from '../_private/fetch-file'
 
 export async function createFileFromWebTemplate(
-  url: string, targetFile: string, force: boolean = false
+  url: string, targetFile: string, force: boolean = false, prompt: string = ''
 ): Promise<void> {
   const shouldCreate = force || await promptUser(
-    `This will create '${targetFile}' file. Continue?`,
+    prompt || `This will create '${targetFile}' file. Continue?`,
   )
   if (shouldCreate) {
 

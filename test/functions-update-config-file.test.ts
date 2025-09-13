@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from 'vitest'
 import { updateConfigFile } from '../src/main'
-import { getConsoleSpy, setPromptSpy, readNormalizedFile } from './cosca-test-utils'
+import { getConsoleSpy, setPromptSpy, readNormalizedFile, getPromptUserSpy } from './cosca-test-utils'
 
 describe('Test updateConfigFile function', () => {
 
@@ -128,6 +128,20 @@ describe('Test updateConfigFile function', () => {
 
     // file not updated
     await expect(readNormalizedFile(wd, 'config-file-named.ts')).toMatchFileSnapshot('snapshots/updated-config-file-named-4.ts')
+  })
+  
+  // test prompting
+  
+  test('should not display custom prompt', async () => {
+    const uSpy = getPromptUserSpy()
+    await updateConfigFile(`a`, { testKey5: 0 })
+    expect(uSpy).toHaveBeenCalledWith(expect.stringMatching(/This will update/))
+  })
+
+  test('should display custom prompt', async () => {
+    const uSpy = getPromptUserSpy()
+    await updateConfigFile(`a`, { testKey5: 0 }, false, "Custom prompt")
+    expect(uSpy).toHaveBeenCalledWith(expect.stringMatching(/Custom prompt/))
   })
 
 })

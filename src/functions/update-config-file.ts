@@ -17,10 +17,11 @@ import { promptUser } from '../terminal/prompt-user.js'
  * @returns {Promise<void>}
  */
 export async function updateConfigFile(
-  pathToFile: string, newConfig: Record<string | number | symbol, any>, force: boolean = false
+  pathToFile: string, newConfig: Record<string | number | symbol, any>, 
+  force: boolean = false, prompt: string = ''
 ): Promise<void> {
   const shouldUpdate = force || await promptUser(
-    `This will update '${pathToFile}' file. Continue?`,
+    prompt || `This will update '${pathToFile}' file. Continue?`,
   )
   if (shouldUpdate) {
     const absPath = resolve(process.cwd(), pathToFile)
