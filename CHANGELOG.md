@@ -2,6 +2,13 @@
 
 Overview of the newest features in COSCA.
 
+## 0.2.5
+
+**2025-09-13**
+
+- feat: new `getEnvValue` util function to read values from `.env` files
+- feat: allow custom prompt questions in file-manipulation functions
+
 ## 0.2.4
 
 **2025-09-11**
