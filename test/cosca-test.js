@@ -4,7 +4,7 @@
 
 import {
   createFileFromTemplate, createFileFromWebTemplate, promptUser, showError, showMessage,
-  updateConfigFile, updateJsonFile, updateTextFile
+  updateConfigFile, getEnvValue, updateJsonFile, updateTextFile
 } from '../dist/elrh-cosca.mjs'
 
 async function main() {
@@ -12,6 +12,14 @@ async function main() {
   showMessage('Hello!')
   console.log('Test showMessage')
   showError('ERROR!')
+
+  console.log('Test getEnvValue')
+  const a = getEnvValue('A')
+  const b = getEnvValue('B')
+  const c = getEnvValue('C')
+  const d = getEnvValue('D')
+  const e = getEnvValue('E')
+  console.log(a, b, c, d, e)
 
   console.log('Test promptUser')
   const input = await promptUser('Is it today?')

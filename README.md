@@ -125,6 +125,16 @@ Prints out a `message` to `process.stderr` and adds the specified number of newl
 
 ### List of other utils
 
+#### `getEnvValue`
+
+```ts
+export function getEnvValue(
+  key: string, envFilePath: string = resolve(process.cwd(), '.env')
+): string | undefined
+```
+
+Reads a `.env` file and returns the value of the specified key or `undefined` if key not found. By default it reads from `.env` in the current working directory (usually the root of the project). You can specify a custom path to `.env` file as the second `envFilePath` parameter.
+
 #### `parseQualifiedPath`
 
 ```ts

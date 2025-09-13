@@ -6,6 +6,7 @@ import { updateTextFile } from './functions/update-text-file'
 import { promptUser } from './terminal/prompt-user'
 import { showError } from './terminal/show-error' 
 import { showMessage } from './terminal/show-message'
+import { getEnvValue } from './utils/get-env-value'
 import { parseQualifiedPath } from './utils/parse-qualified-path'
 import { resolvePackagePath } from './utils/resolve-package-path'
 
@@ -21,6 +22,7 @@ export {
   showError,
   showMessage,
   // other utils
+  getEnvValue,
   parseQualifiedPath,
   resolvePackagePath,
 }
