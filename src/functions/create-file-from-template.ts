@@ -1,12 +1,8 @@
 import { resolve } from 'node:path'
-// import { existsSync, copyFileSync } from 'node:fs'
+import { existsSync, copyFileSync } from 'node:fs'
 import { promptUser } from '../terminal/prompt-user'
 import { parseQualifiedPath } from '../utils/parse-qualified-path'
 import { resolvePackagePath } from '../utils/resolve-package-path'
-
-
-import * as fs from 'node:fs'
-
 
 /**
  * Creates a new copy of given file from a local template.
@@ -31,11 +27,11 @@ export async function createFileFromTemplate(
 
     const targetPath = resolve(process.cwd(), targetFile)
 
-    if (!fs.existsSync(templatePath)) {
+    if (!existsSync(templatePath)) {
       throw new Error(`Template file not found at ${templatePath}`)
     }
 
-    if (fs.existsSync(targetPath)) {
+    if (existsSync(targetPath)) {
       const shouldOverwrite = force || await promptUser(
         `File '${targetFile}' already exists. Overwrite?`,
       )
@@ -45,14 +41,11 @@ export async function createFileFromTemplate(
       }
     }
 
-    fs.copyFileSync(templatePath, targetPath)
-      console.warn("XXXX", targetPath)
+    copyFileSync(templatePath, targetPath)
 
-    if (fs.existsSync(targetPath)) {
-      console.warn("YYYY", targetPath)
+    if (existsSync(targetPath)) {
       console.log(`New file '${targetFile}' successfully created.`)
     } else {
-      console.warn("ZZZZ", targetPath)
       throw new Error(`Failed to create '${targetFile}'.`)
     }
   } else {
