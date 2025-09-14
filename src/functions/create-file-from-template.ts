@@ -4,6 +4,16 @@ import { promptUser } from '../terminal/prompt-user'
 import { parseQualifiedPath } from '../utils/parse-qualified-path'
 import { resolvePackagePath } from '../utils/resolve-package-path'
 
+/**
+ * Creates a new copy of given file from a local template.
+ * 
+ * @param {string} templateFile - The path to the template file (prefixed with package name).
+ * @param {string} targetFile - The path to the target file to create (relative to CWD). Can overwrite existing files if confirmed.
+ * @param {boolean} force - Whether to force creation without prompting.
+ * @param {string} prompt - Custom prompt message displayed in terminal.
+ * @returns {Promise<void>} An empty promise that resolves when the file is created.
+ * @throws Will throw an error if the template file cannot be found.
+ */
 export async function createFileFromTemplate(
   templateFile: string, targetFile: string, force: boolean = false, prompt: string = ''
 ): Promise<void> {

@@ -6,6 +6,17 @@ import { promptUser } from '../terminal/prompt-user.js'
 // e.g. "scripts" or "pnpm" in package.json
 // TODO allow recursive updates on any level (think about using defu)
 
+/**
+ * Updates a JSON file by modifying a specific key with new values.
+ * 
+ * @param {string} pathToFile - The path to the JSON file to update (relative to CWD).
+ * @param {string} jsonKey - The key in the JSON file to update (can be new or existing).
+ * @param {Record<string | number | symbol, any>} newValues - The new values to set for the specified key.
+ * @param {boolean} force - Whether to force the update without prompting.
+ * @param {string} prompt - Custom prompt message displayed in terminal.
+ * @returns {Promise<void>} An empty promise that resolves when the file is updated.
+ * @throws Will throw an error if the file does not exist or cannot be parsed as JSON.
+ */
 export async function updateJsonFile(
   pathToFile: string, jsonKey: string, newValues: Record<string | number | symbol, any>, 
   force: boolean = false, prompt: string = ''

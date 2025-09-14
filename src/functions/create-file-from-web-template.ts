@@ -3,6 +3,16 @@ import { existsSync, writeFileSync } from 'node:fs'
 import { promptUser } from '../terminal/prompt-user'
 import { fetchFile } from '../_private/fetch-file'
 
+/**
+ * Creates a new copy of given file from a web template.
+ * 
+ * @param {string} url - The URL to the template file (must be accessible via `node:https.get` and return raw text data).
+ * @param {string} targetFile - The path to the target file to create (relative to CWD). Can overwrite existing files if confirmed.
+ * @param {boolean} force - Whether to force creation without prompting.
+ * @param {string} prompt - Custom prompt message displayed in terminal.
+ * @returns {Promise<void>} An empty promise that resolves when the file is created.
+ * @throws Will throw an error if the remote template cannot be fetched.
+ */
 export async function createFileFromWebTemplate(
   url: string, targetFile: string, force: boolean = false, prompt: string = ''
 ): Promise<void> {

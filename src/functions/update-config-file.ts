@@ -14,7 +14,8 @@ import { promptUser } from '../terminal/prompt-user.js'
  *
  * @param {string} pathToFile - Path to file, relative to project root (process.cwd()).
  * @param {object} newConfig - Config to merge in (takes precedence).
- * @returns {Promise<void>}
+ * @returns {Promise<void>} An empty promise that resolves when the file is updated.
+ * @throws Will throw an error if no config export is found or it cannot be processed.
  */
 export async function updateConfigFile(
   pathToFile: string, newConfig: Record<string | number | symbol, any>, 

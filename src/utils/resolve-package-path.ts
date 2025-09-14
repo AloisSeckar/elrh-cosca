@@ -5,6 +5,10 @@ import { join } from 'node:path'
  * Resolve a package's installed root directory *from the target app*.
  * Package name can be scoped (e.g. `@scope/package`).
  * Works with npm/yarn/pnpm, hoisting or not.
+ * 
+ * @param {string} packageName - The name of the package to resolve.
+ * @returns {string} The absolute path to the package's root directory.
+ * @throws Will throw an error if the package cannot be found or accessed.
  */
 export function resolvePackagePath(packageName: string): string {
   const appDir = process.cwd()

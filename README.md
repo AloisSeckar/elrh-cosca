@@ -21,7 +21,7 @@ async function createFileFromTemplate(
 ): Promise<void>
 ```
 
-Takes a path to a template file from your project and will create a fresh copy in target project when invoked. 
+Gets a file definition from given `templateFile` and will create a fresh copy in target project.
 
 Path to `templateFile` must be prefixed with the package name to allow proper resolution, e.g. `your-package:path/to/template`. The package name can be scoped.
 
@@ -37,9 +37,9 @@ async function createFileWebFromTemplate(
 ): Promise<void>
 ```
 
-Gets a file definition from given `url` and will create a fresh copy in target project when invoked. 
+Gets a file definition from given `url` and will create a fresh copy in target project. 
 
-Contents of `url` must be accessible via `node:https.get` function and will be fetched as raw string data.
+Contents of `url` must be accessible via `node:https.get` function and will be fetched as raw text data.
 
 Path to `targetFile` is relative to `process.cwd()` which allows consumers to run `npx your-script` in their project roots during development.
 

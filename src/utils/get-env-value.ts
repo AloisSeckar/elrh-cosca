@@ -1,6 +1,13 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
+/**
+ * Retrieves the value of an environment variable from a .env file.
+ * 
+ * @param {string} key - The name of the environment variable to retrieve.
+ * @param {string} envFilePath - The path to the .env file (default is the .env file in the project root).
+ * @returns {string | undefined} - The value of the environment variable, or undefined if not found.
+ */
 export function getEnvValue(
   key: string, envFilePath: string = resolve(process.cwd(), '.env')
 ): string | undefined {

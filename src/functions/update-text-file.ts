@@ -2,6 +2,16 @@ import { resolve } from 'node:path'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { promptUser } from '../terminal/prompt-user.js'
 
+/**
+ * Updates a text file by adding new rows.
+ * 
+ * @param {string} pathToFile - The path to the text file to update (relative to CWD).
+ * @param {string[]} rowsToAdd - New rows to be added at the end of the file.
+ * @param {boolean} force - Whether to force the update without prompting.
+ * @param {string} prompt - Custom prompt message displayed in terminal.
+ * @returns {Promise<void>} An empty promise that resolves when the file is updated.
+ * @throws Will throw an error if the file does not exist.
+ */
 export async function updateTextFile(
     pathToFile: string, rowsToAdd: string[], force: boolean = false, prompt: string = ''
 ): Promise<void> {
