@@ -2,6 +2,15 @@
 
 Overview of the newest features in COSCA.
 
+## 0.2.6
+
+**2025-09-14**
+
+- feat: improved `promptUser` function - accepts more variants of 'yes' responses and allows passing in custom input/output streams
+- fix: `createFileFromTemplate` and `createFileFromWebTemplate` now throw an error if creating new file fails
+- docs: exported methods got proper JSDoc comments
+- build: fresh `pnpm build` is now ensured prior to publishing new version of the package
+
 ## 0.2.5
 
 **2025-09-13**
