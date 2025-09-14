@@ -102,10 +102,15 @@ By default the function asks for confirmation before attempting to alter the `ta
 #### `promptUser`
 
 ```ts
-async function promptUser(question: string): Promise<boolean>
+async function promptUser(
+  question: string,
+  options?: { input?: NodeJS.ReadableStream; output?: NodeJS.WritableStream }
+): Promise<boolean>
 ```
 
 Prints out a `question` to the console and waits for the input. Returns `true` when `y` is pressed and `false` otherwise.
+
+By default it uses `process.stdin` and `process.stdout` streams. To use custom NodeJS streams, `options` object with `input` and `output` properties can be optionally passed.
 
 #### `showMessage`
 

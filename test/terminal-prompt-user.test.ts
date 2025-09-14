@@ -26,4 +26,20 @@ describe('Test promptUser terminal helper', () => {
     setPromptSpy(['n'])
     expect(await promptUser('Is it today?')).toBe(false)
   })
+
+  test('should accept different variants of yes', async () => {
+    setPromptSpy(['Y'])
+    expect(await promptUser('Is it today?')).toBe(true)
+    setPromptSpy(['yes'])
+    expect(await promptUser('Is it today?')).toBe(true)
+    setPromptSpy(['Yes'])
+    expect(await promptUser('Is it today?')).toBe(true)
+    setPromptSpy(['YES'])
+    expect(await promptUser('Is it today?')).toBe(true)
+    // should not accept those though
+    setPromptSpy(['Ye'])
+    expect(await promptUser('Is it today?')).toBe(false)
+    setPromptSpy(['Yess'])
+    expect(await promptUser('Is it today?')).toBe(false)
+  })
 })
