@@ -1,8 +1,12 @@
 import { resolve } from 'node:path'
-import { existsSync, copyFileSync } from 'node:fs'
+// import { existsSync, copyFileSync } from 'node:fs'
 import { promptUser } from '../terminal/prompt-user'
 import { parseQualifiedPath } from '../utils/parse-qualified-path'
 import { resolvePackagePath } from '../utils/resolve-package-path'
+
+
+import * as fs from 'node:fs'
+
 
 /**
  * Creates a new copy of given file from a local template.
@@ -12,7 +16,7 @@ import { resolvePackagePath } from '../utils/resolve-package-path'
  * @param {boolean} force - Whether to force creation without prompting.
  * @param {string} prompt - Custom prompt message displayed in terminal.
  * @returns {Promise<void>} An empty promise that resolves when the file is created.
- * @throws Will throw an error if the template file cannot be found.
+ * @throws Will throw an error if the template file cannot be found or the target file failed to be created.
  */
 export async function createFileFromTemplate(
   templateFile: string, targetFile: string, force: boolean = false, prompt: string = ''
@@ -27,11 +31,11 @@ export async function createFileFromTemplate(
 
     const targetPath = resolve(process.cwd(), targetFile)
 
-    if (!existsSync(templatePath)) {
+    if (!fs.existsSync(templatePath)) {
       throw new Error(`Template file not found at ${templatePath}`)
     }
 
-    if (existsSync(targetPath)) {
+    if (fs.existsSync(targetPath)) {
       const shouldOverwrite = force || await promptUser(
         `File '${targetFile}' already exists. Overwrite?`,
       )
@@ -41,8 +45,16 @@ export async function createFileFromTemplate(
       }
     }
 
-    copyFileSync(templatePath, targetPath)
-    console.log(`New file '${targetFile}' successfully created.`)
+    fs.copyFileSync(templatePath, targetPath)
+      console.warn("XXXX", targetPath)
+
+    if (fs.existsSync(targetPath)) {
+      console.warn("YYYY", targetPath)
+      console.log(`New file '${targetFile}' successfully created.`)
+    } else {
+      console.warn("ZZZZ", targetPath)
+      throw new Error(`Failed to create '${targetFile}'.`)
+    }
   } else {
     console.log(`Creation of '${targetFile}' skipped.`)
   }
