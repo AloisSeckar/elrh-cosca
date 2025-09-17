@@ -2,6 +2,12 @@
 
 Overview of the newest features in COSCA.
 
+# 0.2.7
+
+**2025-09-17**
+
+- fix: do not resolve promptUser to false upon ctrl+c (#2)
+
 ## 0.2.6
 
 **2025-09-14**
