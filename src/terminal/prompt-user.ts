@@ -23,10 +23,9 @@ export async function promptUser(
       resolve(/^y(es)?$/.test(normalizedAnswer))
     })
 
-    // handle Ctrl+C
+    // free "rl" upon Ctrl+C
     rl.on('SIGINT', () => {
       rl.close()
-      resolve(false)
     })
   })
 }
