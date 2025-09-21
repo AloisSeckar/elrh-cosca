@@ -55,6 +55,22 @@ describe('Test updateJsonFile function', () => {
 
     await expect(readNormalizedFile(wd, 'json-file.json')).toMatchFileSnapshot('snapshots/updated-json-file-3.json')
   })
+
+  test('should add primitive value correctly', async () => {
+    await updateJsonFile(`${wd}/json-file.json`, 'cosca2', 'primitive value', true)
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
+
+    await expect(readNormalizedFile(wd, 'json-file.json')).toMatchFileSnapshot('snapshots/updated-json-file-4.json')
+  })
+
+  test('should add array correctly', async () => {
+    await updateJsonFile(`${wd}/json-file.json`, 'cosca3', ['value1', 'value2'], true)
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
+
+    await expect(readNormalizedFile(wd, 'json-file.json')).toMatchFileSnapshot('snapshots/updated-json-file-5.json')
+  })
     
   test('should do nothing when user aborts creating', async () => {
     setPromptSpy(['n'])
@@ -63,7 +79,7 @@ describe('Test updateJsonFile function', () => {
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/skipped/))
 
     // file not updated
-    await expect(readNormalizedFile(wd, 'json-file.json')).toMatchFileSnapshot('snapshots/updated-json-file-3.json')
+    await expect(readNormalizedFile(wd, 'json-file.json')).toMatchFileSnapshot('snapshots/updated-json-file-5.json')
   })
   
   // test prompting

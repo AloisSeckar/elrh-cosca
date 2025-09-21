@@ -72,12 +72,19 @@ By default the function asks for confirmation before attempting to alter the `ta
 
 ```ts
 async function updateJsonFile(
-  pathToFile: string, jsonKey: string, newValues: Record<string | number | symbol, any>, 
+  pathToFile: string, jsonKey: string, patch: JsonValue, 
   force: boolean = false, prompt: string = ''
 ): Promise<void>
 ```
 
-Takes a path to a JSON file and injects `newValues` under `jsonKey` key.
+Takes a path to a JSON file and injects `patch` under `jsonKey` key. A `patch` is of `JsonValue` - a custom type defined as follows:
+
+```ts
+type JsonPrimitive = string | number | boolean | null
+type JsonObject = { [key: string]: JsonValue }
+type JsonArray = JsonValue[]
+type JsonValue = JsonPrimitive | JsonObject | JsonArray
+```
 
 Path to `targetFile` is relative to `process.cwd()`. The file must be a valid JSON file. It is parsed using plain `JSON.parse`.
 

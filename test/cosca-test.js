@@ -37,6 +37,7 @@ async function main() {
 
   console.log('\nTest updateJsonFile')
   await updateJsonFile('test/fixtures/json-file.json', 'scripts', { 'cosca' : 'cosca' })
+  await updateJsonFile('test/fixtures/json-file.json', 'packageManager', 'pnpm' )
 
   console.log('\nTest updateTextFile')
   await updateTextFile('test/fixtures/text-file.txt', ['# COSCA'])
