@@ -2,6 +2,13 @@
 
 Overview of the newest features in COSCA.
 
+# 0.2.8
+
+**2025-09-21**
+
+- feat: improve input handling in `updateJsonFile` (#4)
+- docs: added info about proxied objects restriction in `updateConfigFile` (#3)
+
 # 0.2.7
 
 **2025-09-17**
