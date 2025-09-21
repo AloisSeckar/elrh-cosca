@@ -66,6 +66,15 @@ The merger is performed using [unjs/magicast](https://github.com/unjs/magicast).
 - create a unique-union in case of arrays
 Please [report](https://github.com/AloisSeckar/elrh-cosca/issues) any logical flaws and issues of the process.
 
+**Warning**: The function will fail, if the extracted object is proxied (e.g. when created using `defu`). In such case, the error would be:
+
+```
+TypeError: 'set' on proxy: trap returned falsish for property '<YOUR_PROPERTY>'
+```
+
+If possible, you need to alter your logic, e.g. by creating a new object via the spread operator.
+
+
 By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passsing a custom `prompt` allows tailoring your own question to the user.
 
 #### `updateJsonFile`
