@@ -1,5 +1,5 @@
-import { resolve } from 'node:path'
-import { existsSync, writeFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { promptUser } from '../terminal/prompt-user'
 import { fetchFile } from '../_private/fetch-file'
 
@@ -38,6 +38,11 @@ export async function createFileFromWebTemplate(
         console.log('Aborted.')
         return
       }
+    }
+
+    const targetDir = dirname(targetPath)
+    if (!existsSync(targetDir)) {
+      mkdirSync(targetDir, { recursive: true })
     }
 
     writeFileSync(targetPath, fileContent, 'utf8')

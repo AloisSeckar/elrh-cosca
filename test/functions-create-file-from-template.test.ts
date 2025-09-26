@@ -38,9 +38,16 @@ describe('Test createFileFromTemplate function', () => {
     await expect(readNormalizedFile(wd, 'local-file-copy.txt')).toMatchFileSnapshot('snapshots/created-local-file.txt')
   })
 
+  test('should create the file even in non-existent directory', async () => {
+    await createFileFromTemplate(`elrh-cosca:test/fixtures/text-file.txt`, `${wd}/first/second/file.txt`, true)
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/successfully created/))
+
+    await expect(readNormalizedFile(wd, 'first/second/file.txt')).toMatchFileSnapshot('snapshots/created-local-file.txt')
+  })
+
   // vitest must be installed (but this is a requirement for running vitest tests)
   test('should create the file from NPM source', async () => {
-    // path must be - package name:relative/path/to/file
     await createFileFromTemplate(`vitest:README.md`, `${wd}/npm-file-copy.txt`, true)
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/successfully created/))

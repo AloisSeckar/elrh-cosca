@@ -32,6 +32,14 @@ describe('Test createFileFromWebTemplate function', () => {
     await expect(readNormalizedFile(wd, 'web-file-copy.txt')).toMatchFileSnapshot('snapshots/created-web-file.txt')
   })
 
+  test('should create the file even in non-existent directory', async () => {
+    await createFileFromWebTemplate(`https://raw.githubusercontent.com/AloisSeckar/nuxt-spec/refs/heads/main/config/vitest.config.ts.template`, `${wd}/first/second/file.txt`, true)
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/successfully created/))
+
+    await expect(readNormalizedFile(wd, 'first/second/file.txt')).toMatchFileSnapshot('snapshots/created-web-file.txt')
+  })
+
   test('should do nothing when user aborts creating', async () => {
     setPromptSpy(['n'])
     await createFileFromWebTemplate(`https://raw.githubusercontent.com/AloisSeckar/nuxt-spec/refs/heads/main/config/vitest.config.ts.template`, `${wd}/web-file-copy-2.txt`)

@@ -25,7 +25,7 @@ Gets a file definition from given `templateFile` and will create a fresh copy in
 
 Path to `templateFile` must be prefixed with the package name to allow proper resolution, e.g. `your-package:path/to/template`. The package name can be scoped.
 
-Path to `targetFile` is relative to `process.cwd()` which allows consumers to run `npx your-script` in their project roots during development.
+Path to `targetFile` is relative to `process.cwd()` which allows consumers to run `npx your-script` in their project roots during development. If the target directory does not exist, it will be automatically created.
 
 By default the function asks for confirmation before attempting to create the file and if the file with the same name as `targetFile` is detected. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passsing a custom `prompt` allows tailoring your own question to the user.
 
@@ -41,7 +41,7 @@ Gets a file definition from given `url` and will create a fresh copy in target p
 
 Contents of `url` must be accessible via `node:https.get` function and will be fetched as raw text data.
 
-Path to `targetFile` is relative to `process.cwd()` which allows consumers to run `npx your-script` in their project roots during development.
+Path to `targetFile` is relative to `process.cwd()` which allows consumers to run `npx your-script` in their project roots during development. If the target directory does not exist, it will be automatically created.
 
 By default the function asks for confirmation before attempting to create the file and if the file with the same name as `targetFile` is detected. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passsing a custom `prompt` allows tailoring your own question to the user.
 

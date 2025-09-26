@@ -1,5 +1,5 @@
-import { resolve } from 'node:path'
-import { existsSync, copyFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { existsSync, copyFileSync, mkdirSync } from 'node:fs'
 import { promptUser } from '../terminal/prompt-user'
 import { parseQualifiedPath } from '../utils/parse-qualified-path'
 import { resolvePackagePath } from '../utils/resolve-package-path'
@@ -39,6 +39,11 @@ export async function createFileFromTemplate(
         console.log('Aborted.')
         return
       }
+    }
+
+    const targetDir = dirname(targetPath)
+    if (!existsSync(targetDir)) {
+      mkdirSync(targetDir, { recursive: true })
     }
 
     copyFileSync(templatePath, targetPath)
