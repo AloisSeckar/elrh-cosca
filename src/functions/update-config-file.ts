@@ -12,20 +12,20 @@ import { promptUser } from '../terminal/prompt-user.js'
  * - Uses `defu(newConfig, existingConfig)` so `newConfig` takes precedence.
  * - Applies the merged result back onto the AST to preserve TS/ESM structure.
  *
- * @param {string} pathToFile - Path to file, relative to project root (process.cwd()).
+ * @param {string} targetFile - Path to file, relative to project root (process.cwd()).
  * @param {object} newConfig - Config to merge in (takes precedence).
  * @returns {Promise<void>} An empty promise that resolves when the file is updated.
  * @throws Will throw an error if no config export is found or it cannot be processed.
  */
 export async function updateConfigFile(
-  pathToFile: string, newConfig: Record<string | number | symbol, any>, 
+  targetFile: string, newConfig: Record<string | number | symbol, any>, 
   force: boolean = false, prompt: string = ''
 ): Promise<void> {
   const shouldUpdate = force || await promptUser(
-    prompt || `This will update '${pathToFile}' file. Continue?`,
+    prompt || `This will update '${targetFile}' file. Continue?`,
   )
   if (shouldUpdate) {
-    const absPath = resolve(process.cwd(), pathToFile)
+    const absPath = resolve(process.cwd(), targetFile)
 
     // load the file as a Magicast module (.ts/.js/.mjs)
     const module = await loadFile(absPath)
@@ -53,17 +53,17 @@ export async function updateConfigFile(
       // but it is not very straightforward because of the complex structure and
       // conditioned TypeScript definitions...
       // for now I put further efforts on hold - CONTRIBUTIONS WELCOME!
-      throw new Error(`It is currently not possible to handle CommonJS module.exports syntax of ${pathToFile}`)
+      throw new Error(`It is currently not possible to handle CommonJS module.exports syntax of ${targetFile}`)
     }
     // config object is required
     if (!configExport) {
-      throw new Error(`No suitable config export found in ${pathToFile}`)
+      throw new Error(`No suitable config export found in ${targetFile}`)
     }
 
     // config object might be wrapped inside a function call or be a plain object itself
     const oldConfig = configExport.$type === 'function-call' ? configExport.$args?.[0] : configExport 
     if (!oldConfig || typeof oldConfig !== 'object') {
-      throw new Error(`Could not access config object in ${pathToFile}`)
+      throw new Error(`Could not access config object in ${targetFile}`)
     }
 
     // track changes (save before)
@@ -79,11 +79,11 @@ export async function updateConfigFile(
     if (oldSnapshot !== newSnapshot) {
       const { code } = generateCode(module)
       writeFileSync(absPath, code, 'utf8')
-      console.log(`'${pathToFile}' file updated.`)
+      console.log(`'${targetFile}' file updated.`)
     } else {
-      console.log(`'${pathToFile}' file already up to date.`)
+      console.log(`'${targetFile}' file already up to date.`)
     }
   } else {
-    console.log(`Updating '${pathToFile}' skipped.`)
+    console.log(`Updating '${targetFile}' skipped.`)
   }
 }

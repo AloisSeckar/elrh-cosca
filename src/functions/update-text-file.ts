@@ -5,7 +5,7 @@ import { promptUser } from '../terminal/prompt-user.js'
 /**
  * Updates a text file by adding new rows.
  * 
- * @param {string} pathToFile - The path to the text file to update (relative to CWD).
+ * @param {string} targetFile - The path to the text file to update (relative to CWD).
  * @param {string[]} rowsToAdd - New rows to be added at the end of the file.
  * @param {boolean} force - Whether to force the update without prompting.
  * @param {string} prompt - Custom prompt message displayed in terminal.
@@ -13,15 +13,15 @@ import { promptUser } from '../terminal/prompt-user.js'
  * @throws Will throw an error if the file does not exist.
  */
 export async function updateTextFile(
-    pathToFile: string, rowsToAdd: string[], force: boolean = false, prompt: string = ''
+    targetFile: string, rowsToAdd: string[], force: boolean = false, prompt: string = ''
 ): Promise<void> {
   const shouldUpdate = force || await promptUser(
-    prompt || `This will update '${pathToFile}' file. Continue?`,
+    prompt || `This will update '${targetFile}' file. Continue?`,
   )
   if (shouldUpdate) {
-    const textFilePath = resolve(process.cwd(), pathToFile)
+    const textFilePath = resolve(process.cwd(), targetFile)
     if (!existsSync(textFilePath)) {
-      throw new Error(`No '${pathToFile}' found in project root — cannot update its contents.`)
+      throw new Error(`No '${targetFile}' found in project root — cannot update its contents.`)
     }
 
     const textRaw = readFileSync(textFilePath, 'utf8')
@@ -38,11 +38,11 @@ export async function updateTextFile(
 
     if (modified) {
       writeFileSync(textFilePath, lines.join('\n') + '\n', 'utf8')
-      console.log(`'${pathToFile}' file updated.`)
+      console.log(`'${targetFile}' file updated.`)
     } else {
-      console.log(`'${pathToFile}' file already up to date.`)
+      console.log(`'${targetFile}' file already up to date.`)
     }
   } else {
-    console.log(`Updating '${pathToFile}' skipped.`)
+    console.log(`Updating '${targetFile}' skipped.`)
   }
 }

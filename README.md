@@ -49,7 +49,7 @@ By default the function asks for confirmation before attempting to create the fi
 
 ```ts
 async function updateConfigFile(
-  pathToFile: string, newConfig: Record<string | number | symbol, any>, 
+  targetFile: string, newConfig: Record<string | number | symbol, any>, 
   force: boolean = false, prompt: string = ''
 ): Promise<void>
 ```
@@ -81,7 +81,7 @@ By default the function asks for confirmation before attempting to alter the `ta
 
 ```ts
 async function updateJsonFile(
-  pathToFile: string, jsonKey: string, patch: JsonValue, 
+  targetFile: string, jsonKey: string, patch: JsonValue, 
   force: boolean = false, prompt: string = ''
 ): Promise<void>
 ```
@@ -105,7 +105,7 @@ By default the function asks for confirmation before attempting to alter the `ta
 
 ```ts
 async function updateTextFile(
-    pathToFile: string, rowsToAdd: string[], force: boolean = false, prompt: string = ''
+    targetFile: string, rowsToAdd: string[], force: boolean = false, prompt: string = ''
 ): Promise<void>
 ```
 
@@ -117,13 +117,13 @@ By default the function asks for confirmation before attempting to alter the `ta
 
 ```ts
 async function removeFromJsonFile(
-  pathToFile: string, jsonKey: string, force: boolean = false, prompt: string = ''
+  targetFile: string, jsonKey: string, force: boolean = false, prompt: string = ''
 ): Promise<void>
 ```
 
 Takes a path to a JSON file and removes the specified `jsonKey`.
 
-Path to `pathToFile` is relative to `process.cwd()`. The file must be a valid JSON file. It is parsed using plain `JSON.parse`.
+Path to `targetFile` is relative to `process.cwd()`. The file must be a valid JSON file. It is parsed using plain `JSON.parse`.
 
 Given `jsonKey` might point to a nested key using dot notation, e.g. `a.b.c`. If the key is not present, the function does nothing.
 

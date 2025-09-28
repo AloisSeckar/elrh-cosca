@@ -14,7 +14,7 @@ type JsonValue = JsonPrimitive | JsonObject | JsonArray
 /**
  * Updates a JSON file by modifying a specific key with new values.
  * 
- * @param {string} pathToFile - The path to the JSON file to update (relative to CWD).
+ * @param {string} targetFile - The path to the JSON file to update (relative to CWD).
  * @param {string} jsonKey - The key in the JSON file to update (can be new or existing).
  * @param {JsonPrimitive} patch - The new values to set for the specified key.
  * @param {boolean} force - Whether to force the update without prompting.
@@ -23,16 +23,16 @@ type JsonValue = JsonPrimitive | JsonObject | JsonArray
  * @throws Will throw an error if the file does not exist or cannot be parsed as JSON.
  */
 export async function updateJsonFile(
-  pathToFile: string, jsonKey: string, patch: JsonValue, 
+  targetFile: string, jsonKey: string, patch: JsonValue, 
   force: boolean = false, prompt: string = ''
 ): Promise<void> {
   const shouldUpdate = force || await promptUser(
-    prompt || `This will update '${pathToFile}' file. Continue?`,
+    prompt || `This will update '${targetFile}' file. Continue?`,
   )
   if (shouldUpdate) {
-    const jsonFilePath = resolve(process.cwd(), pathToFile)
+    const jsonFilePath = resolve(process.cwd(), targetFile)
     if (!existsSync(jsonFilePath)) {
-      throw new Error(`No '${pathToFile}' found in project root — cannot update its contents.`)
+      throw new Error(`No '${targetFile}' found in project root — cannot update its contents.`)
     }
 
     const jsonRaw = readFileSync(jsonFilePath, 'utf8')
@@ -40,7 +40,7 @@ export async function updateJsonFile(
     try {
       json = JSON.parse(jsonRaw)
     } catch (err) {
-      throw new Error(`Could not parse '${pathToFile}' — cannot update its contents.\n${err}`)
+      throw new Error(`Could not parse '${targetFile}' — cannot update its contents.\n${err}`)
     }
 
     json[jsonKey] = json[jsonKey] || {}
@@ -65,11 +65,11 @@ export async function updateJsonFile(
 
     if (modified) {
       writeFileSync(jsonFilePath, JSON.stringify(json, null, 2) + '\n', 'utf8')
-      console.log(`'${pathToFile}' file updated.`)
+      console.log(`'${targetFile}' file updated.`)
     } else {
-      console.log(`'${pathToFile}' file already up to date.`)
+      console.log(`'${targetFile}' file already up to date.`)
     }
   } else {
-    console.log(`Updating '${pathToFile}' skipped.`)
+    console.log(`Updating '${targetFile}' skipped.`)
   }
 }

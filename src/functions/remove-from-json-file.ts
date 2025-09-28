@@ -6,7 +6,7 @@ import type { JsonObject } from '../types/json.js'
 /**
  * Updates a JSON file by deleting a specified key.
  * 
- * @param {string} pathToFile - The path to the JSON file to update (relative to CWD).
+ * @param {string} targetFile - The path to the JSON file to update (relative to CWD).
  * @param {string} jsonKey - The key in the JSON file to be deleted (may use dot notation for nested keys).
  * @param {boolean} force - Whether to force the update without prompting.
  * @param {string} prompt - Custom prompt message displayed in terminal.
@@ -14,16 +14,16 @@ import type { JsonObject } from '../types/json.js'
  * @throws Will throw an error if the file does not exist or cannot be parsed as JSON.
  */
 export async function removeFromJsonFile(
-  pathToFile: string, jsonKey: string,
+  targetFile: string, jsonKey: string,
   force: boolean = false, prompt: string = ''
 ): Promise<void> {
   const shouldUpdate = force || await promptUser(
-    prompt || `This will delete '${jsonKey}' from '${pathToFile}' file. Continue?`,
+    prompt || `This will delete '${jsonKey}' from '${targetFile}' file. Continue?`,
   )
   if (shouldUpdate) {
-    const jsonFilePath = resolve(process.cwd(), pathToFile)
+    const jsonFilePath = resolve(process.cwd(), targetFile)
     if (!existsSync(jsonFilePath)) {
-      throw new Error(`No '${pathToFile}' found in project root — cannot delete its keys.`)
+      throw new Error(`No '${targetFile}' found in project root — cannot delete its keys.`)
     }
 
     const jsonRaw = readFileSync(jsonFilePath, 'utf8')
@@ -31,7 +31,7 @@ export async function removeFromJsonFile(
     try {
       json = JSON.parse(jsonRaw)
     } catch (err) {
-      throw new Error(`Could not parse '${pathToFile}' — cannot delete its keys.\n${err}`)
+      throw new Error(`Could not parse '${targetFile}' — cannot delete its keys.\n${err}`)
     }
 
     const oldJson = JSON.stringify(json, null, 2)
@@ -40,12 +40,12 @@ export async function removeFromJsonFile(
 
     if (oldJson !== newJson) {
       writeFileSync(jsonFilePath, newJson + '\n', 'utf8')
-      console.log(`'${pathToFile}' file updated.`)
+      console.log(`'${targetFile}' file updated.`)
     } else {
-      console.log(`'${pathToFile}' file already up to date.`)
+      console.log(`'${targetFile}' file already up to date.`)
     }
   } else {
-    console.log(`Updating '${pathToFile}' skipped.`)
+    console.log(`Updating '${targetFile}' skipped.`)
   }
 }
 
