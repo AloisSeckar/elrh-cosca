@@ -10,6 +10,9 @@ export default async function () {
   cpSync(fixtures, workspace, { recursive: true })
   process.env.WORKSPACE_DIR = workspace
 
+  // for remove tests, create an extra copy of fixuture files
+  cpSync(join(fixtures, 'json-file.json'), join(workspace, 'json-file-2.json'))
+
   // teardown (callback runs after all tests)
   // clean up the temp folder
   return () => rmSync(workspace, { recursive: true, force: true })

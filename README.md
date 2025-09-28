@@ -113,6 +113,22 @@ Takes a path to a plain text file and injects `rowsToAdd` at the end of the file
 
 By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passsing a custom `prompt` allows tailoring your own question to the user.
 
+#### `removeFromJsonFile`
+
+```ts
+async function removeFromJsonFile(
+  pathToFile: string, jsonKey: string, force: boolean = false, prompt: string = ''
+): Promise<void>
+```
+
+Takes a path to a JSON file and removes the specified `jsonKey`.
+
+Path to `pathToFile` is relative to `process.cwd()`. The file must be a valid JSON file. It is parsed using plain `JSON.parse`.
+
+Given `jsonKey` might point to a nested key using dot notation, e.g. `a.b.c`. If the key is not present, the function does nothing.
+
+By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passsing a custom `prompt` allows tailoring your own question to the user.
+
 ### List of terminal helpers
 
 #### `promptUser`

@@ -1,0 +1,8 @@
+{
+  "number-key": 1,
+  "bool-key": true,
+  "array-key": [
+    "value"
+  ],
+  "object-key": {}
+}

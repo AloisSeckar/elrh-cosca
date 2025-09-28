@@ -39,6 +39,9 @@ async function main() {
   await updateJsonFile('test/fixtures/json-file.json', 'scripts', { 'cosca' : 'cosca' })
   await updateJsonFile('test/fixtures/json-file.json', 'packageManager', 'pnpm' )
 
+  console.log('\nTest removeFromJsonFile')
+  await removeFromJsonFile('test/fixtures/json-file.json', 'cosca')
+
   console.log('\nTest updateTextFile')
   await updateTextFile('test/fixtures/text-file.txt', ['# COSCA'])
 }
