@@ -129,6 +129,20 @@ Given `jsonKey` might point to a nested key using dot notation, e.g. `a.b.c`. If
 
 By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passsing a custom `prompt` allows tailoring your own question to the user.
 
+#### `deletePath`
+
+```ts
+async function deletePath(
+  targetPath: string, force: boolean = false, prompt: string = ''
+): Promise<void>
+```
+
+Deletes given `targetPath` from FS. Path is resolved relatively to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed.
+
+If the `targetPath` does not exist, the function does nothing.
+
+By default the function asks for confirmation before attempting to delete the `targetPath`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passsing a custom `prompt` allows tailoring your own question to the user.
+
 ### List of terminal helpers
 
 #### `promptUser`

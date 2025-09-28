@@ -1,5 +1,6 @@
 import { createFileFromTemplate } from './functions/create-file-from-template'
 import { createFileFromWebTemplate } from './functions/create-file-from-web-template'
+import { deletePath } from './functions/delete-path'
 import { removeFromJsonFile } from './functions/remove-from-json-file'
 import { updateConfigFile } from './functions/update-config-file'
 import { updateJsonFile } from './functions/update-json-file'
@@ -15,6 +16,7 @@ export {
   // file-manipulation functions
   createFileFromTemplate,
   createFileFromWebTemplate,
+  deletePath,
   removeFromJsonFile,
   updateConfigFile,
   updateJsonFile,

@@ -4,7 +4,7 @@
 
 import {
   createFileFromTemplate, createFileFromWebTemplate, promptUser, showError, showMessage,
-  updateConfigFile, getEnvValue, updateJsonFile, updateTextFile
+  updateConfigFile, getEnvValue, updateJsonFile, updateTextFile, deletePath, removeFromJsonFile
 } from '../dist/elrh-cosca.mjs'
 
 async function main() {
@@ -44,6 +44,9 @@ async function main() {
 
   console.log('\nTest updateTextFile')
   await updateTextFile('test/fixtures/text-file.txt', ['# COSCA'])
+
+  console.log('\nTest deletePath')
+  await deletePath('test/snapshots/test.file1')
 }
 
 main().catch((err) => {
