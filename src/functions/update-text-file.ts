@@ -21,7 +21,7 @@ export async function updateTextFile(
   if (shouldUpdate) {
     const textFilePath = resolve(process.cwd(), pathToFile)
     if (!existsSync(textFilePath)) {
-      throw new Error(`No '${pathToFile}' found in project root — skipping updates.`)
+      throw new Error(`No '${pathToFile}' found in project root — cannot update its contents.`)
     }
 
     const textRaw = readFileSync(textFilePath, 'utf8')

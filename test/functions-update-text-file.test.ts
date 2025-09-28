@@ -17,7 +17,7 @@ describe('Test updateTextFile function', () => {
   })
   
   test('should fail because of non-existent file', async () => {
-    await expect(updateTextFile(`${wd}/unknown`, ['Row 3'], true)).rejects.toThrow(/skipping updates/)
+    await expect(updateTextFile(`${wd}/unknown`, ['Row 3'], true)).rejects.toThrow(/cannot update its contents/)
   })
 
   test('should add the new line', async () => {

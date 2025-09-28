@@ -17,7 +17,7 @@ describe('Test updateJsonFile function', () => {
   })
 
   test('should fail because of non-existent file', async () => {
-    await expect(updateJsonFile(`${wd}/uknown`, 'cosca', { testKey1: 0 }, true)).rejects.toThrow(/skipping updates/)
+    await expect(updateJsonFile(`${wd}/uknown`, 'cosca', { testKey1: 0 }, true)).rejects.toThrow(/cannot update its contents/)
   })
 
   test('should fail because of invalid JSON', async () => {

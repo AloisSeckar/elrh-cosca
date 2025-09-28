@@ -32,7 +32,7 @@ export async function updateJsonFile(
   if (shouldUpdate) {
     const jsonFilePath = resolve(process.cwd(), pathToFile)
     if (!existsSync(jsonFilePath)) {
-      throw new Error(`No '${pathToFile}' found in project root — skipping updates.`)
+      throw new Error(`No '${pathToFile}' found in project root — cannot update its contents.`)
     }
 
     const jsonRaw = readFileSync(jsonFilePath, 'utf8')
@@ -40,7 +40,7 @@ export async function updateJsonFile(
     try {
       json = JSON.parse(jsonRaw)
     } catch (err) {
-      throw new Error(`Could not parse '${pathToFile}' — skipping updates.\n${err}`)
+      throw new Error(`Could not parse '${pathToFile}' — cannot update its contents.\n${err}`)
     }
 
     json[jsonKey] = json[jsonKey] || {}
