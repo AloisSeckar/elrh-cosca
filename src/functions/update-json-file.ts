@@ -1,15 +1,11 @@
 import { resolve } from 'node:path'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { promptUser } from '../terminal/prompt-user.js'
+import type { JsonValue } from '../types/json.js'
 
 // so-far only allows adding into existing key at the top level of the JSON tree
 // e.g. "scripts" or "pnpm" in package.json
 // TODO allow recursive updates on any level (think about using defu)
-
-type JsonPrimitive = string | number | boolean | null
-type JsonObject = { [key: string]: JsonValue }
-type JsonArray = JsonValue[]
-type JsonValue = JsonPrimitive | JsonObject | JsonArray
 
 /**
  * Updates a JSON file by modifying a specific key with new values.
