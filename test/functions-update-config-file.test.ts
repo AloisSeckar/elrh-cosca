@@ -17,7 +17,7 @@ describe('Test updateConfigFile function', () => {
   })
 
   test('should fail because of non-existent file', async () => {
-    await expect(updateConfigFile(`${wd}/uknown`, { testKey1: 0 }, true)).rejects.toThrow(/no such file or directory/)
+    await expect(updateConfigFile(`${wd}/uknown`, { testKey1: 0 }, true)).rejects.toThrow(/No .* found/)
   })
 
   test('should fail because of CJS format', async () => {

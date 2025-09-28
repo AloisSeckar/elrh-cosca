@@ -1,4 +1,4 @@
-import { writeFileSync } from 'node:fs'
+import { existsSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { loadFile, generateCode } from 'magicast'
 import { deepMergeObject } from '../_private/deep-merge-object.js'
@@ -25,10 +25,13 @@ export async function updateConfigFile(
     prompt || `This will update '${targetFile}' file. Continue?`,
   )
   if (shouldUpdate) {
-    const absPath = resolve(process.cwd(), targetFile)
+    const configFilePath = resolve(process.cwd(), targetFile)
+    if (!existsSync(configFilePath)) {
+      throw new Error(`No '${targetFile}' found in project root — cannot update its contents.`)
+    }
 
     // load the file as a Magicast module (.ts/.js/.mjs)
-    const module = await loadFile(absPath)
+    const module = await loadFile(configFilePath)
     
     // evaluate config object
     // 1. try default export first
@@ -78,7 +81,7 @@ export async function updateConfigFile(
     // if config was changed write the result back into the source file
     if (oldSnapshot !== newSnapshot) {
       const { code } = generateCode(module)
-      writeFileSync(absPath, code, 'utf8')
+      writeFileSync(configFilePath, code, 'utf8')
       console.log(`'${targetFile}' file updated.`)
     } else {
       console.log(`'${targetFile}' file already up to date.`)
