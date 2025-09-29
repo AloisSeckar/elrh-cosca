@@ -2,6 +2,16 @@
 
 Overview of the newest features in COSCA.
 
+# 0.3.0
+
+**2025-09-29**
+
+- feat: new `removeFromJsonFile` function to delete keys from JSONs (#7)
+- feat: new `deletePath` function to delete given path within CWD (#7)
+- feat: restrict paths in all file-manipulation functions to be within CWD (#8)
+- fix: allow creating files in non-existent paths (#6)
+- fix: add explicit file-existence guard into `updateConfigFile`
+
 # 0.2.8
 
 **2025-09-21**
