@@ -25,7 +25,7 @@ Gets a file definition from given `templateFile` and will create a fresh copy in
 
 Path to `templateFile` must be prefixed with the package name to allow proper resolution, e.g. `your-package:path/to/template`. The package name can be scoped.
 
-Path to `targetFile` is relative to `process.cwd()` which allows consumers to run `npx your-script` in their project roots during development. If the target directory does not exist, it will be automatically created.
+Path to `targetFile` is relative to `process.cwd()` which allows consumers to run `npx your-script` in their project roots during development.  Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed. If the target directory does not exist, it will be automatically created.
 
 By default the function asks for confirmation before attempting to create the file and if the file with the same name as `targetFile` is detected. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passsing a custom `prompt` allows tailoring your own question to the user.
 
@@ -41,7 +41,7 @@ Gets a file definition from given `url` and will create a fresh copy in target p
 
 Contents of `url` must be accessible via `node:https.get` function and will be fetched as raw text data.
 
-Path to `targetFile` is relative to `process.cwd()` which allows consumers to run `npx your-script` in their project roots during development. If the target directory does not exist, it will be automatically created.
+Path to `targetFile` is relative to `process.cwd()` which allows consumers to run `npx your-script` in their project roots during development.  Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed. If the target directory does not exist, it will be automatically created.
 
 By default the function asks for confirmation before attempting to create the file and if the file with the same name as `targetFile` is detected. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passsing a custom `prompt` allows tailoring your own question to the user.
 
@@ -56,7 +56,7 @@ async function updateConfigFile(
 
 Takes a path to a configuration file and updates it with the provided `newConfig` object. 
 
-Path to `targetFile` is relative to `process.cwd()`. The file currently must use ESM format with either `default` or named export of **exactly one** configuration object or function call with a configuration object as its argument.
+Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed. The file currently must use ESM format with either `default` or named export of **exactly one** configuration object or function call with a configuration object as its argument.
 
 The merger is performed using [unjs/magicast](https://github.com/unjs/magicast). It should:
 - preserve comments
@@ -95,7 +95,7 @@ type JsonArray = JsonValue[]
 type JsonValue = JsonPrimitive | JsonObject | JsonArray
 ```
 
-Path to `targetFile` is relative to `process.cwd()`. The file must be a valid JSON file. It is parsed using plain `JSON.parse`.
+Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed. The file must be a valid JSON file. It is parsed using plain `JSON.parse`.
 
 Currently it only allows adding new values under top-level keys. If the `jsonKey` exists, new values are merged into existing ones. Otherwise, new key is added. The function tracks if any real change was made and notifies the user if not.
 
@@ -111,6 +111,8 @@ async function updateTextFile(
 
 Takes a path to a plain text file and injects `rowsToAdd` at the end of the file, **providing they are not already present in the file**. The function tracks if any real change was made and notifies the user if not.
 
+Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed. 
+
 By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passsing a custom `prompt` allows tailoring your own question to the user.
 
 #### `removeFromJsonFile`
@@ -123,7 +125,7 @@ async function removeFromJsonFile(
 
 Takes a path to a JSON file and removes the specified `jsonKey`.
 
-Path to `targetFile` is relative to `process.cwd()`. The file must be a valid JSON file. It is parsed using plain `JSON.parse`.
+Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed. The file must be a valid JSON file. It is parsed using plain `JSON.parse`.
 
 Given `jsonKey` might point to a nested key using dot notation, e.g. `a.b.c`. If the key is not present, the function does nothing.
 

@@ -2,6 +2,7 @@ import { dirname, resolve } from 'node:path'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { promptUser } from '../terminal/prompt-user'
 import { fetchFile } from '../_private/fetch-file'
+import { checkPath } from '../_private/check-path'
 
 /**
  * Creates a new copy of given file from a web template.
@@ -26,6 +27,11 @@ export async function createFileFromWebTemplate(
       fileContent = await fetchFile(url)
     } catch (err) {
       throw new Error(`Failed to fetch template from external source ${url}:\n${err}`)
+    }
+
+    const check = checkPath(targetFile)
+    if (!check.valid) {
+      throw new Error(check.error)
     }
 
     const targetPath = resolve(process.cwd(), targetFile)

@@ -1,6 +1,14 @@
-import { beforeEach, describe, expect, test } from 'vitest'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { updateJsonFile } from '../src/main'
 import { getConsoleSpy, getPromptUserSpy, readNormalizedFile, setPromptSpy } from './cosca-test-utils'
+
+// `checkPath` function must be mocked as it disallows paths outside of CWD
+// which is not possible because tests run in temporary folder
+vi.mock('../src/_private/check-path', () => ({
+  checkPath: vi.fn((_path: string) => {
+    return { valid: true }
+  })
+}))
 
 describe('Test updateJsonFile function', () => {
 

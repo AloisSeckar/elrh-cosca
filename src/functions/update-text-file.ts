@@ -1,6 +1,7 @@
 import { resolve } from 'node:path'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { promptUser } from '../terminal/prompt-user.js'
+import { checkPath } from '../_private/check-path.js'
 
 /**
  * Updates a text file by adding new rows.
@@ -19,6 +20,11 @@ export async function updateTextFile(
     prompt || `This will update '${targetFile}' file. Continue?`,
   )
   if (shouldUpdate) {
+    const check = checkPath(targetFile)
+    if (!check.valid) {
+      throw new Error(check.error)
+    }
+
     const textFilePath = resolve(process.cwd(), targetFile)
     if (!existsSync(textFilePath)) {
       throw new Error(`No '${targetFile}' found in project root — cannot update its contents.`)

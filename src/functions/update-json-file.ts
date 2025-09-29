@@ -2,6 +2,7 @@ import { resolve } from 'node:path'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { promptUser } from '../terminal/prompt-user.js'
 import type { JsonValue } from '../types/json.js'
+import { checkPath } from '../_private/check-path.js'
 
 // so-far only allows adding into existing key at the top level of the JSON tree
 // e.g. "scripts" or "pnpm" in package.json
@@ -26,6 +27,11 @@ export async function updateJsonFile(
     prompt || `This will update '${targetFile}' file. Continue?`,
   )
   if (shouldUpdate) {
+    const check = checkPath(targetFile)
+    if (!check.valid) {
+      throw new Error(check.error)
+    }
+    
     const jsonFilePath = resolve(process.cwd(), targetFile)
     if (!existsSync(jsonFilePath)) {
       throw new Error(`No '${targetFile}' found in project root — cannot update its contents.`)

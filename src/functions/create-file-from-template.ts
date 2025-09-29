@@ -3,6 +3,7 @@ import { existsSync, copyFileSync, mkdirSync } from 'node:fs'
 import { promptUser } from '../terminal/prompt-user'
 import { parseQualifiedPath } from '../utils/parse-qualified-path'
 import { resolvePackagePath } from '../utils/resolve-package-path'
+import { checkPath } from '../_private/check-path'
 
 /**
  * Creates a new copy of given file from a local template.
@@ -24,6 +25,11 @@ export async function createFileFromTemplate(
     const { pkg, file } = parseQualifiedPath(templateFile);
     const packagePath = resolvePackagePath(pkg);
     const templatePath = resolve(packagePath, file)
+
+    const check = checkPath(targetFile)
+    if (!check.valid) {
+      throw new Error(check.error)
+    }
 
     const targetPath = resolve(process.cwd(), targetFile)
 

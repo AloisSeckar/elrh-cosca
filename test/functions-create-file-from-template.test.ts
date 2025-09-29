@@ -1,7 +1,15 @@
 import { existsSync } from 'node:fs'
-import { beforeEach, describe, expect, test } from 'vitest'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { createFileFromTemplate } from '../src/main'
 import { getConsoleSpy, setPromptSpy, readNormalizedFile, getPromptUserSpy } from './cosca-test-utils'
+
+// `checkPath` function must be mocked as it disallows paths outside of CWD
+// which is not possible because tests run in temporary folder
+vi.mock('../src/_private/check-path', () => ({
+  checkPath: vi.fn((_path: string) => {
+    return { valid: true }
+  })
+}))
 
 describe('Test createFileFromTemplate function', () => {
 

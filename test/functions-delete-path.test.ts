@@ -1,9 +1,8 @@
-import { beforeEach, describe, expect, test } from 'vitest'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { deletePath } from '../src/main'
 import { getConsoleSpy} from './cosca-test-utils'
-import { existsSync } from 'fs'
-import { join } from 'path'
-import { vi } from 'vitest'
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 
 // `checkPath` function must be mocked as it disallows paths outside of CWD
 // which is not possible because tests run in temporary folder

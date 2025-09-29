@@ -3,6 +3,7 @@ import { resolve } from 'node:path'
 import { loadFile, generateCode } from 'magicast'
 import { deepMergeObject } from '../_private/deep-merge-object.js'
 import { promptUser } from '../terminal/prompt-user.js'
+import { checkPath } from '../_private/check-path.js'
 
 /**
  * Update the single object-literal config found in a file.
@@ -25,6 +26,11 @@ export async function updateConfigFile(
     prompt || `This will update '${targetFile}' file. Continue?`,
   )
   if (shouldUpdate) {
+    const check = checkPath(targetFile)
+    if (!check.valid) {
+      throw new Error(check.error)
+    }
+
     const configFilePath = resolve(process.cwd(), targetFile)
     if (!existsSync(configFilePath)) {
       throw new Error(`No '${targetFile}' found in project root — cannot update its contents.`)
