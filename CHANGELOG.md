@@ -2,6 +2,14 @@
 
 Overview of the newest features in COSCA.
 
+# 0.3.1
+
+**2025-09-30**
+
+- feat: new `hasJsonKey` function to check for key existence in JSONs
+- feat: new `hasText` function to check for row existence in text files
+- fix: minor refinement of exported functions' JSDocs
+
 # 0.3.0
 
 **2025-09-29**
