@@ -1,3 +1,5 @@
+import { hasJsonKey } from './checks/has-json-key'
+import { hasText } from './checks/has-text'
 import { createFileFromTemplate } from './functions/create-file-from-template'
 import { createFileFromWebTemplate } from './functions/create-file-from-web-template'
 import { deletePath } from './functions/delete-path'
@@ -13,6 +15,9 @@ import { parseQualifiedPath } from './utils/parse-qualified-path'
 import { resolvePackagePath } from './utils/resolve-package-path'
 
 export {
+  //  file-content checks
+  hasJsonKey,
+  hasText,
   // file-manipulation functions
   createFileFromTemplate,
   createFileFromWebTemplate,

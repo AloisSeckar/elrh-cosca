@@ -145,6 +145,32 @@ If the `targetPath` does not exist, the function does nothing.
 
 By default the function asks for confirmation before attempting to delete the `targetPath`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passsing a custom `prompt` allows tailoring your own question to the user.
 
+### List of content checkers
+
+#### `hasJsonKey`
+
+```ts
+function hasJsonKey(
+  targetFile: string, jsonKey: string
+): boolean
+```
+
+Checks whether given `jsonKey` exists in JSON file located at `targetFile`. Path is resolved relatively to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed.
+
+Given `jsonKey` might point to a nested key using dot notation, e.g. `a.b.c`. If the key is present, the function returns true, false otherwise.
+
+#### `hasText`
+
+```ts
+function hasText(
+    targetFile: string, row: string
+): boolean
+```
+
+Checks whether given `row` exists in text file located at `targetFile`. Path is resolved relatively to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed.
+
+If the `row` is present, the function returns true, false otherwise. Row must be matched completely, but surrounding whitespaces are ignored.
+
 ### List of terminal helpers
 
 #### `promptUser`
