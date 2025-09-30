@@ -9,7 +9,7 @@ import { checkPath } from '../_private/check-path.js'
  * @param {string} targetFile - The path to the JSON file to be checked (relative to CWD).
  * @param {string} jsonKey - The key in the JSON file to be checked for existence (may use dot notation for nested keys).
  * @returns {boolean} True if the key exists in target file, false otherwise.
- * @throws Will throw an error if the file does not exist or cannot be parsed as JSON.
+ * @throws Will throw an error if the path is invalid, file does not exist or cannot be parsed as JSON.
  */
 export function hasJsonKey(
   targetFile: string, jsonKey: string

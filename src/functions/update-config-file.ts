@@ -16,7 +16,7 @@ import { checkPath } from '../_private/check-path.js'
  * @param {string} targetFile - Path to file, relative to project root (process.cwd()).
  * @param {object} newConfig - Config to merge in (takes precedence).
  * @returns {Promise<void>} An empty promise that resolves when the file is updated.
- * @throws Will throw an error if no config export is found or it cannot be processed.
+ * @throws Will throw an error the path is invalid, the file doesn't exist or no config export is found or it cannot be processed.
  */
 export async function updateConfigFile(
   targetFile: string, newConfig: Record<string | number | symbol, any>, 

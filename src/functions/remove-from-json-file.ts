@@ -12,7 +12,7 @@ import { checkPath } from '../_private/check-path.js'
  * @param {boolean} force - Whether to force the update without prompting.
  * @param {string} prompt - Custom prompt message displayed in terminal.
  * @returns {Promise<void>} An empty promise that resolves when the file is updated.
- * @throws Will throw an error if the file does not exist or cannot be parsed as JSON.
+ * @throws Will throw an error if the path is invalid, the file does not exist or cannot be parsed as JSON.
  */
 export async function removeFromJsonFile(
   targetFile: string, jsonKey: string,

@@ -12,7 +12,7 @@ import { checkPath } from '../_private/check-path'
  * @param {boolean} force - Whether to force creation without prompting.
  * @param {string} prompt - Custom prompt message displayed in terminal.
  * @returns {Promise<void>} An empty promise that resolves when the file is created.
- * @throws Will throw an error if the remote template cannot be fetched or the target file failed to be created.
+ * @throws Will throw an error if the path is invalid, the remote template cannot be fetched or the target file failed to be created.
  */
 export async function createFileFromWebTemplate(
   url: string, targetFile: string, force: boolean = false, prompt: string = ''

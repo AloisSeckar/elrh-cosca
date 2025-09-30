@@ -13,7 +13,7 @@ import { checkPath } from '../_private/check-path'
  * @param {boolean} force - Whether to force creation without prompting.
  * @param {string} prompt - Custom prompt message displayed in terminal.
  * @returns {Promise<void>} An empty promise that resolves when the file is created.
- * @throws Will throw an error if the template file cannot be found or the target file failed to be created.
+ * @throws Will throw an error if the path is invalid, the template file cannot be found or the target file failed to be created.
  */
 export async function createFileFromTemplate(
   templateFile: string, targetFile: string, force: boolean = false, prompt: string = ''

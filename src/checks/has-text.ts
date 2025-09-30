@@ -8,7 +8,7 @@ import { checkPath } from '../_private/check-path.js'
  * @param {string} targetFile - The path to the text file to be checked (relative to CWD).
  * @param {string} row - The text row to be checked for existence.
  * @returns {boolean} True if the row exists in target file, false otherwise. Row must be matched completely, but surrounding whitespaces are ignored.
- * @throws Will throw an error if the file does not exist.
+ * @throws Will throw an error if the path is invalid or the file does not exist.
  */
 export function hasText(
     targetFile: string, row: string
