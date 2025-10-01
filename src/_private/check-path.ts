@@ -1,7 +1,6 @@
 import { resolve, sep } from "node:path"
 
 export function checkPath(path: string): { valid: boolean; error?: string } {
-  console.warn(path)
   // Check if path is empty
   if (!path) {
     return { valid: false, error: `Path cannot be empty` }
