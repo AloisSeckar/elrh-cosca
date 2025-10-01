@@ -147,6 +147,18 @@ By default the function asks for confirmation before attempting to delete the `t
 
 ### List of content checkers
 
+#### `fileExists`
+
+```ts
+function fileExists(
+    targetFile: string
+): boolean
+```
+
+Checks if the specified `targetFile` exists on FS. Path is resolved relatively to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed.
+
+If the file exists , the function returns true, false otherwise.
+
 #### `hasJsonKey`
 
 ```ts
