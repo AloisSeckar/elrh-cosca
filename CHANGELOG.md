@@ -2,6 +2,12 @@
 
 Overview of the newest features in COSCA.
 
+# 0.3.2
+
+**2025-10-01**
+
+- feat: new `fileExists` function to check for file existence (#11)
+
 # 0.3.1
 
 **2025-09-30**
