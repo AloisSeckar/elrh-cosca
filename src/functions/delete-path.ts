@@ -6,11 +6,11 @@ import { checkPath } from '../_private/check-path.js'
 /**
  * Deletes given path from FS.
  * 
- * @param {string} targetPath - The path to the JSON file to update (relative to CWD).
- * @param {boolean} force - Whether to force the update without prompting.
+ * @param {string} targetPath - The path to delete (relative to CWD).
+ * @param {boolean} force - Whether to force the deletion without prompting.
  * @param {string} prompt - Custom prompt message displayed in terminal.
- * @returns {Promise<void>} An empty promise that resolves when the file is updated.
- * @throws Will throw an error if the path is invalid, the file does not exist or cannot be parsed as JSON.
+ * @returns {Promise<void>} An empty promise that resolves when the path is deleted.
+ * @throws Will throw an error if the path is invalid.
  */
 export async function deletePath(
   targetPath: string, force: boolean = false, prompt: string = ''

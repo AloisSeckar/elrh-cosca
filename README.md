@@ -1,5 +1,5 @@
 # COSCA
-Library of file-writting functions that help building CLI scripts for making changes in target projects - like adding default configuration files or new sections in `package.json`.
+Library of file-writing functions that help building CLI scripts for making changes in target projects - like adding default configuration files or new sections in `package.json`.
 
 The first experimental "customers" are my [Nuxt Spec](https://github.com/AloisSeckar/nuxt-spec) and [Nuxt Ignis](https://github.com/AloisSeckar/nuxt-ignis) projects.
 
@@ -27,12 +27,12 @@ Path to `templateFile` must be prefixed with the package name to allow proper re
 
 Path to `targetFile` is relative to `process.cwd()` which allows consumers to run `npx your-script` in their project roots during development.  Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed. If the target directory does not exist, it will be automatically created.
 
-By default the function asks for confirmation before attempting to create the file and if the file with the same name as `targetFile` is detected. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passsing a custom `prompt` allows tailoring your own question to the user.
+By default the function asks for confirmation before attempting to create the file and if the file with the same name as `targetFile` is detected. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passing a custom `prompt` allows tailoring your own question to the user.
 
 #### `createFileFromWebTemplate`
 
 ```ts
-async function createFileWebFromTemplate(
+async function createFileFromWebTemplate(
   url: string, targetFile: string, force: boolean = false, prompt: string = ''
 ): Promise<void>
 ```
@@ -43,7 +43,7 @@ Contents of `url` must be accessible via `node:https.get` function and will be f
 
 Path to `targetFile` is relative to `process.cwd()` which allows consumers to run `npx your-script` in their project roots during development.  Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed. If the target directory does not exist, it will be automatically created.
 
-By default the function asks for confirmation before attempting to create the file and if the file with the same name as `targetFile` is detected. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passsing a custom `prompt` allows tailoring your own question to the user.
+By default the function asks for confirmation before attempting to create the file and if the file with the same name as `targetFile` is detected. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passing a custom `prompt` allows tailoring your own question to the user.
 
 #### `updateConfigFile`
 
@@ -75,7 +75,7 @@ TypeError: 'set' on proxy: trap returned falsish for property '<YOUR_PROPERTY>'
 If possible, you need to alter your logic, e.g. by creating a new object via the spread operator.
 
 
-By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passsing a custom `prompt` allows tailoring your own question to the user.
+By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passing a custom `prompt` allows tailoring your own question to the user.
 
 #### `updateJsonFile`
 
@@ -99,7 +99,7 @@ Path to `targetFile` is relative to `process.cwd()`. Several checks are in place
 
 Currently it only allows adding new values under top-level keys. If the `jsonKey` exists, new values are merged into existing ones. Otherwise, new key is added. The function tracks if any real change was made and notifies the user if not.
 
-By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passsing a custom `prompt` allows tailoring your own question to the user.
+By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passing a custom `prompt` allows tailoring your own question to the user.
 
 #### `updateTextFile`
 
@@ -113,7 +113,7 @@ Takes a path to a plain text file and injects `rowsToAdd` at the end of the file
 
 Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed. 
 
-By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passsing a custom `prompt` allows tailoring your own question to the user.
+By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passing a custom `prompt` allows tailoring your own question to the user.
 
 #### `removeFromJsonFile`
 
@@ -129,7 +129,7 @@ Path to `targetFile` is relative to `process.cwd()`. Several checks are in place
 
 Given `jsonKey` might point to a nested key using dot notation, e.g. `a.b.c`. If the key is not present, the function does nothing.
 
-By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passsing a custom `prompt` allows tailoring your own question to the user.
+By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passing a custom `prompt` allows tailoring your own question to the user.
 
 #### `deletePath`
 
@@ -143,7 +143,7 @@ Deletes given `targetPath` from FS. Path is resolved relatively to `process.cwd(
 
 If the `targetPath` does not exist, the function does nothing.
 
-By default the function asks for confirmation before attempting to delete the `targetPath`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passsing a custom `prompt` allows tailoring your own question to the user.
+By default the function asks for confirmation before attempting to delete the `targetPath`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passing a custom `prompt` allows tailoring your own question to the user.
 
 ### List of content checkers
 
