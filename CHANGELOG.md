@@ -2,6 +2,14 @@
 
 Overview of the newest features in COSCA.
 
+# 0.3.3
+
+**2025-10-02**
+
+- fix: remove forgetten console log in path checker
+- docs: fixed couple of typos
+- build: bump deps (`vite`, `typescript`, `@types/node`)
+
 # 0.3.2
 
 **2025-10-01**
