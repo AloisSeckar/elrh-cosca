@@ -1,4 +1,4 @@
-import { fileExists } from './checks/file-exists'
+import { pathExists } from './checks/path-exists'
 import { hasJsonKey } from './checks/has-json-key'
 import { hasText } from './checks/has-text'
 import { createFileFromTemplate } from './functions/create-file-from-template'
@@ -17,7 +17,7 @@ import { resolvePackagePath } from './utils/resolve-package-path'
 
 export {
   //  file-content checks
-  fileExists,
+  pathExists,
   hasJsonKey,
   hasText,
   // file-manipulation functions
