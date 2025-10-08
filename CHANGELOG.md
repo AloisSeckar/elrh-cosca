@@ -2,6 +2,13 @@
 
 Overview of the newest features in COSCA.
 
+# 0.3.4
+
+**2025-10-08**
+
+- feat: new `getPackageManager` checker for detecting current package manager (#13)
+- fix: rename `fileExists` to `pathExists` for better clarity (#12)
+
 # 0.3.3
 
 **2025-10-02**
