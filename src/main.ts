@@ -1,6 +1,7 @@
-import { pathExists } from './checks/path-exists'
+import { getPackageManager } from './checks/get-package-manager'
 import { hasJsonKey } from './checks/has-json-key'
 import { hasText } from './checks/has-text'
+import { pathExists } from './checks/path-exists'
 import { createFileFromTemplate } from './functions/create-file-from-template'
 import { createFileFromWebTemplate } from './functions/create-file-from-web-template'
 import { deletePath } from './functions/delete-path'
@@ -17,9 +18,10 @@ import { resolvePackagePath } from './utils/resolve-package-path'
 
 export {
   //  file-content checks
-  pathExists,
+  getPackageManager,
   hasJsonKey,
   hasText,
+  pathExists,
   // file-manipulation functions
   createFileFromTemplate,
   createFileFromWebTemplate,

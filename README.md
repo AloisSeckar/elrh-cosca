@@ -183,6 +183,14 @@ Checks whether given `row` exists in text file located at `targetFile`. Path is 
 
 If the `row` is present, the function returns true, false otherwise. Row must be matched completely, but surrounding whitespaces are ignored.
 
+#### `getPackageManager`
+
+```ts
+function getPackageManager(): 'npm' | 'yarn' | 'pnpm' | 'deno' | 'bun'
+```
+
+Tries to detect the package manager used in the current environment by checking for specific global variables and user agent strings. Fallbacks to `npm` if common checks fail to detect otherwise.
+
 ### List of terminal helpers
 
 #### `promptUser`
