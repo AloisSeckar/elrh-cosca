@@ -2,6 +2,13 @@
 
 Overview of the newest features in COSCA.
 
+# 0.3.5
+
+**2025-10-28**
+
+- feat: allow partial and regex matching in `hasText` checker (#14)
+- build: bump deps (`vite`, `vitest`, `magicast`, `@types/node`)
+
 # 0.3.4
 
 **2025-10-08**
