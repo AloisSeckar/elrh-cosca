@@ -3,15 +3,18 @@ import { existsSync, readFileSync } from 'node:fs'
 import { checkPath } from '../_private/check-path.js'
 
 /**
- * Checks if a text file contains specified row.
+ * Checks if a text file contains specified text.
  * 
  * @param {string} targetFile - The path to the text file to be checked (relative to CWD).
- * @param {string} row - The text row to be checked for existence.
- * @returns {boolean} True if the row exists in target file, false otherwise. Row must be matched completely, but surrounding whitespaces are ignored.
+ * @param {string | RegExp} pattern - The text or regular expression pattern to search for.
+ * @param {boolean} exact - If true, requires exact line match (default: false for partial matching).
+ * @returns {boolean} True if the pattern is found in target file, false otherwise.
  * @throws Will throw an error if the path is invalid or the file does not exist.
  */
 export function hasText(
-    targetFile: string, row: string
+    targetFile: string, 
+    pattern: string | RegExp,
+    exact: boolean = false
 ): boolean {
     const check = checkPath(targetFile)
     if (!check.valid) {
@@ -26,5 +29,19 @@ export function hasText(
     const textRaw = readFileSync(textFilePath, 'utf8')
     const lines = textRaw.split(/\r?\n/).map(line => line.trim())
 
-    return lines.includes(row.trim())
+    // Handle RegExp pattern
+    if (pattern instanceof RegExp) {
+        return lines.some(line => pattern.test(line))
+    }
+
+    // Handle string pattern
+    const searchText = pattern.trim()
+    
+    if (exact) {
+        // Exact match: whole line must equal the pattern
+        return lines.includes(searchText)
+    } else {
+        // Partial match: line must contain the pattern
+        return lines.some(line => line.includes(searchText))
+    }
 }

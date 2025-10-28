@@ -175,13 +175,13 @@ Given `jsonKey` might point to a nested key using dot notation, e.g. `a.b.c`. If
 
 ```ts
 function hasText(
-    targetFile: string, row: string
+    targetFile: string, pattern: string | RegExp, exact: boolean = false
 ): boolean
 ```
 
-Checks whether given `row` exists in text file located at `targetFile`. Path is resolved relatively to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed.
+Checks whether given `pattern` exists in text file located at `targetFile`. Path is resolved relatively to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed.
 
-If the `row` is present, the function returns true, false otherwise. Row must be matched completely, but surrounding whitespaces are ignored.
+The `pattern` might be a plain string or a regular expression. If it is present, the function returns true, false otherwise. By default partial matches are allowed for string patterns. If you set optional `exact` parameter to true, the string must completely match at least one line in the file. However, surrounding whitespaces are trimmed in both cases.
 
 #### `getPackageManager`
 

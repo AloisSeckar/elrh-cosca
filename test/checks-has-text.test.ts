@@ -37,8 +37,20 @@ describe('Test hasText checker', () => {
     expect(hasText(`${wd}/text-file.txt`, 'Row 11')).toBe(false)
   })
 
-  test('should not find the incomplete row', async () => {
-    expect(hasText(`${wd}/text-file.txt`, 'Row')).toBe(false)
+  test('should find the partial match by default', async () => {
+    expect(hasText(`${wd}/text-file.txt`, 'Row')).toBe(true)
+  })
+
+  test('should not find the partial match if exact match is required', async () => {
+    expect(hasText(`${wd}/text-file.txt`, 'Row', true)).toBe(false)
+  })
+
+  test('should find the existing regular expression match', async () => {
+    expect(hasText(`${wd}/text-file.txt`, /R.w/)).toBe(true)
+  })
+
+  test('should not find the non-existent regular expression match', async () => {
+    expect(hasText(`${wd}/text-file.txt`, /R..w/)).toBe(false)
   })
   
 })
