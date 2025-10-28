@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { showMessage } from '../src/main'
 import { getStdoutSpy } from './cosca-test-utils'
 
@@ -7,6 +7,10 @@ describe('Test showMessage terminal helper', () => {
   let spy: any
   beforeEach(() => {
     spy = getStdoutSpy()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
   })
   
   test('should be defined', () => {
