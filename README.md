@@ -1,4 +1,5 @@
 # COSCA
+
 Library of file-writing functions that help building CLI scripts for making changes in target projects - like adding default configuration files or new sections in `package.json`.
 
 The first experimental "customers" are my [Nuxt Spec](https://github.com/AloisSeckar/nuxt-spec) and [Nuxt Ignis](https://github.com/AloisSeckar/nuxt-ignis) projects.
@@ -37,7 +38,7 @@ async function createFileFromWebTemplate(
 ): Promise<void>
 ```
 
-Gets a file definition from given `url` and will create a fresh copy in target project. 
+Gets a file definition from given `url` and will create a fresh copy in target project.
 
 Contents of `url` must be accessible via `node:https.get` function and will be fetched as raw text data.
 
@@ -54,11 +55,12 @@ async function updateConfigFile(
 ): Promise<void>
 ```
 
-Takes a path to a configuration file and updates it with the provided `newConfig` object. 
+Takes a path to a configuration file and updates it with the provided `newConfig` object.
 
 Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed. The file currently must use ESM format with either `default` or named export of **exactly one** configuration object or function call with a configuration object as its argument.
 
 The merger is performed using [unjs/magicast](https://github.com/unjs/magicast). It should:
+
 - preserve comments
 - work recursively to allow deep-merge
 - extend existing object with new keys from `newConfig`
@@ -68,12 +70,11 @@ Please [report](https://github.com/AloisSeckar/elrh-cosca/issues) any logical fl
 
 **Warning**: The function will fail, if the extracted object is proxied (e.g. when created using `defu`). In such case, the error would be:
 
-```
+```text
 TypeError: 'set' on proxy: trap returned falsish for property '<YOUR_PROPERTY>'
 ```
 
 If possible, you need to alter your logic, e.g. by creating a new object via the spread operator.
-
 
 By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passing a custom `prompt` allows tailoring your own question to the user.
 
@@ -111,7 +112,7 @@ async function updateTextFile(
 
 Takes a path to a plain text file and injects `rowsToAdd` at the end of the file, **providing they are not already present in the file**. The function tracks if any real change was made and notifies the user if not.
 
-Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed. 
+Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed.
 
 By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passing a custom `prompt` allows tailoring your own question to the user.
 
@@ -262,4 +263,5 @@ See [Changelog](https://github.com/AloisSeckar/elrh-cosca/blob/main/CHANGELOG.md
 ## Report bugs & contact
 
 Use GitHub issues to report bugs / propose enhancements / give feedback:
-https://github.com/AloisSeckar/elrh-cosca/issues
+
+[https://github.com/AloisSeckar/elrh-cosca/issues](https://github.com/AloisSeckar/elrh-cosca/issues)

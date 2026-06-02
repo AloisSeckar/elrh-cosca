@@ -8,4 +8,6 @@ Each function has its Vitest test suite in `/test` named `functions-<file-name>.
 
 Functions are made available via re-export in `src/main.ts`.
 
+When adding/changing function, it should be documented in `README.md` accordingly.
+
 To accept changes, `pnpm build` must pass.
