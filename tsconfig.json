@@ -13,6 +13,7 @@
     "isolatedModules": true,
     
     /* TypeScript */
+    "rootDir": ".",
     "declaration": true,
     "declarationDir": "./dist",
     "emitDeclarationOnly": true,
@@ -21,8 +22,8 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "types": ["node"]
   },
-  "include": ["src"],
-  "types": ["node"]
+  "include": ["src", "test"]
 }
