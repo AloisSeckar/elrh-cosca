@@ -1,16 +1,7 @@
-import { beforeEach, describe, expect, test } from 'vitest'
+import { describe, expect, test } from 'vitest'
 import { resolvePackagePath } from '../src/main'
-import { getConsoleSpy } from './cosca-test-utils'
 
 describe('Test resolvePackagePath util function', () => {
-
-  let wd: string = ''
-  let spy: any
-
-  beforeEach(() => {
-    wd = process.env.WORKSPACE_DIR!
-    spy = getConsoleSpy('log')
-  })
 
   test('should be defined', () => {
     expect(resolvePackagePath).toBeDefined()

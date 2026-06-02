@@ -26,7 +26,6 @@ export default defineConfig({
       ],
       output: {
         exports: 'named',
-        interop: 'auto',
       }
     },
   },
@@ -36,6 +35,6 @@ export default defineConfig({
     },
   },
   plugins: [
-    dts({ outDir: 'dist/types', insertTypesEntry: true }),
+    dts({ outDirs: 'dist/types', insertTypesEntry: true }),
   ],
 })

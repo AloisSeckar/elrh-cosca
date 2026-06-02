@@ -1,16 +1,8 @@
-import { beforeEach, describe, expect, test } from 'vitest'
+import { describe, expect, test } from 'vitest'
 import { promptUser } from '../src/main'
-import { getConsoleSpy, setPromptSpy } from './cosca-test-utils'
+import { setPromptSpy } from './cosca-test-utils'
 
 describe('Test promptUser terminal helper', () => {
-
-  let wd: string = ''
-  let spy: any
-
-  beforeEach(() => {
-    wd = process.env.WORKSPACE_DIR!
-    spy = getConsoleSpy('log')
-  })
 
   test('should be defined', () => {
     expect(promptUser).toBeDefined()
