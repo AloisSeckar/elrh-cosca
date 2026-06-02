@@ -132,6 +132,20 @@ Given `jsonKey` might point to a nested key using dot notation, e.g. `a.b.c`. If
 
 By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passing a custom `prompt` allows tailoring your own question to the user.
 
+#### `removeFromTextFile`
+
+```ts
+async function removeFromTextFile(
+  targetFile: string, searchText: string, force: boolean = false, prompt: string = ''
+): Promise<void>
+```
+
+Takes a path to a plain text file and removes all lines that include the given `searchText`. The matching is done using `String.includes()`, so partial matches within a line will cause that line to be removed. The function tracks if any real change was made and notifies the user if not.
+
+Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed.
+
+By default the function asks for confirmation before attempting to alter the `targetFile`. Setting the last optional parameter `force` to `true` will suppress manual confirmation prompts. Passing a custom `prompt` allows tailoring your own question to the user.
+
 #### `deletePath`
 
 ```ts
