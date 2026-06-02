@@ -2,6 +2,14 @@
 
 Overview of the newest features in COSCA.
 
+## 0.3.6
+
+`2026-06-02`
+
+- feat: new `removeFromTextFile` function to delete lines from text files
+- build: bump deps (`vite`, `vite-plugin-dts`, `vitest`, `magicast`, `@types/node`)
+- chore: some internal adjustments of project settings
+
 ## 0.3.5
 
 `2025-10-28`
