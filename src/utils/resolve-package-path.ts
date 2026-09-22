@@ -1,3 +1,4 @@
+import type { ResolvePackagePathOptions } from '../types/functions.js'
 import { access, constants, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -6,11 +7,13 @@ import { join } from 'node:path'
  * Package name can be scoped (e.g. `@scope/package`).
  * Works with npm/yarn/pnpm, hoisting or not.
  * 
- * @param {string} packageName - The name of the package to resolve.
+ * @param {ResolvePackagePathOptions} opts - Options for this operation.
+ * @param {string} opts.packageName - The name of the package to resolve.
  * @returns {string} The absolute path to the package's root directory.
  * @throws Will throw an error if the package cannot be found or accessed.
  */
-export function resolvePackagePath(packageName: string): string {
+export function resolvePackagePath(opts: ResolvePackagePathOptions): string {
+  const { packageName } = opts
   const appDir = process.cwd()
 
   // 1. check if it is not called from itself during development

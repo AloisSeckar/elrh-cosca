@@ -1,7 +1,7 @@
+import type { UpdateJsonFileOptions } from '../types/functions.js'
 import { resolve } from 'node:path'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { promptUser } from '../terminal/prompt-user.js'
-import type { JsonValue } from '../types/json.js'
 import { checkPath } from '../_private/check-path.js'
 
 // so-far only allows adding into existing key at the top level of the JSON tree
@@ -11,21 +11,18 @@ import { checkPath } from '../_private/check-path.js'
 /**
  * Updates a JSON file by modifying a specific key with new values.
  * 
- * @param {string} targetFile - The path to the JSON file to update (relative to CWD).
- * @param {string} jsonKey - The key in the JSON file to update (can be new or existing).
- * @param {JsonPrimitive} patch - The new values to set for the specified key.
- * @param {boolean} force - Whether to force the update without prompting.
- * @param {string} prompt - Custom prompt message displayed in terminal.
+ * @param {UpdateJsonFileOptions} opts - Options for this operation.
+ * @param {string} opts.targetFile - The path to the JSON file to update (relative to CWD).
+ * @param {string} opts.jsonKey - The key in the JSON file to update (can be new or existing).
+ * @param {JsonValue} opts.patch - The new values to set for the specified key.
+ * @param {boolean} opts.force - Whether to force the update without prompting.
+ * @param {string} opts.prompt - Custom prompt message displayed in terminal.
  * @returns {Promise<void>} An empty promise that resolves when the file is updated.
  * @throws Will throw an error if the path is invalid, the file does not exist or cannot be parsed as JSON.
  */
-export async function updateJsonFile(
-  targetFile: string, jsonKey: string, patch: JsonValue, 
-  force: boolean = false, prompt: string = ''
-): Promise<void> {
-  const shouldUpdate = force || await promptUser(
-    prompt || `This will update '${targetFile}' file. Continue?`,
-  )
+export async function updateJsonFile(opts: UpdateJsonFileOptions): Promise<void> {
+  const { targetFile, jsonKey, patch, force = false, prompt = '' } = opts
+  const shouldUpdate = force || await promptUser({ question: prompt || `This will update '${targetFile}' file. Continue?` })
   if (shouldUpdate) {
     const check = checkPath(targetFile)
     if (!check.valid) {

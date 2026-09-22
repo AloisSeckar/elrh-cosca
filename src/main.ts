@@ -17,6 +17,26 @@ import { getEnvValue } from './utils/get-env-value'
 import { parseQualifiedPath } from './utils/parse-qualified-path'
 import { resolvePackagePath } from './utils/resolve-package-path'
 
+export type {
+  HasJsonKeyOptions,
+  HasTextOptions,
+  PathExistsOptions,
+  CreateFileFromTemplateOptions,
+  CreateFileFromWebTemplateOptions,
+  DeletePathOptions,
+  RemoveFromJsonFileOptions,
+  RemoveFromTextFileOptions,
+  UpdateConfigFileOptions,
+  UpdateJsonFileOptions,
+  UpdateTextFileOptions,
+  PromptUserOptions,
+  ShowErrorOptions,
+  ShowMessageOptions,
+  GetEnvValueOptions,
+  ParseQualifiedPathOptions,
+  ResolvePackagePathOptions,
+} from './types/functions'
+
 export {
   //  file-content checks
   getPackageManager,

@@ -1,3 +1,4 @@
+import type { CreateFileFromTemplateOptions } from '../types/functions.js'
 import { dirname, resolve } from 'node:path'
 import { existsSync, copyFileSync, mkdirSync } from 'node:fs'
 import { promptUser } from '../terminal/prompt-user'
@@ -8,22 +9,20 @@ import { checkPath } from '../_private/check-path'
 /**
  * Creates a new copy of given file from a local template.
  * 
- * @param {string} templateFile - The path to the template file (prefixed with package name).
- * @param {string} targetFile - The path to the target file to create (relative to CWD). Can overwrite existing files if confirmed.
- * @param {boolean} force - Whether to force creation without prompting.
- * @param {string} prompt - Custom prompt message displayed in terminal.
+ * @param {CreateFileFromTemplateOptions} opts - Options for this operation.
+ * @param {string} opts.templateFile - The path to the template file (prefixed with package name).
+ * @param {string} opts.targetFile - The path to the target file to create (relative to CWD). Can overwrite existing files if confirmed.
+ * @param {boolean} opts.force - Whether to force creation without prompting.
+ * @param {string} opts.prompt - Custom prompt message displayed in terminal.
  * @returns {Promise<void>} An empty promise that resolves when the file is created.
  * @throws Will throw an error if the path is invalid, the template file cannot be found or the target file failed to be created.
  */
-export async function createFileFromTemplate(
-  templateFile: string, targetFile: string, force: boolean = false, prompt: string = ''
-): Promise<void> {
-  const shouldCreate = force || await promptUser(
-    prompt || `This will create '${targetFile}' file. Continue?`,
-  )
+export async function createFileFromTemplate(opts: CreateFileFromTemplateOptions): Promise<void> {
+  const { templateFile, targetFile, force = false, prompt = '' } = opts
+  const shouldCreate = force || await promptUser({ question: prompt || `This will create '${targetFile}' file. Continue?` })
   if (shouldCreate) {
-    const { pkg, file } = parseQualifiedPath(templateFile);
-    const packagePath = resolvePackagePath(pkg);
+    const { pkg, file } = parseQualifiedPath({ path: templateFile });
+    const packagePath = resolvePackagePath({ packageName: pkg });
     const templatePath = resolve(packagePath, file)
 
     const check = checkPath(targetFile)
@@ -38,9 +37,7 @@ export async function createFileFromTemplate(
     }
 
     if (existsSync(targetPath)) {
-      const shouldOverwrite = force || await promptUser(
-        `File '${targetFile}' already exists. Overwrite?`,
-      )
+      const shouldOverwrite = force || await promptUser({ question: `File '${targetFile}' already exists. Overwrite?` })
       if (!shouldOverwrite) {
         console.log('Aborted.')
         return

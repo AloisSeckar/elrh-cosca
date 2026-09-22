@@ -9,44 +9,44 @@ import {
 
 async function main() {
   console.log('Test showMessage')
-  showMessage('Hello!')
+  showMessage({ message: 'Hello!' })
   console.log('Test showMessage')
-  showError('ERROR!')
+  showError({ message: 'ERROR!' })
 
   console.log('Test getEnvValue')
-  const a = getEnvValue('A')
-  const b = getEnvValue('B')
-  const c = getEnvValue('C')
-  const d = getEnvValue('D')
-  const e = getEnvValue('E')
+  const a = getEnvValue({ key: 'A' })
+  const b = getEnvValue({ key: 'B' })
+  const c = getEnvValue({ key: 'C' })
+  const d = getEnvValue({ key: 'D' })
+  const e = getEnvValue({ key: 'E' })
   console.log(a, b, c, d, e)
 
   console.log('Test promptUser')
-  const input = await promptUser('Is it today?')
+  const input = await promptUser({ question: 'Is it today?' })
   console.log('User input:', input)
 
   console.log('\nTest createFileFromTemplate')
-  await createFileFromTemplate('vitest:README.md', 'test/snapshots/test.file1')
-  await createFileFromTemplate('elrh-cosca:test/fixtures/text-file.txt', 'test/snapshots/test.file2')
+  await createFileFromTemplate({ templateFile: 'vitest:README.md', targetFile: 'test/snapshots/test.file1' })
+  await createFileFromTemplate({ templateFile: 'elrh-cosca:test/fixtures/text-file.txt', targetFile: 'test/snapshots/test.file2' })
   
   console.log('\nTest createFileFromWebTemplate')
-  await createFileFromWebTemplate('https://raw.githubusercontent.com/AloisSeckar/nuxt-spec/refs/heads/main/config/vitest.config.ts.template', 'test/snapshots/test.file3')
+  await createFileFromWebTemplate({ url: 'https://raw.githubusercontent.com/AloisSeckar/nuxt-spec/refs/heads/main/config/vitest.config.ts.template', targetFile: 'test/snapshots/test.file3' })
 
   console.log('\nTest updateConfigFile')
-  await updateConfigFile('test/fixtures/config-file-default.ts', { compatibilityDate: '2025-08-26', extends: ['nuxt-iignis'], cosca: { exists: true, data: ['some', 'other'], raw: 'war' } })
+  await updateConfigFile({ targetFile: 'test/fixtures/config-file-default.ts', newConfig: { compatibilityDate: '2025-08-26', extends: ['nuxt-iignis'], cosca: { exists: true, data: ['some', 'other'], raw: 'war' } } })
 
   console.log('\nTest updateJsonFile')
-  await updateJsonFile('test/fixtures/json-file.json', 'scripts', { 'cosca' : 'cosca' })
-  await updateJsonFile('test/fixtures/json-file.json', 'packageManager', 'pnpm' )
+  await updateJsonFile({ targetFile: 'test/fixtures/json-file.json', jsonKey: 'scripts', patch: { 'cosca' : 'cosca' } })
+  await updateJsonFile({ targetFile: 'test/fixtures/json-file.json', jsonKey: 'packageManager', patch: 'pnpm' })
 
   console.log('\nTest removeFromJsonFile')
-  await removeFromJsonFile('test/fixtures/json-file.json', 'cosca')
+  await removeFromJsonFile({ targetFile: 'test/fixtures/json-file.json', jsonKey: 'cosca' })
 
   console.log('\nTest updateTextFile')
-  await updateTextFile('test/fixtures/text-file.txt', ['# COSCA'])
+  await updateTextFile({ targetFile: 'test/fixtures/text-file.txt', rowsToAdd: ['# COSCA'] })
 
   console.log('\nTest deletePath')
-  await deletePath('test/snapshots/test.file1')
+  await deletePath({ targetPath: 'test/snapshots/test.file1' })
 }
 
 main().catch((err) => {

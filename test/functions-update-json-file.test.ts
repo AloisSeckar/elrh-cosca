@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { beforeEach, describe, expect, expectTypeOf, test, vi } from 'vitest'
 import { updateJsonFile } from '../src/main'
+import type { UpdateJsonFileOptions } from '../src/main'
 import { getConsoleSpy, getPromptUserSpy, readNormalizedFile, setPromptSpy } from './cosca-test-utils'
 
 // `checkPath` function must be mocked as it disallows paths outside of CWD
@@ -24,16 +25,25 @@ describe('Test updateJsonFile function', () => {
     expect(updateJsonFile).toBeDefined()
   })
 
+  test('should require one options object with targetFile, jsonKey and patch', () => {
+    expectTypeOf(updateJsonFile).parameters.toEqualTypeOf<[opts: UpdateJsonFileOptions]>()
+    expectTypeOf<string>().not.toExtend<UpdateJsonFileOptions>()
+    expectTypeOf<Omit<UpdateJsonFileOptions, 'targetFile'>>().not.toExtend<UpdateJsonFileOptions>()
+    expectTypeOf<Omit<UpdateJsonFileOptions, 'jsonKey'>>().not.toExtend<UpdateJsonFileOptions>()
+    expectTypeOf<Omit<UpdateJsonFileOptions, 'patch'>>().not.toExtend<UpdateJsonFileOptions>()
+    expectTypeOf<{ targetFile: string; jsonKey: string; patch: null }>().toExtend<UpdateJsonFileOptions>()
+  })
+
   test('should fail because of non-existent file', async () => {
-    await expect(updateJsonFile(`${wd}/uknown`, 'cosca', { testKey1: 0 }, true)).rejects.toThrow(/cannot update its contents/)
+    await expect(updateJsonFile({ targetFile: `${wd}/uknown`, jsonKey: 'cosca', patch: { testKey1: 0 }, force: true })).rejects.toThrow(/cannot update its contents/)
   })
 
   test('should fail because of invalid JSON', async () => {
-    await expect(updateJsonFile(`${wd}/text-file.txt`, 'cosca', { testKey1: 0 }, true)).rejects.toThrow(/Could not parse/)
+    await expect(updateJsonFile({ targetFile: `${wd}/text-file.txt`, jsonKey: 'cosca', patch: { testKey1: 0 }, force: true })).rejects.toThrow(/Could not parse/)
   })
 
   test('should add the new key and values', async () => {
-    await updateJsonFile(`${wd}/json-file.json`, 'cosca', { testKey1: 'value', testKey2: 2, testKey3: true }, true)
+    await updateJsonFile({ targetFile: `${wd}/json-file.json`, jsonKey: 'cosca', patch: { testKey1: 'value', testKey2: 2, testKey3: true }, force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
@@ -41,7 +51,7 @@ describe('Test updateJsonFile function', () => {
   })
 
   test('should not add new same value in key again', async () => {
-    await updateJsonFile(`${wd}/json-file.json`, 'cosca', { testKey1: 'value' }, true)
+    await updateJsonFile({ targetFile: `${wd}/json-file.json`, jsonKey: 'cosca', patch: { testKey1: 'value' }, force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
 
@@ -49,7 +59,7 @@ describe('Test updateJsonFile function', () => {
   })
 
   test('should add the new value under existing key', async () => {
-    await updateJsonFile(`${wd}/json-file.json`, 'cosca', { testKey4: 'value2' }, true)
+    await updateJsonFile({ targetFile: `${wd}/json-file.json`, jsonKey: 'cosca', patch: { testKey4: 'value2' }, force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
@@ -57,7 +67,7 @@ describe('Test updateJsonFile function', () => {
   })
 
   test('should add nested key', async () => {
-    await updateJsonFile(`${wd}/json-file.json`, 'cosca', { testKey5: { nestedKey: 'nested' } }, true)
+    await updateJsonFile({ targetFile: `${wd}/json-file.json`, jsonKey: 'cosca', patch: { testKey5: { nestedKey: 'nested' } }, force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
@@ -65,7 +75,7 @@ describe('Test updateJsonFile function', () => {
   })
 
   test('should add primitive value correctly', async () => {
-    await updateJsonFile(`${wd}/json-file.json`, 'cosca2', 'primitive value', true)
+    await updateJsonFile({ targetFile: `${wd}/json-file.json`, jsonKey: 'cosca2', patch: 'primitive value', force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
@@ -73,7 +83,7 @@ describe('Test updateJsonFile function', () => {
   })
 
   test('should add array correctly', async () => {
-    await updateJsonFile(`${wd}/json-file.json`, 'cosca3', ['value1', 'value2'], true)
+    await updateJsonFile({ targetFile: `${wd}/json-file.json`, jsonKey: 'cosca3', patch: ['value1', 'value2'], force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
@@ -82,7 +92,7 @@ describe('Test updateJsonFile function', () => {
     
   test('should do nothing when user aborts creating', async () => {
     setPromptSpy(['n'])
-    await updateJsonFile(`${wd}/json-file.json`, 'cosca', { testKey6: 0 })
+    await updateJsonFile({ targetFile: `${wd}/json-file.json`, jsonKey: 'cosca', patch: { testKey6: 0 } })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/skipped/))
 
@@ -94,14 +104,27 @@ describe('Test updateJsonFile function', () => {
 
   test('should not display custom prompt', async () => {
     const uSpy = getPromptUserSpy()
-    await updateJsonFile(`a`, 'b', { testKey6: 0 })
-    expect(uSpy).toHaveBeenCalledWith(expect.stringMatching(/This will update/))
+    await updateJsonFile({ targetFile: `a`, jsonKey: 'b', patch: { testKey6: 0 } })
+    expect(uSpy).toHaveBeenCalledWith({ question: expect.stringMatching(/This will update/) })
   })
 
   test('should display custom prompt', async () => {
     const uSpy = getPromptUserSpy()
-    await updateJsonFile(`a`, 'b', { testKey6: 0 }, false, "Custom prompt")
-    expect(uSpy).toHaveBeenCalledWith(expect.stringMatching(/Custom prompt/))
+    await updateJsonFile({ targetFile: `a`, jsonKey: 'b', patch: { testKey6: 0 }, force: false, prompt: "Custom prompt" })
+    expect(uSpy).toHaveBeenCalledWith({ question: expect.stringMatching(/Custom prompt/) })
+  })
+
+  test('should accept a custom prompt without specifying force', async () => {
+    const promptSpy = getPromptUserSpy()
+    const opts: UpdateJsonFileOptions = { targetFile: 'a', jsonKey: 'b', patch: null, prompt: 'Apply changes?' }
+    await updateJsonFile(opts)
+    expect(promptSpy).toHaveBeenCalledWith({ question: 'Apply changes?' })
+  })
+
+  test('should bypass prompts when force is true', async () => {
+    const promptSpy = getPromptUserSpy()
+    await updateJsonFile({ targetFile: `${wd}/json-file.json`, jsonKey: 'cosca3', patch: ['value1', 'value2'], force: true })
+    expect(promptSpy).not.toHaveBeenCalled()
   })
 
 })

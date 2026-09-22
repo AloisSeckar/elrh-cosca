@@ -26,14 +26,14 @@ describe('Test createFileFromWebTemplate function', () => {
   })
   
   test('should fail because of invalid path', async () => {
-    await expect(createFileFromWebTemplate(`path`, `${wd}/web-file-copy.txt`, true)).rejects.toThrow(/Failed to fetch template from external source/)
+    await expect(createFileFromWebTemplate({ url: `path`, targetFile: `${wd}/web-file-copy.txt`, force: true })).rejects.toThrow(/Failed to fetch template from external source/)
     
     expect(existsSync(`${wd}/web-file-copy.txt`)).toBe(false)
   })
 
   test('should create the file from web source', async () => {
     // data must be available via node:https.get
-    await createFileFromWebTemplate(`https://raw.githubusercontent.com/AloisSeckar/nuxt-spec/refs/heads/main/config/templates/vitest.config.ts.template`, `${wd}/web-file-copy.txt`, true)
+    await createFileFromWebTemplate({ url: `https://raw.githubusercontent.com/AloisSeckar/nuxt-spec/refs/heads/main/config/templates/vitest.config.ts.template`, targetFile: `${wd}/web-file-copy.txt`, force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/successfully created/))
 
@@ -41,7 +41,7 @@ describe('Test createFileFromWebTemplate function', () => {
   })
 
   test('should create the file even in non-existent directory', async () => {
-    await createFileFromWebTemplate(`https://raw.githubusercontent.com/AloisSeckar/nuxt-spec/refs/heads/main/config/templates/vitest.config.ts.template`, `${wd}/first/second/file.txt`, true)
+    await createFileFromWebTemplate({ url: `https://raw.githubusercontent.com/AloisSeckar/nuxt-spec/refs/heads/main/config/templates/vitest.config.ts.template`, targetFile: `${wd}/first/second/file.txt`, force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/successfully created/))
 
@@ -50,7 +50,7 @@ describe('Test createFileFromWebTemplate function', () => {
 
   test('should do nothing when user aborts creating', async () => {
     setPromptSpy(['n'])
-    await createFileFromWebTemplate(`https://raw.githubusercontent.com/AloisSeckar/nuxt-spec/refs/heads/main/config/templates/vitest.config.ts.template`, `${wd}/web-file-copy-2.txt`)
+    await createFileFromWebTemplate({ url: `https://raw.githubusercontent.com/AloisSeckar/nuxt-spec/refs/heads/main/config/templates/vitest.config.ts.template`, targetFile: `${wd}/web-file-copy-2.txt` })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/skipped/))
 
@@ -60,7 +60,7 @@ describe('Test createFileFromWebTemplate function', () => {
 
   test('should do nothing when user aborts overwriting', async () => {
     setPromptSpy(['y', 'n'])
-    await createFileFromWebTemplate(`https://raw.githubusercontent.com/AloisSeckar/nuxt-spec/refs/heads/main/config/templates/vitest.config.ts.template`, `${wd}/web-file-copy.txt`)
+    await createFileFromWebTemplate({ url: `https://raw.githubusercontent.com/AloisSeckar/nuxt-spec/refs/heads/main/config/templates/vitest.config.ts.template`, targetFile: `${wd}/web-file-copy.txt` })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/Aborted/))
 
@@ -72,14 +72,14 @@ describe('Test createFileFromWebTemplate function', () => {
 
   test('should not display custom prompt', async () => {
     const uSpy = getPromptUserSpy()
-    await createFileFromWebTemplate(`a`, `b`)
-    expect(uSpy).toHaveBeenCalledWith(expect.stringMatching(/This will create/))
+    await createFileFromWebTemplate({ url: `a`, targetFile: `b` })
+    expect(uSpy).toHaveBeenCalledWith({ question: expect.stringMatching(/This will create/) })
   })
 
   test('should display custom prompt', async () => {
     const uSpy = getPromptUserSpy()
-    await createFileFromWebTemplate(`a`, `b`, false, "Custom prompt")
-    expect(uSpy).toHaveBeenCalledWith(expect.stringMatching(/Custom prompt/))
+    await createFileFromWebTemplate({ url: `a`, targetFile: `b`, force: false, prompt: "Custom prompt" })
+    expect(uSpy).toHaveBeenCalledWith({ question: expect.stringMatching(/Custom prompt/) })
   })
 
 })

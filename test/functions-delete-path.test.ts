@@ -36,18 +36,18 @@ describe('Test deletePath function', () => {
   */
 
   test('should work but do nothing on non-existent file', async () => {
-    await deletePath(join(wd, 'unknown'), true)
+    await deletePath({ targetPath: join(wd, 'unknown'), force: true })
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/nothing to delete/))
   })
 
   test('should delete file', async () => {
-    await expect(deletePath(join(wd, 'del', 'test.file1'), true)).resolves.not.toThrow()
+    await expect(deletePath({ targetPath: join(wd, 'del', 'test.file1'), force: true })).resolves.not.toThrow()
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/deleted from project/))
     expect(existsSync(join(wd, 'del', 'test.file1'))).toBe(false)
   })
 
   test('should delete folder with all contents', async () => {
-    await expect(deletePath(join(wd, 'del'), true)).resolves.not.toThrow()
+    await expect(deletePath({ targetPath: join(wd, 'del'), force: true })).resolves.not.toThrow()
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/deleted from project/))
     expect(existsSync(join(wd, 'del', 'a', 'test.file1'))).toBe(false)
     expect(existsSync(join(wd, 'del', 'test.file2'))).toBe(false)

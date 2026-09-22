@@ -25,11 +25,11 @@ describe('Test updateTextFile function', () => {
   })
   
   test('should fail because of non-existent file', async () => {
-    await expect(updateTextFile(`${wd}/unknown`, ['Row 3'], true)).rejects.toThrow(/cannot update its contents/)
+    await expect(updateTextFile({ targetFile: `${wd}/unknown`, rowsToAdd: ['Row 3'], force: true })).rejects.toThrow(/cannot update its contents/)
   })
 
   test('should add the new line', async () => {
-    await updateTextFile(`${wd}/text-file.txt`, ['Row 3'], true)
+    await updateTextFile({ targetFile: `${wd}/text-file.txt`, rowsToAdd: ['Row 3'], force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
@@ -37,7 +37,7 @@ describe('Test updateTextFile function', () => {
   })
 
   test('should not add same line again', async () => {
-    await updateTextFile(`${wd}/text-file.txt`, ['Row 3'], true)
+    await updateTextFile({ targetFile: `${wd}/text-file.txt`, rowsToAdd: ['Row 3'], force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
 
@@ -45,7 +45,7 @@ describe('Test updateTextFile function', () => {
   })
 
   test('should add new line but ignore existing', async () => {
-    await updateTextFile(`${wd}/text-file.txt`, ['Row 4', 'Row 3'], true)
+    await updateTextFile({ targetFile: `${wd}/text-file.txt`, rowsToAdd: ['Row 4', 'Row 3'], force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
@@ -54,7 +54,7 @@ describe('Test updateTextFile function', () => {
       
   test('should do nothing when user aborts creating', async () => {
     setPromptSpy(['n'])
-    await updateTextFile(`${wd}/text-file.json`, ['Row 5'])
+    await updateTextFile({ targetFile: `${wd}/text-file.json`, rowsToAdd: ['Row 5'] })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/skipped/))
 
@@ -66,14 +66,14 @@ describe('Test updateTextFile function', () => {
 
   test('should not display custom prompt', async () => {
     const uSpy = getPromptUserSpy()
-    await updateTextFile(`a`, ['b'])
-    expect(uSpy).toHaveBeenCalledWith(expect.stringMatching(/This will update/))
+    await updateTextFile({ targetFile: `a`, rowsToAdd: ['b'] })
+    expect(uSpy).toHaveBeenCalledWith({ question: expect.stringMatching(/This will update/) })
   })
 
   test('should display custom prompt', async () => {
     const uSpy = getPromptUserSpy()
-    await updateTextFile(`a`, ['b'], false, "Custom prompt")
-    expect(uSpy).toHaveBeenCalledWith(expect.stringMatching(/Custom prompt/))
+    await updateTextFile({ targetFile: `a`, rowsToAdd: ['b'], force: false, prompt: "Custom prompt" })
+    expect(uSpy).toHaveBeenCalledWith({ question: expect.stringMatching(/Custom prompt/) })
   })
 
 })

@@ -1,3 +1,4 @@
+import type { RemoveFromJsonFileOptions } from '../types/functions.js'
 import { resolve } from 'node:path'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { promptUser } from '../terminal/prompt-user.js'
@@ -7,20 +8,17 @@ import { checkPath } from '../_private/check-path.js'
 /**
  * Updates a JSON file by deleting a specified key.
  * 
- * @param {string} targetFile - The path to the JSON file to update (relative to CWD).
- * @param {string} jsonKey - The key in the JSON file to be deleted (may use dot notation for nested keys).
- * @param {boolean} force - Whether to force the update without prompting.
- * @param {string} prompt - Custom prompt message displayed in terminal.
+ * @param {RemoveFromJsonFileOptions} opts - Options for this operation.
+ * @param {string} opts.targetFile - The path to the JSON file to update (relative to CWD).
+ * @param {string} opts.jsonKey - The key in the JSON file to be deleted (may use dot notation for nested keys).
+ * @param {boolean} opts.force - Whether to force the update without prompting.
+ * @param {string} opts.prompt - Custom prompt message displayed in terminal.
  * @returns {Promise<void>} An empty promise that resolves when the file is updated.
  * @throws Will throw an error if the path is invalid, the file does not exist or cannot be parsed as JSON.
  */
-export async function removeFromJsonFile(
-  targetFile: string, jsonKey: string,
-  force: boolean = false, prompt: string = ''
-): Promise<void> {
-  const shouldUpdate = force || await promptUser(
-    prompt || `This will delete '${jsonKey}' from '${targetFile}' file. Continue?`,
-  )
+export async function removeFromJsonFile(opts: RemoveFromJsonFileOptions): Promise<void> {
+  const { targetFile, jsonKey, force = false, prompt = '' } = opts
+  const shouldUpdate = force || await promptUser({ question: prompt || `This will delete '${jsonKey}' from '${targetFile}' file. Continue?` })
   if (shouldUpdate) {
     const check = checkPath(targetFile)
     if (!check.valid) {

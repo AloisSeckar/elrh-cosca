@@ -1,3 +1,4 @@
+import type { HasTextOptions } from '../types/functions.js'
 import { resolve } from 'node:path'
 import { existsSync, readFileSync } from 'node:fs'
 import { checkPath } from '../_private/check-path.js'
@@ -5,17 +6,15 @@ import { checkPath } from '../_private/check-path.js'
 /**
  * Checks if a text file contains specified text.
  * 
- * @param {string} targetFile - The path to the text file to be checked (relative to CWD).
- * @param {string | RegExp} pattern - The text or regular expression pattern to search for.
- * @param {boolean} exact - If true, requires exact line match (default: false for partial matching).
+ * @param {HasTextOptions} opts - Options for this operation.
+ * @param {string} opts.targetFile - The path to the text file to be checked (relative to CWD).
+ * @param {string | RegExp} opts.pattern - The text or regular expression pattern to search for.
+ * @param {boolean} opts.exact - If true, requires exact line match (default: false for partial matching).
  * @returns {boolean} True if the pattern is found in target file, false otherwise.
  * @throws Will throw an error if the path is invalid or the file does not exist.
  */
-export function hasText(
-    targetFile: string, 
-    pattern: string | RegExp,
-    exact: boolean = false
-): boolean {
+export function hasText(opts: HasTextOptions): boolean {
+    const { targetFile, pattern, exact = false } = opts
     const check = checkPath(targetFile)
     if (!check.valid) {
         throw new Error(check.error)

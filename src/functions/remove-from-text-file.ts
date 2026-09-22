@@ -1,3 +1,4 @@
+import type { RemoveFromTextFileOptions } from '../types/functions.js'
 import { resolve } from 'node:path'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { promptUser } from '../terminal/prompt-user.js'
@@ -6,20 +7,17 @@ import { checkPath } from '../_private/check-path.js'
 /**
  * Removes lines from a text file that include the given search text.
  * 
- * @param {string} targetFile - The path to the text file to update (relative to CWD).
- * @param {string} searchText - The text to search for; any line that includes this text will be removed.
- * @param {boolean} force - Whether to force the update without prompting.
- * @param {string} prompt - Custom prompt message displayed in terminal.
+ * @param {RemoveFromTextFileOptions} opts - Options for this operation.
+ * @param {string} opts.targetFile - The path to the text file to update (relative to CWD).
+ * @param {string} opts.searchText - The text to search for; any line that includes this text will be removed.
+ * @param {boolean} opts.force - Whether to force the update without prompting.
+ * @param {string} opts.prompt - Custom prompt message displayed in terminal.
  * @returns {Promise<void>} An empty promise that resolves when the file is updated.
  * @throws Will throw an error if the path is invalid or the file does not exist.
  */
-export async function removeFromTextFile(
-  targetFile: string, searchText: string,
-  force: boolean = false, prompt: string = ''
-): Promise<void> {
-  const shouldUpdate = force || await promptUser(
-    prompt || `This will remove lines containing '${searchText}' from '${targetFile}' file. Continue?`,
-  )
+export async function removeFromTextFile(opts: RemoveFromTextFileOptions): Promise<void> {
+  const { targetFile, searchText, force = false, prompt = '' } = opts
+  const shouldUpdate = force || await promptUser({ question: prompt || `This will remove lines containing '${searchText}' from '${targetFile}' file. Continue?` })
   if (shouldUpdate) {
     const check = checkPath(targetFile)
     if (!check.valid) {

@@ -1,3 +1,4 @@
+import type { UpdateTextFileOptions } from '../types/functions.js'
 import { resolve } from 'node:path'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { promptUser } from '../terminal/prompt-user.js'
@@ -6,19 +7,17 @@ import { checkPath } from '../_private/check-path.js'
 /**
  * Updates a text file by adding new rows.
  * 
- * @param {string} targetFile - The path to the text file to update (relative to CWD).
- * @param {string[]} rowsToAdd - New rows to be added at the end of the file.
- * @param {boolean} force - Whether to force the update without prompting.
- * @param {string} prompt - Custom prompt message displayed in terminal.
+ * @param {UpdateTextFileOptions} opts - Options for this operation.
+ * @param {string} opts.targetFile - The path to the text file to update (relative to CWD).
+ * @param {string[]} opts.rowsToAdd - New rows to be added at the end of the file.
+ * @param {boolean} opts.force - Whether to force the update without prompting.
+ * @param {string} opts.prompt - Custom prompt message displayed in terminal.
  * @returns {Promise<void>} An empty promise that resolves when the file is updated.
  * @throws Will throw an error if the path is invalid or the file does not exist.
  */
-export async function updateTextFile(
-    targetFile: string, rowsToAdd: string[], force: boolean = false, prompt: string = ''
-): Promise<void> {
-  const shouldUpdate = force || await promptUser(
-    prompt || `This will update '${targetFile}' file. Continue?`,
-  )
+export async function updateTextFile(opts: UpdateTextFileOptions): Promise<void> {
+  const { targetFile, rowsToAdd, force = false, prompt = '' } = opts
+  const shouldUpdate = force || await promptUser({ question: prompt || `This will update '${targetFile}' file. Continue?` })
   if (shouldUpdate) {
     const check = checkPath(targetFile)
     if (!check.valid) {

@@ -25,15 +25,15 @@ describe('Test removeFromJsonFile function', () => {
   })
 
   test('should fail because of non-existent file', async () => {
-    await expect(removeFromJsonFile(`${wd}/uknown`, 'cosca', true)).rejects.toThrow(/No .* found/)
+    await expect(removeFromJsonFile({ targetFile: `${wd}/uknown`, jsonKey: 'cosca', force: true })).rejects.toThrow(/No .* found/)
   })
 
   test('should fail because of invalid JSON', async () => {
-    await expect(removeFromJsonFile(`${wd}/text-file.txt`, 'cosca', true)).rejects.toThrow(/Could not parse/)
+    await expect(removeFromJsonFile({ targetFile: `${wd}/text-file.txt`, jsonKey: 'cosca', force: true })).rejects.toThrow(/Could not parse/)
   })
 
   test('should remove top level key', async () => {
-    await removeFromJsonFile(`${wd}/json-file-2.json`, 'string-key', true)
+    await removeFromJsonFile({ targetFile: `${wd}/json-file-2.json`, jsonKey: 'string-key', force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
@@ -41,7 +41,7 @@ describe('Test removeFromJsonFile function', () => {
   })
 
   test('should handle removing non-existent key and do nothing', async () => {
-    await expect(removeFromJsonFile(`${wd}/json-file-2.json`, 'non-existent-key', true)).resolves.not.toThrow()
+    await expect(removeFromJsonFile({ targetFile: `${wd}/json-file-2.json`, jsonKey: 'non-existent-key', force: true })).resolves.not.toThrow()
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
 
@@ -50,7 +50,7 @@ describe('Test removeFromJsonFile function', () => {
   })
 
   test('should remove nested key', async () => {
-    await removeFromJsonFile(`${wd}/json-file-2.json`, 'object-key.nested-key', true)
+    await removeFromJsonFile({ targetFile: `${wd}/json-file-2.json`, jsonKey: 'object-key.nested-key', force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
     
@@ -59,7 +59,7 @@ describe('Test removeFromJsonFile function', () => {
   })
 
   test('should handle removing non-existent nested key and do nothing', async () => {
-    await expect(removeFromJsonFile(`${wd}/json-file-2.json`, 'object-key.nested-key', true)).resolves.not.toThrow()
+    await expect(removeFromJsonFile({ targetFile: `${wd}/json-file-2.json`, jsonKey: 'object-key.nested-key', force: true })).resolves.not.toThrow()
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
 
@@ -69,7 +69,7 @@ describe('Test removeFromJsonFile function', () => {
     
   test('should do nothing when user aborts creating', async () => {
     setPromptSpy(['n'])
-    await removeFromJsonFile(`${wd}/json-file-2.json`, 'cosca')
+    await removeFromJsonFile({ targetFile: `${wd}/json-file-2.json`, jsonKey: 'cosca' })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/skipped/))
 
@@ -81,14 +81,14 @@ describe('Test removeFromJsonFile function', () => {
 
   test('should not display custom prompt', async () => {
     const uSpy = getPromptUserSpy()
-    await removeFromJsonFile(`a`, 'b')
-    expect(uSpy).toHaveBeenCalledWith(expect.stringMatching(/This will delete/))
+    await removeFromJsonFile({ targetFile: `a`, jsonKey: 'b' })
+    expect(uSpy).toHaveBeenCalledWith({ question: expect.stringMatching(/This will delete/) })
   })
 
   test('should display custom prompt', async () => {
     const uSpy = getPromptUserSpy()
-    await removeFromJsonFile(`a`, 'b', false, "Custom prompt")
-    expect(uSpy).toHaveBeenCalledWith(expect.stringMatching(/Custom prompt/))
+    await removeFromJsonFile({ targetFile: `a`, jsonKey: 'b', force: false, prompt: "Custom prompt" })
+    expect(uSpy).toHaveBeenCalledWith({ question: expect.stringMatching(/Custom prompt/) })
   })
 
 })

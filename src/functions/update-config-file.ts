@@ -1,3 +1,4 @@
+import type { UpdateConfigFileOptions } from '../types/functions.js'
 import { existsSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { loadFile, generateCode } from 'magicast'
@@ -13,18 +14,17 @@ import { checkPath } from '../_private/check-path.js'
  * - Uses `defu(newConfig, existingConfig)` so `newConfig` takes precedence.
  * - Applies the merged result back onto the AST to preserve TS/ESM structure.
  *
- * @param {string} targetFile - Path to file, relative to project root (process.cwd()).
- * @param {object} newConfig - Config to merge in (takes precedence).
+ * @param {UpdateConfigFileOptions} opts - Options for this operation.
+ * @param {string} opts.targetFile - Path to file, relative to project root (process.cwd()).
+ * @param {object} opts.newConfig - Config to merge in (takes precedence).
+ * @param {boolean} opts.force - Whether to force the update without prompting.
+ * @param {string} opts.prompt - Custom prompt message displayed in terminal.
  * @returns {Promise<void>} An empty promise that resolves when the file is updated.
  * @throws Will throw an error the path is invalid, the file doesn't exist or no config export is found or it cannot be processed.
  */
-export async function updateConfigFile(
-  targetFile: string, newConfig: Record<string | number | symbol, any>, 
-  force: boolean = false, prompt: string = ''
-): Promise<void> {
-  const shouldUpdate = force || await promptUser(
-    prompt || `This will update '${targetFile}' file. Continue?`,
-  )
+export async function updateConfigFile(opts: UpdateConfigFileOptions): Promise<void> {
+  const { targetFile, newConfig, force = false, prompt = '' } = opts
+  const shouldUpdate = force || await promptUser({ question: prompt || `This will update '${targetFile}' file. Continue?` })
   if (shouldUpdate) {
     const check = checkPath(targetFile)
     if (!check.valid) {

@@ -25,11 +25,11 @@ describe('Test removeFromTextFile function', () => {
   })
   
   test('should fail because of non-existent file', async () => {
-    await expect(removeFromTextFile(`${wd}/unknown`, 'Row 1', true)).rejects.toThrow(/cannot update its contents/)
+    await expect(removeFromTextFile({ targetFile: `${wd}/unknown`, searchText: 'Row 1', force: true })).rejects.toThrow(/cannot update its contents/)
   })
 
   test('should remove the matching line', async () => {
-    await removeFromTextFile(`${wd}/text-file-2.txt`, 'Row 1', true)
+    await removeFromTextFile({ targetFile: `${wd}/text-file-2.txt`, searchText: 'Row 1', force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
@@ -37,7 +37,7 @@ describe('Test removeFromTextFile function', () => {
   })
 
   test('should remove another matching line', async () => {
-    await removeFromTextFile(`${wd}/text-file-2.txt`, 'Row 2', true)
+    await removeFromTextFile({ targetFile: `${wd}/text-file-2.txt`, searchText: 'Row 2', force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
@@ -45,7 +45,7 @@ describe('Test removeFromTextFile function', () => {
   })
 
   test('should not modify file when no line matches', async () => {
-    await removeFromTextFile(`${wd}/text-file-2.txt`, 'NonExistent', true)
+    await removeFromTextFile({ targetFile: `${wd}/text-file-2.txt`, searchText: 'NonExistent', force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
 
@@ -53,7 +53,7 @@ describe('Test removeFromTextFile function', () => {
   })
 
   test('should remove line by partial match', async () => {
-    await removeFromTextFile(`${wd}/text-file-2.txt`, 'Test', true)
+    await removeFromTextFile({ targetFile: `${wd}/text-file-2.txt`, searchText: 'Test', force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
@@ -62,7 +62,7 @@ describe('Test removeFromTextFile function', () => {
       
   test('should do nothing when user aborts', async () => {
     setPromptSpy(['n'])
-    await removeFromTextFile(`${wd}/text-file-2.txt`, 'something')
+    await removeFromTextFile({ targetFile: `${wd}/text-file-2.txt`, searchText: 'something' })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/skipped/))
   })
@@ -71,14 +71,14 @@ describe('Test removeFromTextFile function', () => {
 
   test('should not display custom prompt', async () => {
     const uSpy = getPromptUserSpy()
-    await removeFromTextFile(`a`, 'b')
-    expect(uSpy).toHaveBeenCalledWith(expect.stringMatching(/This will remove/))
+    await removeFromTextFile({ targetFile: `a`, searchText: 'b' })
+    expect(uSpy).toHaveBeenCalledWith({ question: expect.stringMatching(/This will remove/) })
   })
 
   test('should display custom prompt', async () => {
     const uSpy = getPromptUserSpy()
-    await removeFromTextFile(`a`, 'b', false, "Custom prompt")
-    expect(uSpy).toHaveBeenCalledWith(expect.stringMatching(/Custom prompt/))
+    await removeFromTextFile({ targetFile: `a`, searchText: 'b', force: false, prompt: "Custom prompt" })
+    expect(uSpy).toHaveBeenCalledWith({ question: expect.stringMatching(/Custom prompt/) })
   })
 
 })

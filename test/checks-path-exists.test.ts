@@ -21,11 +21,11 @@ describe('Test pathExists checker', () => {
     expect(pathExists).toBeDefined()
   })
   test('should find the existing file', async () => {
-    expect(pathExists(`${wd}/text-file.txt`)).toBe(true)
+    expect(pathExists({ targetPath: `${wd}/text-file.txt` })).toBe(true)
   })
   
   test('should not find the non-existent file', async () => {
-    expect(pathExists(`${wd}/unknown-file.txt`)).toBe(false)
+    expect(pathExists({ targetPath: `${wd}/unknown-file.txt` })).toBe(false)
   })
 
 })

@@ -22,23 +22,23 @@ describe('Test hasJsonKey checker', () => {
   })
   
   test('should fail because of non-existent file', async () => {
-    expect(() => hasJsonKey(`${wd}/unknown`, 'string-key')).toThrow(/cannot check its keys/)
+    expect(() => hasJsonKey({ targetFile: `${wd}/unknown`, jsonKey: 'string-key' })).toThrow(/cannot check its keys/)
   })
 
   test('should find the existing key', async () => {
-    expect(hasJsonKey(`${wd}/json-file.json`, 'string-key')).toBe(true)
+    expect(hasJsonKey({ targetFile: `${wd}/json-file.json`, jsonKey: 'string-key' })).toBe(true)
   })
 
   test('should not find the non-existent key', async () => {
-    expect(hasJsonKey(`${wd}/json-file.json`, 'non-existent-key')).toBe(false)
+    expect(hasJsonKey({ targetFile: `${wd}/json-file.json`, jsonKey: 'non-existent-key' })).toBe(false)
   })
 
   test('should find the nested key', async () => {
-    expect(hasJsonKey(`${wd}/json-file.json`, 'object-key.nested-key')).toBe(true)
+    expect(hasJsonKey({ targetFile: `${wd}/json-file.json`, jsonKey: 'object-key.nested-key' })).toBe(true)
   })
 
   test('should not find the non-existent nested key', async () => {
-    expect(hasJsonKey(`${wd}/json-file.json`, 'object-key.non-existent-key')).toBe(false)
+    expect(hasJsonKey({ targetFile: `${wd}/json-file.json`, jsonKey: 'object-key.non-existent-key' })).toBe(false)
   })
 
 })

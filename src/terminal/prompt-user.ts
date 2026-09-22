@@ -1,19 +1,20 @@
+import type { PromptUserOptions } from '../types/functions.js'
 import readline from 'node:readline'
 
 /**
  * Prompts the user with a question and returns their response.
  * 
- * @param {string} question - Question to ask the user
- * @param {{ input?: NodeJS.ReadableStream; output?: NodeJS.WritableStream }} options - Optional setting of custom input/output stream
+ * @param {PromptUserOptions} opts - Options for this operation.
+ * @param {string} opts.question - Question to ask the user
+ * @param {NodeJS.ReadableStream} opts.input - Custom input stream (default: process.stdin).
+ * @param {NodeJS.WritableStream} opts.output - Custom output stream (default: process.stdout).
  * @returns {Promise<boolean>} - true if the user answered yes (`y`, `Y`, `yes`, `YES`), false otherwise
  */
-export async function promptUser(
-  question: string,
-  options?: { input?: NodeJS.ReadableStream; output?: NodeJS.WritableStream }
-): Promise<boolean> {
+export async function promptUser(opts: PromptUserOptions): Promise<boolean> {
+  const { question, input, output } = opts
   const rl = readline.createInterface({
-    input: options?.input || process.stdin,
-    output: options?.output || process.stdout,
+    input: input || process.stdin,
+    output: output || process.stdout,
   })
 
   return new Promise((resolve) => {

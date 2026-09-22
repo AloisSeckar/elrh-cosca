@@ -25,15 +25,15 @@ describe('Test updateConfigFile function', () => {
   })
 
   test('should fail because of non-existent file', async () => {
-    await expect(updateConfigFile(`${wd}/uknown`, { testKey1: 0 }, true)).rejects.toThrow(/No .* found/)
+    await expect(updateConfigFile({ targetFile: `${wd}/uknown`, newConfig: { testKey1: 0 }, force: true })).rejects.toThrow(/No .* found/)
   })
 
   test('should fail because of CJS format', async () => {
-    await expect(updateConfigFile(`${wd}/config-file.cjs`, { testKey1: 0 }, true)).rejects.toThrow(/currently not possible to handle CommonJS/)
+    await expect(updateConfigFile({ targetFile: `${wd}/config-file.cjs`, newConfig: { testKey1: 0 }, force: true })).rejects.toThrow(/currently not possible to handle CommonJS/)
   })
 
   test('should add the new key and values (default export)', async () => {
-    await updateConfigFile(`${wd}/config-file-default.ts`, { testKey1: 'value', testKey2: 2, testKey3: true }, true)
+    await updateConfigFile({ targetFile: `${wd}/config-file-default.ts`, newConfig: { testKey1: 'value', testKey2: 2, testKey3: true }, force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
@@ -41,7 +41,7 @@ describe('Test updateConfigFile function', () => {
   })
 
   test('should not add new same value in key again (default export)', async () => {
-    await updateConfigFile(`${wd}/config-file-default.ts`, { testKey1: 'value' }, true)
+    await updateConfigFile({ targetFile: `${wd}/config-file-default.ts`, newConfig: { testKey1: 'value' }, force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
 
@@ -49,7 +49,7 @@ describe('Test updateConfigFile function', () => {
   })
 
   test('should add the new value under existing key (default export)', async () => {
-    await updateConfigFile(`${wd}/config-file-default.ts`, { testKey4: 'value2' }, true)
+    await updateConfigFile({ targetFile: `${wd}/config-file-default.ts`, newConfig: { testKey4: 'value2' }, force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
@@ -57,7 +57,7 @@ describe('Test updateConfigFile function', () => {
   })
 
   test('should add the nested key under existing (default export)', async () => {
-    await updateConfigFile(`${wd}/config-file-default.ts`, { testKey4: { nestedKey: 'nested' } }, true)
+    await updateConfigFile({ targetFile: `${wd}/config-file-default.ts`, newConfig: { testKey4: { nestedKey: 'nested' } }, force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
@@ -65,7 +65,7 @@ describe('Test updateConfigFile function', () => {
   })
 
   test('should not add the nested key under existing again (default export)', async () => {
-    await updateConfigFile(`${wd}/config-file-default.ts`, { testKey4: { nestedKey: 'nested' } }, true)
+    await updateConfigFile({ targetFile: `${wd}/config-file-default.ts`, newConfig: { testKey4: { nestedKey: 'nested' } }, force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
 
@@ -73,7 +73,7 @@ describe('Test updateConfigFile function', () => {
   })
 
   test('should replace nested key (default export)', async () => {
-    await updateConfigFile(`${wd}/config-file-default.ts`, { testKey4: { nestedKey: { deeper: true } } }, true)
+    await updateConfigFile({ targetFile: `${wd}/config-file-default.ts`, newConfig: { testKey4: { nestedKey: { deeper: true } } }, force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
@@ -81,7 +81,7 @@ describe('Test updateConfigFile function', () => {
   })
 
   test('should add the new key and values (named export)', async () => {
-    await updateConfigFile(`${wd}/config-file-named.ts`, { testKey1: 'value', testKey2: 2, testKey3: true }, true)
+    await updateConfigFile({ targetFile: `${wd}/config-file-named.ts`, newConfig: { testKey1: 'value', testKey2: 2, testKey3: true }, force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
@@ -89,7 +89,7 @@ describe('Test updateConfigFile function', () => {
   })
 
   test('should not add new same value in key again (named export)', async () => {
-    await updateConfigFile(`${wd}/config-file-named.ts`, { testKey1: 'value' }, true)
+    await updateConfigFile({ targetFile: `${wd}/config-file-named.ts`, newConfig: { testKey1: 'value' }, force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
 
@@ -97,7 +97,7 @@ describe('Test updateConfigFile function', () => {
   })
 
   test('should add the new value under existing key (named export)', async () => {
-    await updateConfigFile(`${wd}/config-file-named.ts`, { testKey4: 'value2' }, true)
+    await updateConfigFile({ targetFile: `${wd}/config-file-named.ts`, newConfig: { testKey4: 'value2' }, force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
@@ -105,7 +105,7 @@ describe('Test updateConfigFile function', () => {
   })
 
   test('should add the nested key under existing (named export)', async () => {
-    await updateConfigFile(`${wd}/config-file-named.ts`, { testKey4: { nestedKey: 'nested' } }, true)
+    await updateConfigFile({ targetFile: `${wd}/config-file-named.ts`, newConfig: { testKey4: { nestedKey: 'nested' } }, force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
@@ -113,7 +113,7 @@ describe('Test updateConfigFile function', () => {
   })
 
   test('should not add the nested key under existing again (named export)', async () => {
-    await updateConfigFile(`${wd}/config-file-named.ts`, { testKey4: { nestedKey: 'nested' } }, true)
+    await updateConfigFile({ targetFile: `${wd}/config-file-named.ts`, newConfig: { testKey4: { nestedKey: 'nested' } }, force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
 
@@ -121,7 +121,7 @@ describe('Test updateConfigFile function', () => {
   })
 
   test('should replace nested key (named export)', async () => {
-    await updateConfigFile(`${wd}/config-file-named.ts`, { testKey4: { nestedKey: { deeper: true } } }, true)
+    await updateConfigFile({ targetFile: `${wd}/config-file-named.ts`, newConfig: { testKey4: { nestedKey: { deeper: true } } }, force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
@@ -130,7 +130,7 @@ describe('Test updateConfigFile function', () => {
   
   test('should do nothing when user aborts creating', async () => {
     setPromptSpy(['n'])
-    await updateConfigFile(`${wd}/config-file-named.ts`, { testKey5: 0 })
+    await updateConfigFile({ targetFile: `${wd}/config-file-named.ts`, newConfig: { testKey5: 0 } })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/skipped/))
 
@@ -142,14 +142,14 @@ describe('Test updateConfigFile function', () => {
   
   test('should not display custom prompt', async () => {
     const uSpy = getPromptUserSpy()
-    await updateConfigFile(`a`, { testKey5: 0 })
-    expect(uSpy).toHaveBeenCalledWith(expect.stringMatching(/This will update/))
+    await updateConfigFile({ targetFile: `a`, newConfig: { testKey5: 0 } })
+    expect(uSpy).toHaveBeenCalledWith({ question: expect.stringMatching(/This will update/) })
   })
 
   test('should display custom prompt', async () => {
     const uSpy = getPromptUserSpy()
-    await updateConfigFile(`a`, { testKey5: 0 }, false, "Custom prompt")
-    expect(uSpy).toHaveBeenCalledWith(expect.stringMatching(/Custom prompt/))
+    await updateConfigFile({ targetFile: `a`, newConfig: { testKey5: 0 }, force: false, prompt: "Custom prompt" })
+    expect(uSpy).toHaveBeenCalledWith({ question: expect.stringMatching(/Custom prompt/) })
   })
 
 })
