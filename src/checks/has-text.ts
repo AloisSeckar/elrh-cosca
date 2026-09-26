@@ -22,7 +22,7 @@ export function hasText(opts: HasTextOptions): boolean {
 
     const textFilePath = resolve(process.cwd(), targetFile)
     if (!existsSync(textFilePath)) {
-        throw new Error(`No '${targetFile}' found in project root — cannot check its contents.`)
+        throw new Error(`No '${targetFile}' found — cannot check its contents.`)
     }
 
     const textRaw = readFileSync(textFilePath, 'utf8')

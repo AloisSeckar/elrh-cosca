@@ -27,7 +27,7 @@ export async function removeFromJsonFile(opts: RemoveFromJsonFileOptions): Promi
 
     const jsonFilePath = resolve(process.cwd(), targetFile)
     if (!existsSync(jsonFilePath)) {
-      throw new Error(`No '${targetFile}' found in project root — cannot delete its keys.`)
+      throw new Error(`No '${targetFile}' found — cannot delete its keys.`)
     }
 
     const jsonRaw = readFileSync(jsonFilePath, 'utf8')

@@ -31,7 +31,7 @@ export async function updateJsonFile(opts: UpdateJsonFileOptions): Promise<void>
     
     const jsonFilePath = resolve(process.cwd(), targetFile)
     if (!existsSync(jsonFilePath)) {
-      throw new Error(`No '${targetFile}' found in project root — cannot update its contents.`)
+      throw new Error(`No '${targetFile}' found — cannot update its contents.`)
     }
 
     const jsonRaw = readFileSync(jsonFilePath, 'utf8')

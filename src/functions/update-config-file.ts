@@ -33,7 +33,7 @@ export async function updateConfigFile(opts: UpdateConfigFileOptions): Promise<v
 
     const configFilePath = resolve(process.cwd(), targetFile)
     if (!existsSync(configFilePath)) {
-      throw new Error(`No '${targetFile}' found in project root — cannot update its contents.`)
+      throw new Error(`No '${targetFile}' found — cannot update its contents.`)
     }
 
     // load the file as a Magicast module (.ts/.js/.mjs)

@@ -22,7 +22,7 @@ export function hasJsonKey(opts: HasJsonKeyOptions): boolean {
 
   const jsonFilePath = resolve(process.cwd(), targetFile)
   if (!existsSync(jsonFilePath)) {
-    throw new Error(`No '${targetFile}' found in project root — cannot check its keys.`)
+    throw new Error(`No '${targetFile}' found — cannot check its keys.`)
   }
   
   const jsonRaw = readFileSync(jsonFilePath, 'utf8')
