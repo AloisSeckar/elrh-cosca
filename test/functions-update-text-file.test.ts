@@ -61,6 +61,22 @@ describe('Test updateTextFile function', () => {
     // file not updated
     await expect(readNormalizedFile(wd, 'text-file.txt')).toMatchFileSnapshot('snapshots/updated-text-file-2.txt')
   })
+
+  test('should add existing lines again when duplicates allowed', async () => {
+    await updateTextFile({ targetFile: `${wd}/text-file.txt`, rowsToAdd: ['Row 3', 'Row 4', 'Row 4'], allowDuplicates: true, force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
+
+    await expect(readNormalizedFile(wd, 'text-file.txt')).toMatchFileSnapshot('snapshots/updated-text-file-3.txt')
+  })
+
+  test('should not add existing lines when duplicates explicitly disallowed', async () => {
+    await updateTextFile({ targetFile: `${wd}/text-file.txt`, rowsToAdd: ['Row 3', 'Row 4'], allowDuplicates: false, force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
+
+    await expect(readNormalizedFile(wd, 'text-file.txt')).toMatchFileSnapshot('snapshots/updated-text-file-3.txt')
+  })
     
   // test prompting
 

@@ -10,13 +10,14 @@ import { checkPath } from '../_private/check-path.js'
  * @param {UpdateTextFileOptions} opts - Options for this operation.
  * @param {string} opts.targetFile - The path to the text file to update (relative to CWD).
  * @param {string[]} opts.rowsToAdd - New rows to be added at the end of the file.
+ * @param {boolean} opts.allowDuplicates - If true, rows will be added even if they already exist in the file.
  * @param {boolean} opts.force - Whether to force the update without prompting.
  * @param {string} opts.prompt - Custom prompt message displayed in terminal.
  * @returns {Promise<void>} An empty promise that resolves when the file is updated.
  * @throws Will throw an error if the path is invalid or the file does not exist.
  */
 export async function updateTextFile(opts: UpdateTextFileOptions): Promise<void> {
-  const { targetFile, rowsToAdd, force = false, prompt = '' } = opts
+  const { targetFile, rowsToAdd, allowDuplicates = false, force = false, prompt = '' } = opts
   const shouldUpdate = force || await promptUser({ question: prompt || `This will update '${targetFile}' file. Continue?` })
   if (shouldUpdate) {
     const check = checkPath(targetFile)
@@ -35,7 +36,7 @@ export async function updateTextFile(opts: UpdateTextFileOptions): Promise<void>
     let modified = false
 
     for (const row of rowsToAdd) {
-      if (!lines.includes(row)) {
+      if (allowDuplicates || !lines.includes(row)) {
         lines.push(row)
         modified = true
       }

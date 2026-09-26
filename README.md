@@ -128,11 +128,12 @@ By default the function asks for confirmation before attempting to alter the `ta
 interface UpdateTextFileOptions extends FileOperationOptions {
   targetFile: string
   rowsToAdd: string[]
+  allowDuplicates?: boolean
 }
 async function updateTextFile(opts: UpdateTextFileOptions): Promise<void>
 ```
 
-Takes a path to a plain text file and injects `rowsToAdd` at the end of the file, **providing they are not already present in the file**. The function tracks if any real change was made and notifies the user if not.
+Takes a path to a plain text file and injects `rowsToAdd` at the end of the file, **providing they are not already present in the file**. Setting `opts.allowDuplicates` to `true` disables this check and all `rowsToAdd` are appended regardless of the current file contents. The function tracks if any real change was made and notifies the user if not.
 
 Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed.
 

@@ -61,6 +61,7 @@ export interface UpdateJsonFileOptions extends FileOperationOptions {
 export interface UpdateTextFileOptions extends FileOperationOptions {
 	targetFile: string
 	rowsToAdd: string[]
+	allowDuplicates?: boolean
 }
 
 export interface PromptUserOptions {
