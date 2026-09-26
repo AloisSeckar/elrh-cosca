@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { deletePath } from '../src/main'
-import { getConsoleSpy} from './cosca-test-utils'
+import { checkPath } from '../src/_private/check-path'
+import { getConsoleSpy, getPromptUserSpy, setPromptSpy } from './cosca-test-utils'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -52,6 +53,32 @@ describe('Test deletePath function', () => {
     expect(existsSync(join(wd, 'del', 'a', 'test.file1'))).toBe(false)
     expect(existsSync(join(wd, 'del', 'test.file2'))).toBe(false)
     expect(existsSync(join(wd, 'del'))).toBe(false)
+  })
+
+  test('should be rejected when path check fails', async () => {
+    vi.mocked(checkPath).mockReturnValueOnce({ valid: false, error: 'Invalid path' })
+    await expect(deletePath({ targetPath: 'a', force: true })).rejects.toThrow(/Invalid path/)
+  })
+
+  test('should do nothing when user aborts deleting', async () => {
+    setPromptSpy(['n'])
+    await deletePath({ targetPath: join(wd, 'json-file.json') })
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/skipped/))
+    expect(existsSync(join(wd, 'json-file.json'))).toBe(true)
+  })
+
+  // test prompting
+
+  test('should not display custom prompt', async () => {
+    const uSpy = getPromptUserSpy()
+    await deletePath({ targetPath: 'a' })
+    expect(uSpy).toHaveBeenCalledWith({ question: expect.stringMatching(/This will delete/) })
+  })
+
+  test('should display custom prompt', async () => {
+    const uSpy = getPromptUserSpy()
+    await deletePath({ targetPath: 'a', force: false, prompt: 'Custom prompt' })
+    expect(uSpy).toHaveBeenCalledWith({ question: expect.stringMatching(/Custom prompt/) })
   })
 
 })
