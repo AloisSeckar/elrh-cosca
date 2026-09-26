@@ -1,5 +1,5 @@
 import type { ResolvePackagePathOptions } from '../types/functions.js'
-import { access, constants, readFileSync } from 'node:fs'
+import { accessSync, constants, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 /**
@@ -32,11 +32,7 @@ export function resolvePackagePath(opts: ResolvePackagePathOptions): string {
   try {
     const nmRoot = join(appDir, 'node_modules', ...packageName.split('/'))
     const nmPkgJson = join(nmRoot, 'package.json')
-    access(nmPkgJson, constants.R_OK, (err) => { 
-      if (err) {
-        throw new Error(`Cannot access "${nmPkgJson}"`)
-      }
-    })
+    accessSync(nmPkgJson, constants.R_OK)
     return nmRoot
   } catch (err) {
     console.error(err)
