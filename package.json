@@ -22,14 +22,15 @@
     "build": "pnpm install && vitest run && tsc && vite build",
     "preview": "vite preview",
     "prepublishOnly": "pnpm build",
-    "test": "vitest run"
+    "test": "vitest run --coverage"
   },
   "devDependencies": {
     "@types/node": "^26.6.0",
+    "@vitest/coverage-v8": "^5.0.2",
     "magicast": "^0.5.5",
     "typescript": "^6.0.0",
     "vite": "^8.0.0",
     "vite-plugin-dts": "^5.0.0",
-    "vitest": "^5.0.0"
+    "vitest": "^5.0.2"
   }
 }

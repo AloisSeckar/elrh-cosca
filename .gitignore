@@ -14,3 +14,6 @@ bun.lock
 
 # do not force pnpm-specific file in possible checkouts
 pnpm-workspace.yaml
+
+# Vitest coverage reports
+coverage/
