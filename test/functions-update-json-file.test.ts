@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, expectTypeOf, test, vi } from 'vitest'
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 import { updateJsonFile } from '../src/main'
 import type { UpdateJsonFileOptions } from '../src/main'
 import { getConsoleSpy, getPromptUserSpy, readNormalizedFile, setPromptSpy } from './cosca-test-utils'
@@ -36,6 +38,34 @@ describe('Test updateJsonFile function', () => {
 
   test('should fail because of non-existent file', async () => {
     await expect(updateJsonFile({ targetFile: `${wd}/uknown`, jsonKey: 'cosca', patch: { testKey1: 0 }, force: true })).rejects.toThrow(/cannot update its contents/)
+  })
+
+  test('should fail because of non-existent file when createMissing is false', async () => {
+    await expect(updateJsonFile({ targetFile: `${wd}/uknown`, jsonKey: 'cosca', patch: { testKey1: 0 }, createMissing: false, force: true })).rejects.toThrow(/cannot update its contents/)
+  })
+
+  test('should create non-existent file when createMissing is true', async () => {
+    await updateJsonFile({ targetFile: `${wd}/new-json/created.json`, jsonKey: 'cosca', patch: { testKey1: 'value' }, createMissing: true, force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file created/))
+
+    expect(readNormalizedFile(wd, 'new-json/created.json')).toBe('{\n  "cosca": {\n    "testKey1": "value"\n  }\n}\n')
+  })
+
+  test('should not create non-existent file when user declines', async () => {
+    setPromptSpy(['y', 'n'])
+    await updateJsonFile({ targetFile: `${wd}/new-json/declined.json`, jsonKey: 'cosca', patch: { testKey1: 'value' }, createMissing: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/Creation of .* skipped/))
+    expect(existsSync(join(wd, 'new-json/declined.json'))).toBe(false)
+  })
+
+  test('should create non-existent file when user confirms', async () => {
+    setPromptSpy(['y', 'y'])
+    await updateJsonFile({ targetFile: `${wd}/new-json/confirmed.json`, jsonKey: 'cosca', patch: 'value', createMissing: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file created/))
+    expect(readNormalizedFile(wd, 'new-json/confirmed.json')).toBe('{\n  "cosca": "value"\n}\n')
   })
 
   test('should fail because of invalid JSON', async () => {

@@ -50,18 +50,21 @@ export interface RemoveFromTextFileOptions extends FileOperationOptions {
 export interface UpdateConfigFileOptions extends FileOperationOptions {
 	targetFile: string
 	newConfig: Record<string | number | symbol, any>
+	createMissing?: boolean
 }
 
 export interface UpdateJsonFileOptions extends FileOperationOptions {
 	targetFile: string
 	jsonKey: string
 	patch: JsonValue
+	createMissing?: boolean
 }
 
 export interface UpdateTextFileOptions extends FileOperationOptions {
 	targetFile: string
 	rowsToAdd: string[]
 	allowDuplicates?: boolean
+	createMissing?: boolean
 }
 
 export interface PromptUserOptions {

@@ -1,7 +1,7 @@
 import type { UpdateConfigFileOptions } from '../types/functions.js'
-import { existsSync, writeFileSync } from 'node:fs'
-import { resolve } from 'node:path'
-import { loadFile, generateCode } from 'magicast'
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { loadFile, parseModule, generateCode } from 'magicast'
 import { deepMergeObject } from '../_private/deep-merge-object.js'
 import { promptUser } from '../terminal/prompt-user.js'
 import { checkPath } from '../_private/check-path.js'
@@ -17,13 +17,14 @@ import { checkPath } from '../_private/check-path.js'
  * @param {UpdateConfigFileOptions} opts - Options for this operation.
  * @param {string} opts.targetFile - Path to file, relative to project root (process.cwd()).
  * @param {object} opts.newConfig - Config to merge in (takes precedence).
+ * @param {boolean} opts.createMissing - If true, the file will be created (with `export default {}`) if it does not exist (after confirmation unless `force` is set).
  * @param {boolean} opts.force - Whether to force the update without prompting.
  * @param {string} opts.prompt - Custom prompt message displayed in terminal.
  * @returns {Promise<void>} An empty promise that resolves when the file is updated.
- * @throws Will throw an error the path is invalid, the file doesn't exist or no config export is found or it cannot be processed.
+ * @throws Will throw an error the path is invalid, the file doesn't exist (and `createMissing` is not set) or no config export is found or it cannot be processed.
  */
 export async function updateConfigFile(opts: UpdateConfigFileOptions): Promise<void> {
-  const { targetFile, newConfig, force = false, prompt = '' } = opts
+  const { targetFile, newConfig, createMissing = false, force = false, prompt = '' } = opts
   const shouldUpdate = force || await promptUser({ question: prompt || `This will update '${targetFile}' file. Continue?` })
   if (shouldUpdate) {
     const check = checkPath(targetFile)
@@ -32,12 +33,20 @@ export async function updateConfigFile(opts: UpdateConfigFileOptions): Promise<v
     }
 
     const configFilePath = resolve(process.cwd(), targetFile)
-    if (!existsSync(configFilePath)) {
-      throw new Error(`No '${targetFile}' found — cannot update its contents.`)
+    const created = !existsSync(configFilePath)
+    if (created) {
+      if (!createMissing) {
+        throw new Error(`No '${targetFile}' found — cannot update its contents.`)
+      }
+      const shouldCreate = force || await promptUser({ question: `File '${targetFile}' does not exist. Create it?` })
+      if (!shouldCreate) {
+        console.log(`Creation of '${targetFile}' skipped.`)
+        return
+      }
     }
 
     // load the file as a Magicast module (.ts/.js/.mjs)
-    const module = await loadFile(configFilePath)
+    const module = created ? parseModule('export default {}\n') : await loadFile(configFilePath)
     
     // evaluate config object
     // 1. try default export first
@@ -85,10 +94,13 @@ export async function updateConfigFile(opts: UpdateConfigFileOptions): Promise<v
     const newSnapshot = JSON.stringify(oldConfig)
 
     // if config was changed write the result back into the source file
-    if (oldSnapshot !== newSnapshot) {
+    if (created || oldSnapshot !== newSnapshot) {
+      if (created) {
+        mkdirSync(dirname(configFilePath), { recursive: true })
+      }
       const { code } = generateCode(module)
       writeFileSync(configFilePath, code, 'utf8')
-      console.log(`'${targetFile}' file updated.`)
+      console.log(`'${targetFile}' file ${created ? 'created' : 'updated'}.`)
     } else {
       console.log(`'${targetFile}' file already up to date.`)
     }

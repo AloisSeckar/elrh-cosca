@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 import { updateTextFile } from '../src/main'
 import { getConsoleSpy, getPromptUserSpy, readNormalizedFile, setPromptSpy } from './cosca-test-utils'
 
@@ -26,6 +28,34 @@ describe('Test updateTextFile function', () => {
   
   test('should fail because of non-existent file', async () => {
     await expect(updateTextFile({ targetFile: `${wd}/unknown`, rowsToAdd: ['Row 3'], force: true })).rejects.toThrow(/cannot update its contents/)
+  })
+
+  test('should fail because of non-existent file when createMissing is false', async () => {
+    await expect(updateTextFile({ targetFile: `${wd}/unknown`, rowsToAdd: ['Row 3'], createMissing: false, force: true })).rejects.toThrow(/cannot update its contents/)
+  })
+
+  test('should create non-existent file when createMissing is true', async () => {
+    await updateTextFile({ targetFile: `${wd}/new-text/created.txt`, rowsToAdd: ['Row 1', 'Row 2'], createMissing: true, force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file created/))
+
+    expect(readNormalizedFile(wd, 'new-text/created.txt')).toBe('Row 1\nRow 2\n')
+  })
+
+  test('should not create non-existent file when user declines', async () => {
+    setPromptSpy(['y', 'n'])
+    await updateTextFile({ targetFile: `${wd}/new-text/declined.txt`, rowsToAdd: ['Row 1'], createMissing: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/Creation of .* skipped/))
+    expect(existsSync(join(wd, 'new-text/declined.txt'))).toBe(false)
+  })
+
+  test('should create non-existent file when user confirms', async () => {
+    setPromptSpy(['y', 'y'])
+    await updateTextFile({ targetFile: `${wd}/new-text/confirmed.txt`, rowsToAdd: ['Row 1'], createMissing: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file created/))
+    expect(readNormalizedFile(wd, 'new-text/confirmed.txt')).toBe('Row 1\n')
   })
 
   test('should add the new line', async () => {

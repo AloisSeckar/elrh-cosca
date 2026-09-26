@@ -69,6 +69,7 @@ By default the function asks for confirmation before attempting to create the fi
 interface UpdateConfigFileOptions extends FileOperationOptions {
   targetFile: string
   newConfig: Record<string | number | symbol, any>
+  createMissing?: boolean
 }
 async function updateConfigFile(opts: UpdateConfigFileOptions): Promise<void>
 ```
@@ -76,6 +77,8 @@ async function updateConfigFile(opts: UpdateConfigFileOptions): Promise<void>
 Takes a path to a configuration file and updates it with the provided `newConfig` object.
 
 Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed. The file currently must use ESM format with either `default` or named export of **exactly one** configuration object or function call with a configuration object as its argument.
+
+If `targetFile` does not exist, the function throws an error by default. Setting `opts.createMissing` to `true` will instead create the file (including missing directories) as `export default {}` with `newConfig` merged in. The user is asked to confirm the creation unless `opts.force` is `true`.
 
 The merger is performed using [unjs/magicast](https://github.com/unjs/magicast). It should:
 
@@ -103,6 +106,7 @@ interface UpdateJsonFileOptions extends FileOperationOptions {
   targetFile: string
   jsonKey: string
   patch: JsonValue
+  createMissing?: boolean
 }
 async function updateJsonFile(opts: UpdateJsonFileOptions): Promise<void>
 ```
@@ -120,6 +124,8 @@ Path to `targetFile` is relative to `process.cwd()`. Several checks are in place
 
 Currently it only allows adding new values under top-level keys. If the `jsonKey` exists, new values are merged into existing ones. Otherwise, new key is added. The function tracks if any real change was made and notifies the user if not.
 
+If `targetFile` does not exist, the function throws an error by default. Setting `opts.createMissing` to `true` will instead create the file (including missing directories) as an empty JSON object with `patch` applied. The user is asked to confirm the creation unless `opts.force` is `true`.
+
 By default the function asks for confirmation before attempting to alter the `targetFile`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own question to the user.
 
 #### `updateTextFile`
@@ -129,6 +135,7 @@ interface UpdateTextFileOptions extends FileOperationOptions {
   targetFile: string
   rowsToAdd: string[]
   allowDuplicates?: boolean
+  createMissing?: boolean
 }
 async function updateTextFile(opts: UpdateTextFileOptions): Promise<void>
 ```
@@ -136,6 +143,8 @@ async function updateTextFile(opts: UpdateTextFileOptions): Promise<void>
 Takes a path to a plain text file and injects `rowsToAdd` at the end of the file, **providing they are not already present in the file**. Setting `opts.allowDuplicates` to `true` disables this check and all `rowsToAdd` are appended regardless of the current file contents. The function tracks if any real change was made and notifies the user if not.
 
 Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed.
+
+If `targetFile` does not exist, the function throws an error by default. Setting `opts.createMissing` to `true` will instead create the file (including missing directories) containing `rowsToAdd`. The user is asked to confirm the creation unless `opts.force` is `true`.
 
 By default the function asks for confirmation before attempting to alter the `targetFile`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own question to the user.
 

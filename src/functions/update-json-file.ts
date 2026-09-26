@@ -1,6 +1,6 @@
 import type { UpdateJsonFileOptions } from '../types/functions.js'
-import { resolve } from 'node:path'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { promptUser } from '../terminal/prompt-user.js'
 import { checkPath } from '../_private/check-path.js'
 
@@ -15,13 +15,14 @@ import { checkPath } from '../_private/check-path.js'
  * @param {string} opts.targetFile - The path to the JSON file to update (relative to CWD).
  * @param {string} opts.jsonKey - The key in the JSON file to update (can be new or existing).
  * @param {JsonValue} opts.patch - The new values to set for the specified key.
+ * @param {boolean} opts.createMissing - If true, the file will be created if it does not exist (after confirmation unless `force` is set).
  * @param {boolean} opts.force - Whether to force the update without prompting.
  * @param {string} opts.prompt - Custom prompt message displayed in terminal.
  * @returns {Promise<void>} An empty promise that resolves when the file is updated.
- * @throws Will throw an error if the path is invalid, the file does not exist or cannot be parsed as JSON.
+ * @throws Will throw an error if the path is invalid, the file does not exist (and `createMissing` is not set) or cannot be parsed as JSON.
  */
 export async function updateJsonFile(opts: UpdateJsonFileOptions): Promise<void> {
-  const { targetFile, jsonKey, patch, force = false, prompt = '' } = opts
+  const { targetFile, jsonKey, patch, createMissing = false, force = false, prompt = '' } = opts
   const shouldUpdate = force || await promptUser({ question: prompt || `This will update '${targetFile}' file. Continue?` })
   if (shouldUpdate) {
     const check = checkPath(targetFile)
@@ -30,11 +31,19 @@ export async function updateJsonFile(opts: UpdateJsonFileOptions): Promise<void>
     }
     
     const jsonFilePath = resolve(process.cwd(), targetFile)
-    if (!existsSync(jsonFilePath)) {
-      throw new Error(`No '${targetFile}' found — cannot update its contents.`)
+    const created = !existsSync(jsonFilePath)
+    if (created) {
+      if (!createMissing) {
+        throw new Error(`No '${targetFile}' found — cannot update its contents.`)
+      }
+      const shouldCreate = force || await promptUser({ question: `File '${targetFile}' does not exist. Create it?` })
+      if (!shouldCreate) {
+        console.log(`Creation of '${targetFile}' skipped.`)
+        return
+      }
     }
 
-    const jsonRaw = readFileSync(jsonFilePath, 'utf8')
+    const jsonRaw = created ? '{}' : readFileSync(jsonFilePath, 'utf8')
     let json
     try {
       json = JSON.parse(jsonRaw)
@@ -44,7 +53,7 @@ export async function updateJsonFile(opts: UpdateJsonFileOptions): Promise<void>
 
     json[jsonKey] = json[jsonKey] || {}
 
-    let modified = false
+    let modified = created
 
 
     if (patch === null || typeof patch === 'string' || 
@@ -63,8 +72,11 @@ export async function updateJsonFile(opts: UpdateJsonFileOptions): Promise<void>
     }
 
     if (modified) {
+      if (created) {
+        mkdirSync(dirname(jsonFilePath), { recursive: true })
+      }
       writeFileSync(jsonFilePath, JSON.stringify(json, null, 2) + '\n', 'utf8')
-      console.log(`'${targetFile}' file updated.`)
+      console.log(`'${targetFile}' file ${created ? 'created' : 'updated'}.`)
     } else {
       console.log(`'${targetFile}' file already up to date.`)
     }

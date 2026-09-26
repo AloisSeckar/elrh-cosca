@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, test, vi} from 'vitest'
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 import { updateConfigFile } from '../src/main'
 import { getConsoleSpy, setPromptSpy, readNormalizedFile, getPromptUserSpy } from './cosca-test-utils'
 
@@ -26,6 +28,34 @@ describe('Test updateConfigFile function', () => {
 
   test('should fail because of non-existent file', async () => {
     await expect(updateConfigFile({ targetFile: `${wd}/uknown`, newConfig: { testKey1: 0 }, force: true })).rejects.toThrow(/No .* found/)
+  })
+
+  test('should fail because of non-existent file when createMissing is false', async () => {
+    await expect(updateConfigFile({ targetFile: `${wd}/uknown`, newConfig: { testKey1: 0 }, createMissing: false, force: true })).rejects.toThrow(/No .* found/)
+  })
+
+  test('should create non-existent file when createMissing is true', async () => {
+    await updateConfigFile({ targetFile: `${wd}/new-config/created.ts`, newConfig: { testKey1: 'value', testKey2: { nestedKey: true } }, createMissing: true, force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file created/))
+
+    await expect(readNormalizedFile(wd, 'new-config/created.ts')).toMatchFileSnapshot('snapshots/created-config-file.ts')
+  })
+
+  test('should not create non-existent file when user declines', async () => {
+    setPromptSpy(['y', 'n'])
+    await updateConfigFile({ targetFile: `${wd}/new-config/declined.ts`, newConfig: { testKey1: 'value' }, createMissing: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/Creation of .* skipped/))
+    expect(existsSync(join(wd, 'new-config/declined.ts'))).toBe(false)
+  })
+
+  test('should create non-existent file when user confirms', async () => {
+    setPromptSpy(['y', 'y'])
+    await updateConfigFile({ targetFile: `${wd}/new-config/confirmed.ts`, newConfig: { testKey1: 'value', testKey2: { nestedKey: true } }, createMissing: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file created/))
+    await expect(readNormalizedFile(wd, 'new-config/confirmed.ts')).toMatchFileSnapshot('snapshots/created-config-file.ts')
   })
 
   test('should fail because of CJS format', async () => {
