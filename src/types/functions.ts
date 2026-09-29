@@ -12,6 +12,11 @@ export interface HasJsonKeyOptions {
 	jsonKey: string
 }
 
+export interface HasYamlKeyOptions {
+	targetFile: string
+	yamlKey: string
+}
+
 export interface HasTextOptions {
 	targetFile: string
 	pattern: string | RegExp

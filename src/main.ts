@@ -1,6 +1,7 @@
 import { getPackageManager } from './checks/get-package-manager'
 import { hasJsonKey } from './checks/has-json-key'
 import { hasText } from './checks/has-text'
+import { hasYamlKey } from './checks/has-yaml-key'
 import { pathExists } from './checks/path-exists'
 import { createFileFromTemplate } from './functions/create-file-from-template'
 import { createFileFromWebTemplate } from './functions/create-file-from-web-template'
@@ -21,6 +22,7 @@ import { resolvePackagePath } from './utils/resolve-package-path'
 export type {
   HasJsonKeyOptions,
   HasTextOptions,
+  HasYamlKeyOptions,
   PathExistsOptions,
   CreateFileFromTemplateOptions,
   CreateFileFromWebTemplateOptions,
@@ -44,6 +46,7 @@ export {
   getPackageManager,
   hasJsonKey,
   hasText,
+  hasYamlKey,
   pathExists,
   // file-manipulation functions
   createFileFromTemplate,
