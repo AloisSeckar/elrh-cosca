@@ -1,7 +1,7 @@
 import type { HasJsonKeyOptions } from '../types/functions.js'
 import { resolve } from 'node:path'
 import { existsSync, readFileSync } from 'node:fs'
-import type { JsonObject } from '../types/json.js'
+import type { DataObject } from '../types/data.js'
 import { checkPath } from '../_private/check-path.js'
 
 /**
@@ -38,7 +38,7 @@ export function hasJsonKey(opts: HasJsonKeyOptions): boolean {
 
 // recursive function to check possibly nested key if exists in given JSON
 // the key may use dot notation to indicate nesting, e.g. "a.b.c"
-function keyExists(json: JsonObject, jsonKey: string): boolean {
+function keyExists(json: DataObject, jsonKey: string): boolean {
     const keys = jsonKey.split('.')
 
     if (keys.length === 1) {
@@ -50,7 +50,7 @@ function keyExists(json: JsonObject, jsonKey: string): boolean {
         if (json.hasOwnProperty(keys[0]) ) {
             const nestedValue = json[keys[0]]
             if (nestedValue !== null && typeof nestedValue === 'object' && !Array.isArray(nestedValue)) {
-                return keyExists(nestedValue as JsonObject, keys.slice(1).join('.'))
+                return keyExists(nestedValue as DataObject, keys.slice(1).join('.'))
             }
         }
     }

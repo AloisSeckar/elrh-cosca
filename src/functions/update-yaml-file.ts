@@ -1,5 +1,5 @@
 import type { UpdateYamlFileOptions } from '../types/functions.js'
-import type { JsonValue } from '../types/json.js'
+import type { DataValue } from '../types/data.js'
 import { dirname, resolve } from 'node:path'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { isDeepStrictEqual } from 'node:util'
@@ -16,7 +16,7 @@ const FORBIDDEN_KEYS = ['__proto__', 'constructor', 'prototype']
  * @param {UpdateYamlFileOptions} opts - Options for this operation.
  * @param {string} opts.targetFile - The path to the YAML file to update (relative to CWD).
  * @param {string} opts.yamlKey - The key in the YAML file to update (can be new or existing; may use dot notation for nested keys - missing or non-map intermediate levels are replaced with maps).
- * @param {JsonValue} opts.patch - The value for the specified key. Objects are shallow-merged into the existing value (a non-map existing value is replaced), other values (primitives, arrays, null) replace it.
+ * @param {DataValue} opts.patch - The value for the specified key. Objects are shallow-merged into the existing value (a non-map existing value is replaced), other values (primitives, arrays, null) replace it.
  * @param {boolean} [opts.createMissing] - If true, the file is created when it does not exist, after confirmation unless `force` is set (default: false).
  * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
  * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
@@ -108,7 +108,7 @@ export async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void>
   }
 }
 
-function setValue(doc: Document, map: YAMLMap, key: string, value: JsonValue): boolean {
+function setValue(doc: Document, map: YAMLMap, key: string, value: DataValue): boolean {
   const current = map.get(key, true)
   if (map.has(key) && isDeepStrictEqual(isNode(current) ? current.toJSON() : current, value)) {
     return false

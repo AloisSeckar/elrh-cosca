@@ -1,4 +1,4 @@
-import type { JsonValue } from './json.js'
+import type { DataValue } from './data.js'
 
 interface FileOperationOptions {
 	/** Skip confirmation prompts. Defaults to false. */
@@ -56,14 +56,14 @@ export interface UpdateConfigFileOptions extends FileOperationOptions {
 export interface UpdateJsonFileOptions extends FileOperationOptions {
 	targetFile: string
 	jsonKey: string
-	patch: JsonValue
+	patch: DataValue
 	createMissing?: boolean
 }
 
 export interface UpdateYamlFileOptions extends FileOperationOptions {
 	targetFile: string
 	yamlKey: string
-	patch: JsonValue
+	patch: DataValue
 	createMissing?: boolean
 }
 

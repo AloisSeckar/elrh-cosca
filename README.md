@@ -106,19 +106,19 @@ By default the function asks for confirmation before attempting to alter the `ta
 interface UpdateJsonFileOptions extends FileOperationOptions {
   targetFile: string
   jsonKey: string
-  patch: JsonValue
+  patch: DataValue
   createMissing?: boolean
 }
 async function updateJsonFile(opts: UpdateJsonFileOptions): Promise<void>
 ```
 
-Takes a path to a JSON file and injects `patch` under the `jsonKey` key. The `patch` is of type `JsonValue` - a custom type defined as follows:
+Takes a path to a JSON file and injects `patch` under the `jsonKey` key. The `patch` is of type `DataValue` - a custom type defined as follows:
 
 ```ts
-type JsonPrimitive = string | number | boolean | null
-type JsonObject = { [key: string]: JsonValue }
-type JsonArray = JsonValue[]
-type JsonValue = JsonPrimitive | JsonObject | JsonArray
+type DataPrimitive = string | number | boolean | null
+type DataObject = { [key: string]: DataValue }
+type DataArray = DataValue[]
+type DataValue = DataPrimitive | DataObject | DataArray
 ```
 
 Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must be a valid JSON file. It is parsed using plain `JSON.parse`.
@@ -135,13 +135,13 @@ By default the function asks for confirmation before attempting to alter the `ta
 interface UpdateYamlFileOptions extends FileOperationOptions {
   targetFile: string
   yamlKey: string
-  patch: JsonValue
+  patch: DataValue
   createMissing?: boolean
 }
 async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void>
 ```
 
-Takes a path to a YAML file and injects `patch` under the `yamlKey` key. The `patch` is of type `JsonValue` (see [`updateJsonFile`](#updatejsonfile)).
+Takes a path to a YAML file and injects `patch` under the `yamlKey` key. The `patch` is of type `DataValue` (see [`updateJsonFile`](#updatejsonfile)).
 
 Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must be a valid single-document YAML file with a map at its root (an empty file is accepted). It is parsed using [eemeli/yaml](https://github.com/eemeli/yaml) package.
 

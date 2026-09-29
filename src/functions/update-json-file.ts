@@ -13,7 +13,7 @@ const FORBIDDEN_KEYS = ['__proto__', 'constructor', 'prototype']
  * @param {UpdateJsonFileOptions} opts - Options for this operation.
  * @param {string} opts.targetFile - The path to the JSON file to update (relative to CWD).
  * @param {string} opts.jsonKey - The key in the JSON file to update (can be new or existing; may use dot notation for nested keys - missing or non-object intermediate levels are replaced with objects).
- * @param {JsonValue} opts.patch - The value for the specified key. Objects are shallow-merged into the existing value (a non-object existing value is replaced), other values (primitives, arrays, null) replace it.
+ * @param {DataValue} opts.patch - The value for the specified key. Objects are shallow-merged into the existing value (a non-object existing value is replaced), other values (primitives, arrays, null) replace it.
  * @param {boolean} [opts.createMissing] - If true, the file is created when it does not exist, after confirmation unless `force` is set (default: false).
  * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
  * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).

@@ -2,7 +2,7 @@ import type { RemoveFromJsonFileOptions } from '../types/functions.js'
 import { resolve } from 'node:path'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { promptUser } from '../terminal/prompt-user.js'
-import type { JsonObject } from '../types/json.js'
+import type { DataObject } from '../types/data.js'
 import { checkPath } from '../_private/check-path.js'
 
 /**
@@ -55,7 +55,7 @@ export async function removeFromJsonFile(opts: RemoveFromJsonFileOptions): Promi
 
 // recursive function to remove possibly nested key if exists in given JSON
 // the key may use dot notation to indicate nesting, e.g. "a.b.c"
-function removeKeyIfExists(json: JsonObject, jsonKey: string): JsonObject {
+function removeKeyIfExists(json: DataObject, jsonKey: string): DataObject {
     const keys = jsonKey.split('.')
 
     if (keys.length === 1) {
@@ -69,7 +69,7 @@ function removeKeyIfExists(json: JsonObject, jsonKey: string): JsonObject {
         if (json.hasOwnProperty(keys[0]) ) {
             const nestedValue = json[keys[0]]
             if (nestedValue !== null && typeof nestedValue === 'object' && !Array.isArray(nestedValue)) {
-                json[keys[0]] = removeKeyIfExists(nestedValue as JsonObject, keys.slice(1).join('.'))
+                json[keys[0]] = removeKeyIfExists(nestedValue as DataObject, keys.slice(1).join('.'))
             }
         }
     }
