@@ -11,9 +11,9 @@ import { checkPath } from '../_private/check-path.js'
  * @param {RemoveFromJsonFileOptions} opts - Options for this operation.
  * @param {string} opts.targetFile - The path to the JSON file to update (relative to CWD).
  * @param {string} opts.jsonKey - The key in the JSON file to be deleted (may use dot notation for nested keys).
- * @param {boolean} opts.force - Whether to force the update without prompting.
- * @param {string} opts.prompt - Custom prompt message displayed in terminal.
- * @returns {Promise<void>} An empty promise that resolves when the file is updated.
+ * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
+ * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
+ * @returns {Promise<void>} A promise that resolves when the operation is finished or skipped.
  * @throws Will throw an error if the path is invalid, the file does not exist or cannot be parsed as JSON.
  */
 export async function removeFromJsonFile(opts: RemoveFromJsonFileOptions): Promise<void> {

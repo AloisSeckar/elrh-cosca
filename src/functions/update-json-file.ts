@@ -9,16 +9,16 @@ import { checkPath } from '../_private/check-path.js'
 // TODO allow recursive updates on any level (think about using defu)
 
 /**
- * Updates a JSON file by modifying a specific key with new values.
+ * Updates a JSON file by setting a top-level key with new value(s).
  * 
  * @param {UpdateJsonFileOptions} opts - Options for this operation.
  * @param {string} opts.targetFile - The path to the JSON file to update (relative to CWD).
- * @param {string} opts.jsonKey - The key in the JSON file to update (can be new or existing).
- * @param {JsonValue} opts.patch - The new values to set for the specified key.
- * @param {boolean} opts.createMissing - If true, the file will be created if it does not exist (after confirmation unless `force` is set).
- * @param {boolean} opts.force - Whether to force the update without prompting.
- * @param {string} opts.prompt - Custom prompt message displayed in terminal.
- * @returns {Promise<void>} An empty promise that resolves when the file is updated.
+ * @param {string} opts.jsonKey - The top-level key in the JSON file to update (can be new or existing; dot notation is not supported).
+ * @param {JsonValue} opts.patch - The value for the specified key. Objects are shallow-merged into the existing value, other values (primitives, arrays, null) replace it.
+ * @param {boolean} [opts.createMissing] - If true, the file is created when it does not exist, after confirmation unless `force` is set (default: false).
+ * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
+ * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
+ * @returns {Promise<void>} A promise that resolves when the operation is finished or skipped.
  * @throws Will throw an error if the path is invalid, the file does not exist (and `createMissing` is not set) or cannot be parsed as JSON.
  */
 export async function updateJsonFile(opts: UpdateJsonFileOptions): Promise<void> {

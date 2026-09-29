@@ -5,7 +5,7 @@ import type { ShowErrorOptions } from '../types/functions.js'
  * 
  * @param {ShowErrorOptions} opts - Options for this operation.
  * @param {string} opts.message - The error message text to display.
- * @param {number} opts.linesAfter - The number of newlines to print after the message (default is 1).
+ * @param {number} [opts.linesAfter] - The number of newlines to print after the message (default: 1).
  */
 export function showError(opts: ShowErrorOptions): void {
   const { message, linesAfter = 1 } = opts

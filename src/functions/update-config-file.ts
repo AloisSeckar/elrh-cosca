@@ -7,21 +7,22 @@ import { promptUser } from '../terminal/prompt-user.js'
 import { checkPath } from '../_private/check-path.js'
 
 /**
- * Update the single object-literal config found in a file.
+ * Updates the config object exported from a JS/TS config file.
  *
  * The function:
  * - Reads and edits the file as code (no execution).
- * - Uses `defu(newConfig, existingConfig)` so `newConfig` takes precedence.
+ * - Uses the default export or a single named export; the config may be a plain object or the first argument of a function call (e.g. `defineConfig({...})`).
+ * - Deep-merges `newConfig` into the existing config, so `newConfig` takes precedence; arrays are merged as a unique union.
  * - Applies the merged result back onto the AST to preserve TS/ESM structure.
  *
  * @param {UpdateConfigFileOptions} opts - Options for this operation.
- * @param {string} opts.targetFile - Path to file, relative to project root (process.cwd()).
- * @param {object} opts.newConfig - Config to merge in (takes precedence).
- * @param {boolean} opts.createMissing - If true, the file will be created (with `export default {}`) if it does not exist (after confirmation unless `force` is set).
- * @param {boolean} opts.force - Whether to force the update without prompting.
- * @param {string} opts.prompt - Custom prompt message displayed in terminal.
- * @returns {Promise<void>} An empty promise that resolves when the file is updated.
- * @throws Will throw an error the path is invalid, the file doesn't exist (and `createMissing` is not set) or no config export is found or it cannot be processed.
+ * @param {string} opts.targetFile - The path to the config file to update (relative to CWD).
+ * @param {Record<string | number | symbol, any>} opts.newConfig - The config to merge in (takes precedence).
+ * @param {boolean} [opts.createMissing] - If true, the file is created (with `export default {}`) when it does not exist, after confirmation unless `force` is set (default: false).
+ * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
+ * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
+ * @returns {Promise<void>} A promise that resolves when the operation is finished or skipped.
+ * @throws Will throw an error if the path is invalid, the file does not exist (and `createMissing` is not set), uses CommonJS `module.exports` or no suitable config export is found or it cannot be processed.
  */
 export async function updateConfigFile(opts: UpdateConfigFileOptions): Promise<void> {
   const { targetFile, newConfig, createMissing = false, force = false, prompt = '' } = opts

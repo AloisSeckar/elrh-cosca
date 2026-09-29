@@ -10,11 +10,11 @@ import { checkPath } from '../_private/check-path.js'
  * @param {UpdateTextFileOptions} opts - Options for this operation.
  * @param {string} opts.targetFile - The path to the text file to update (relative to CWD).
  * @param {string[]} opts.rowsToAdd - New rows to be added at the end of the file.
- * @param {boolean} opts.allowDuplicates - If true, rows will be added even if they already exist in the file.
- * @param {boolean} opts.createMissing - If true, the file will be created if it does not exist (after confirmation unless `force` is set).
- * @param {boolean} opts.force - Whether to force the update without prompting.
- * @param {string} opts.prompt - Custom prompt message displayed in terminal.
- * @returns {Promise<void>} An empty promise that resolves when the file is updated.
+ * @param {boolean} [opts.allowDuplicates] - If true, rows are added even if identical lines already exist in the file (default: false).
+ * @param {boolean} [opts.createMissing] - If true, the file is created when it does not exist, after confirmation unless `force` is set (default: false).
+ * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
+ * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
+ * @returns {Promise<void>} A promise that resolves when the operation is finished or skipped.
  * @throws Will throw an error if the path is invalid or the file does not exist (and `createMissing` is not set).
  */
 export async function updateTextFile(opts: UpdateTextFileOptions): Promise<void> {

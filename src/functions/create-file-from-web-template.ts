@@ -6,15 +6,15 @@ import { fetchFile } from '../_private/fetch-file'
 import { checkPath } from '../_private/check-path'
 
 /**
- * Creates a new copy of given file from a web template.
+ * Creates a new file as a copy of a template file downloaded from the web.
  * 
  * @param {CreateFileFromWebTemplateOptions} opts - Options for this operation.
- * @param {string} opts.url - The URL to the template file (must be accessible via `node:https.get` and return raw text data).
- * @param {string} opts.targetFile - The path to the target file to create (relative to CWD). Can overwrite existing files if confirmed.
- * @param {boolean} opts.force - Whether to force creation without prompting.
- * @param {string} opts.prompt - Custom prompt message displayed in terminal.
- * @returns {Promise<void>} An empty promise that resolves when the file is created.
- * @throws Will throw an error if the path is invalid, the remote template cannot be fetched or the target file failed to be created.
+ * @param {string} opts.url - The URL of the template file (must be accessible via `node:https.get` and return raw text data).
+ * @param {string} opts.targetFile - The path to the file to create (relative to CWD). Existing file is overwritten after confirmation.
+ * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
+ * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
+ * @returns {Promise<void>} A promise that resolves when the operation is finished or skipped.
+ * @throws Will throw an error if the path is invalid, the template file cannot be fetched or the target file failed to be created.
  */
 export async function createFileFromWebTemplate(opts: CreateFileFromWebTemplateOptions): Promise<void> {
   const { url, targetFile, force = false, prompt = '' } = opts

@@ -3,9 +3,9 @@ import { accessSync, constants, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 /**
- * Resolve a package's installed root directory *from the target app*.
- * Package name can be scoped (e.g. `@scope/package`).
- * Works with npm/yarn/pnpm, hoisting or not.
+ * Resolves a package's root directory *from the target app* (CWD).
+ * Returns CWD itself if its `package.json` has the same name, otherwise looks into `node_modules` in CWD.
+ * The package name can be scoped (e.g. `@scope/package`).
  * 
  * @param {ResolvePackagePathOptions} opts - Options for this operation.
  * @param {string} opts.packageName - The name of the package to resolve.

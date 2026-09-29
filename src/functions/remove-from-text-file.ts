@@ -10,9 +10,9 @@ import { checkPath } from '../_private/check-path.js'
  * @param {RemoveFromTextFileOptions} opts - Options for this operation.
  * @param {string} opts.targetFile - The path to the text file to update (relative to CWD).
  * @param {string} opts.searchText - The text to search for; any line that includes this text will be removed.
- * @param {boolean} opts.force - Whether to force the update without prompting.
- * @param {string} opts.prompt - Custom prompt message displayed in terminal.
- * @returns {Promise<void>} An empty promise that resolves when the file is updated.
+ * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
+ * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
+ * @returns {Promise<void>} A promise that resolves when the operation is finished or skipped.
  * @throws Will throw an error if the path is invalid or the file does not exist.
  */
 export async function removeFromTextFile(opts: RemoveFromTextFileOptions): Promise<void> {

@@ -7,8 +7,8 @@ import { resolve } from 'node:path'
  * 
  * @param {GetEnvValueOptions} opts - Options for this operation.
  * @param {string} opts.key - The name of the environment variable to retrieve.
- * @param {string} opts.envFilePath - The path to the .env file (default is the .env file in the project root).
- * @returns {string | undefined} - The value of the environment variable, or undefined if not found.
+ * @param {string} [opts.envFilePath] - The path to the .env file (default: `.env` in CWD).
+ * @returns {string | undefined} The value of the environment variable (without surrounding quotes), or undefined if the file or the variable is not found.
  */
 export function getEnvValue(opts: GetEnvValueOptions): string | undefined {
   const { key, envFilePath = resolve(process.cwd(), '.env') } = opts

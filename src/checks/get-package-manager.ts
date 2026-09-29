@@ -1,7 +1,7 @@
 /**
- * Checks what package manager was used to execute the current command.
+ * Checks what package manager/runtime was used to execute the current command.
  * 
- * @returns {string} The name of the package manager used ('npm', 'yarn', 'pnpm', 'deno' or 'bun').
+ * @returns {'npm' | 'yarn' | 'pnpm' | 'deno' | 'bun'} The name of the package manager used (falls back to 'npm' if detection failed).
  */
 export function getPackageManager(): 'npm' | 'yarn' | 'pnpm' | 'deno' | 'bun' {
   if ((globalThis as any)?.Deno) {

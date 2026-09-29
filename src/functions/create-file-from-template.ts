@@ -7,15 +7,15 @@ import { resolvePackagePath } from '../utils/resolve-package-path'
 import { checkPath } from '../_private/check-path'
 
 /**
- * Creates a new copy of given file from a local template.
+ * Creates a new file as a copy of a template file from an installed package.
  * 
  * @param {CreateFileFromTemplateOptions} opts - Options for this operation.
- * @param {string} opts.templateFile - The path to the template file (prefixed with package name).
- * @param {string} opts.targetFile - The path to the target file to create (relative to CWD). Can overwrite existing files if confirmed.
- * @param {boolean} opts.force - Whether to force creation without prompting.
- * @param {string} opts.prompt - Custom prompt message displayed in terminal.
- * @returns {Promise<void>} An empty promise that resolves when the file is created.
- * @throws Will throw an error if the path is invalid, the template file cannot be found or the target file failed to be created.
+ * @param {string} opts.templateFile - The path to the template file in `package:relative/path/to/file` format (relative to the package root).
+ * @param {string} opts.targetFile - The path to the file to create (relative to CWD). Existing file is overwritten after confirmation.
+ * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
+ * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
+ * @returns {Promise<void>} A promise that resolves when the operation is finished or skipped.
+ * @throws Will throw an error if the path is invalid, the template path cannot be parsed, the package or the template file cannot be found or the target file failed to be created.
  */
 export async function createFileFromTemplate(opts: CreateFileFromTemplateOptions): Promise<void> {
   const { templateFile, targetFile, force = false, prompt = '' } = opts

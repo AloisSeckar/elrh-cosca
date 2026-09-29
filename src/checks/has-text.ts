@@ -8,8 +8,8 @@ import { checkPath } from '../_private/check-path.js'
  * 
  * @param {HasTextOptions} opts - Options for this operation.
  * @param {string} opts.targetFile - The path to the text file to be checked (relative to CWD).
- * @param {string | RegExp} opts.pattern - The text or regular expression pattern to search for.
- * @param {boolean} opts.exact - If true, requires exact line match (default: false for partial matching).
+ * @param {string | RegExp} opts.pattern - The text or regular expression pattern to search for (lines and text pattern are trimmed before matching).
+ * @param {boolean} [opts.exact] - If true, a text pattern must match a whole line; ignored for RegExp patterns (default: false).
  * @returns {boolean} True if the pattern is found in target file, false otherwise.
  * @throws Will throw an error if the path is invalid or the file does not exist.
  */

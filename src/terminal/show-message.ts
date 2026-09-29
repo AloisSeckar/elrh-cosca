@@ -5,7 +5,7 @@ import type { ShowMessageOptions } from '../types/functions.js'
  * 
  * @param {ShowMessageOptions} opts - Options for this operation.
  * @param {string} opts.message - The message text to display.
- * @param {number} opts.linesAfter - The number of newlines to print after the message (default is 1).
+ * @param {number} [opts.linesAfter] - The number of newlines to print after the message (default: 1).
  */
 export function showMessage(opts: ShowMessageOptions): void {
   const { message, linesAfter = 1 } = opts
