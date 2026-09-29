@@ -48,6 +48,21 @@ describe('Test createFileFromWebTemplate function', () => {
     await expect(readNormalizedFile(wd, 'first/second/file.txt')).toMatchFileSnapshot('snapshots/created-web-file.txt')
   })
 
+  test('should follow redirects', async () => {
+    // github.com/.../raw/... redirects to raw.githubusercontent.com
+    await createFileFromWebTemplate({ url: `https://github.com/AloisSeckar/nuxt-spec/raw/refs/heads/main/config/templates/vitest.config.ts.template`, targetFile: `${wd}/web-file-redirected.txt`, force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/successfully created/))
+
+    await expect(readNormalizedFile(wd, 'web-file-redirected.txt')).toMatchFileSnapshot('snapshots/created-web-file.txt')
+  })
+
+  test('should fail on 4xx response', async () => {
+    await expect(createFileFromWebTemplate({ url: `https://raw.githubusercontent.com/AloisSeckar/nuxt-spec/refs/heads/main/does-not-exist.txt`, targetFile: `${wd}/web-file-404.txt`, force: true })).rejects.toThrow(/Failed to fetch file: 404/)
+
+    expect(existsSync(`${wd}/web-file-404.txt`)).toBe(false)
+  })
+
   test('should do nothing when user aborts creating', async () => {
     setPromptSpy(['n'])
     await createFileFromWebTemplate({ url: `https://raw.githubusercontent.com/AloisSeckar/nuxt-spec/refs/heads/main/config/templates/vitest.config.ts.template`, targetFile: `${wd}/web-file-copy-2.txt` })
