@@ -1,0 +1,14 @@
+# COSCA test YAML file
+string-key: value # inline comment
+number-key: 1
+bool-key: true
+array-key:
+  - value
+object-key:
+  # nested comment
+  nested-key: value
+  testKey4: value2
+cosca:
+  testKey1: value
+  testKey2: 2
+  testKey3: true

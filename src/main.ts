@@ -10,6 +10,7 @@ import { removeFromTextFile } from './functions/remove-from-text-file'
 import { updateConfigFile } from './functions/update-config-file'
 import { updateJsonFile } from './functions/update-json-file'
 import { updateTextFile } from './functions/update-text-file'
+import { updateYamlFile } from './functions/update-yaml-file'
 import { promptUser } from './terminal/prompt-user'
 import { showError } from './terminal/show-error'
 import { showMessage } from './terminal/show-message'
@@ -29,6 +30,7 @@ export type {
   UpdateConfigFileOptions,
   UpdateJsonFileOptions,
   UpdateTextFileOptions,
+  UpdateYamlFileOptions,
   PromptUserOptions,
   ShowErrorOptions,
   ShowMessageOptions,
@@ -52,6 +54,7 @@ export {
   updateConfigFile,
   updateJsonFile,
   updateTextFile,
+  updateYamlFile,
   // terminal helpers
   promptUser,
   showError,

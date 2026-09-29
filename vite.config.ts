@@ -23,6 +23,7 @@ export default defineConfig({
           'node:readline',
           'node:stream',
           'node:url',
+          'node:util',
       ],
       output: {
         exports: 'named',

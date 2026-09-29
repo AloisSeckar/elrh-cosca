@@ -60,6 +60,13 @@ export interface UpdateJsonFileOptions extends FileOperationOptions {
 	createMissing?: boolean
 }
 
+export interface UpdateYamlFileOptions extends FileOperationOptions {
+	targetFile: string
+	yamlKey: string
+	patch: JsonValue
+	createMissing?: boolean
+}
+
 export interface UpdateTextFileOptions extends FileOperationOptions {
 	targetFile: string
 	rowsToAdd: string[]

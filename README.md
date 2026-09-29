@@ -129,6 +129,28 @@ If `targetFile` does not exist, the function throws an error by default. Setting
 
 By default the function asks for confirmation before attempting to alter the `targetFile`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
 
+#### `updateYamlFile`
+
+```ts
+interface UpdateYamlFileOptions extends FileOperationOptions {
+  targetFile: string
+  yamlKey: string
+  patch: JsonValue
+  createMissing?: boolean
+}
+async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void>
+```
+
+Takes a path to a YAML file and injects `patch` under the `yamlKey` key. The `patch` is of type `JsonValue` (see [`updateJsonFile`](#updatejsonfile)).
+
+Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must be a valid single-document YAML file with a map at its root (an empty file is accepted). It is parsed using [eemeli/yaml](https://github.com/eemeli/yaml) package.
+
+The given `yamlKey` might point to a nested key using dot notation, e.g. `a.b.c`. Missing intermediate levels are created as empty maps, and existing intermediate levels that are not maps (scalars and sequences) are replaced with maps. Empty key segments (e.g. `a..b`) and the segments `__proto__`, `constructor` and `prototype` are rejected with an error. If `yamlKey` does not exist, a new key is added. If `patch` is an object, its keys are shallow-merged into the existing value. If the existing value is not a map, it is replaced. Other values (primitives, arrays and `null`) replace the existing value. The function tracks if any real change was made (values are compared deeply) and notifies the user if not.
+
+If `targetFile` does not exist, the function throws an error by default. Setting `opts.createMissing` to `true` will instead create the file (including missing directories) as an empty YAML map with `patch` applied. The user is asked to confirm the creation unless `opts.force` is `true`.
+
+By default the function asks for confirmation before attempting to alter the `targetFile`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
+
 #### `updateTextFile`
 
 ```ts
@@ -331,6 +353,7 @@ Resolves a package's root directory *from the target app* (CWD). Returns CWD its
 
 - Developed with [TypeScript](https://www.typescriptlang.org/) in mind
 - Using [magicast](https://github.com/unjs/magicast) for parsing files
+- Using [yaml](https://github.com/eemeli/yaml) for parsing YAML files
 - Built with [Vite](https://vitejs.dev/)
 - Tested with [Vitest](https://vitest.dev/)
 
