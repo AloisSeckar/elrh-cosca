@@ -12,6 +12,7 @@ export default async function () {
 
   // for removeal tests create an extra copy of fixuture files
   cpSync(join(fixtures, 'json-file.json'), join(workspace, 'json-file-2.json'))
+  cpSync(join(fixtures, 'yaml-file.yaml'), join(workspace, 'yaml-file-2.yaml'))
 
   // for removeFromTextFile tests create a copy of text fixture
   cpSync(join(fixtures, 'text-file.txt'), join(workspace, 'text-file-2.txt'))

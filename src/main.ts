@@ -8,6 +8,7 @@ import { createFileFromWebTemplate } from './functions/create-file-from-web-temp
 import { deletePath } from './functions/delete-path'
 import { removeFromJsonFile } from './functions/remove-from-json-file'
 import { removeFromTextFile } from './functions/remove-from-text-file'
+import { removeFromYamlFile } from './functions/remove-from-yaml-file'
 import { updateConfigFile } from './functions/update-config-file'
 import { updateJsonFile } from './functions/update-json-file'
 import { updateTextFile } from './functions/update-text-file'
@@ -29,6 +30,7 @@ export type {
   DeletePathOptions,
   RemoveFromJsonFileOptions,
   RemoveFromTextFileOptions,
+  RemoveFromYamlFileOptions,
   UpdateConfigFileOptions,
   UpdateJsonFileOptions,
   UpdateTextFileOptions,
@@ -54,6 +56,7 @@ export {
   deletePath,
   removeFromJsonFile,
   removeFromTextFile,
+  removeFromYamlFile,
   updateConfigFile,
   updateJsonFile,
   updateTextFile,

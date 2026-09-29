@@ -205,6 +205,26 @@ Path to `targetFile` is relative to `process.cwd()`. Several checks are in place
 
 By default the function asks for confirmation before attempting to alter the `targetFile`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
 
+#### `removeFromYamlFile`
+
+```ts
+interface RemoveFromYamlFileOptions extends FileOperationOptions {
+  targetFile: string
+  yamlKey: string
+}
+async function removeFromYamlFile(opts: RemoveFromYamlFileOptions): Promise<void>
+```
+
+Takes a path to a YAML file and removes the specified `yamlKey`.
+
+Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist and be a valid single-document YAML file. It is parsed using [eemeli/yaml](https://github.com/eemeli/yaml) package, which preserves comments and formatting of the untouched parts of the file.
+
+The given `yamlKey` might point to a nested key using dot notation, e.g. `a.b.c`. If the key is not present (including when the file is empty or its root is not a map), the file is left untouched and the user is notified.
+
+Comments attached to the removed key are removed as well, with two exceptions. A comment directly above the first root-level key is treated as a file header and kept at the top of the file. A comment left above a nested map that became empty is dropped.
+
+By default the function asks for confirmation before attempting to alter the `targetFile`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
+
 #### `deletePath`
 
 ```ts

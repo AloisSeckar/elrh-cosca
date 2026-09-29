@@ -52,6 +52,11 @@ export interface RemoveFromTextFileOptions extends FileOperationOptions {
 	searchText: string
 }
 
+export interface RemoveFromYamlFileOptions extends FileOperationOptions {
+	targetFile: string
+	yamlKey: string
+}
+
 export interface UpdateConfigFileOptions extends FileOperationOptions {
 	targetFile: string
 	newConfig: Record<string | number | symbol, any>
