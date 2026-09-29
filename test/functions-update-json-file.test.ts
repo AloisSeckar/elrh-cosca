@@ -144,6 +144,40 @@ describe('Test updateJsonFile function', () => {
     expect(readNormalizedFile(wd, 'new-json/empty.json')).toBe('{\n  "cosca": "x",\n  "other": {}\n}\n')
   })
     
+  test('should create nested keys using dot notation', async () => {
+    await updateJsonFile({ targetFile: `${wd}/new-json/nested.json`, jsonKey: 'a.b.c', patch: { key: 'value' }, createMissing: true, force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file created/))
+    expect(readNormalizedFile(wd, 'new-json/nested.json')).toBe('{\n  "a": {\n    "b": {\n      "c": {\n        "key": "value"\n      }\n    }\n  }\n}\n')
+  })
+
+  test('should update existing nested key using dot notation', async () => {
+    await updateJsonFile({ targetFile: `${wd}/new-json/nested.json`, jsonKey: 'a.b', patch: { other: 1 }, force: true })
+    await updateJsonFile({ targetFile: `${wd}/new-json/nested.json`, jsonKey: 'a.b.c.key', patch: 'changed', force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
+    expect(readNormalizedFile(wd, 'new-json/nested.json')).toBe('{\n  "a": {\n    "b": {\n      "c": {\n        "key": "changed"\n      },\n      "other": 1\n    }\n  }\n}\n')
+  })
+
+  test('should not update nested key with the same value', async () => {
+    await updateJsonFile({ targetFile: `${wd}/new-json/nested.json`, jsonKey: 'a.b.c', patch: { key: 'changed' }, force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
+  })
+
+  test('should replace non-object intermediate values using dot notation', async () => {
+    await updateJsonFile({ targetFile: `${wd}/new-json/nested-replace.json`, jsonKey: 'a', patch: { b: 'primitive', c: [1] }, createMissing: true, force: true })
+    await updateJsonFile({ targetFile: `${wd}/new-json/nested-replace.json`, jsonKey: 'a.b.x', patch: 1, force: true })
+    await updateJsonFile({ targetFile: `${wd}/new-json/nested-replace.json`, jsonKey: 'a.c.y', patch: 2, force: true })
+
+    expect(readNormalizedFile(wd, 'new-json/nested-replace.json')).toBe('{\n  "a": {\n    "b": {\n      "x": 1\n    },\n    "c": {\n      "y": 2\n    }\n  }\n}\n')
+  })
+
+  test.each(['a..b', '.a', 'a.', '__proto__.polluted', 'a.constructor.prototype'])('should reject invalid key \'%s\'', async (jsonKey: string) => {
+    await expect(updateJsonFile({ targetFile: `${wd}/json-file.json`, jsonKey, patch: { polluted: true }, force: true })).rejects.toThrow(/Invalid JSON key/)
+    expect(({} as any).polluted).toBeUndefined()
+  })
+
   test('should do nothing when user aborts creating', async () => {
     setPromptSpy(['n'])
     await updateJsonFile({ targetFile: `${wd}/json-file.json`, jsonKey: 'cosca', patch: { testKey6: 0 } })
