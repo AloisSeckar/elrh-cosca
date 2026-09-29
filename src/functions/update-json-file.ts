@@ -14,7 +14,7 @@ import { checkPath } from '../_private/check-path.js'
  * @param {UpdateJsonFileOptions} opts - Options for this operation.
  * @param {string} opts.targetFile - The path to the JSON file to update (relative to CWD).
  * @param {string} opts.jsonKey - The top-level key in the JSON file to update (can be new or existing; dot notation is not supported).
- * @param {JsonValue} opts.patch - The value for the specified key. Objects are shallow-merged into the existing value, other values (primitives, arrays, null) replace it.
+ * @param {JsonValue} opts.patch - The value for the specified key. Objects are shallow-merged into the existing value (a non-object existing value is replaced), other values (primitives, arrays, null) replace it.
  * @param {boolean} [opts.createMissing] - If true, the file is created when it does not exist, after confirmation unless `force` is set (default: false).
  * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
  * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
@@ -51,10 +51,7 @@ export async function updateJsonFile(opts: UpdateJsonFileOptions): Promise<void>
       throw new Error(`Could not parse '${targetFile}' — cannot update its contents.\n${err}`)
     }
 
-    json[jsonKey] = json[jsonKey] || {}
-
     let modified = created
-
 
     if (patch === null || typeof patch === 'string' || 
       typeof patch === 'number' || typeof patch === 'boolean' || Array.isArray(patch)) {
@@ -63,6 +60,12 @@ export async function updateJsonFile(opts: UpdateJsonFileOptions): Promise<void>
         modified = true
       }
     } else {
+      const current = json[jsonKey]
+      if (current === null || typeof current !== 'object' || Array.isArray(current)) {
+        // non-object values cannot be merged into, so they are replaced
+        json[jsonKey] = {}
+        modified = true
+      }
       for (const [key, value] of Object.entries(patch)) {
         if (json[jsonKey][key] !== value) {
           json[jsonKey][key] = value

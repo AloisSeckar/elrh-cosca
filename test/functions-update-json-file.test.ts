@@ -119,6 +119,30 @@ describe('Test updateJsonFile function', () => {
 
     await expect(readNormalizedFile(wd, 'json-file.json')).toMatchFileSnapshot('snapshots/updated-json-file-5.json')
   })
+
+  test('should replace existing primitive value with object patch', async () => {
+    await updateJsonFile({ targetFile: `${wd}/new-json/primitive.json`, jsonKey: 'cosca', patch: 'primitive', createMissing: true, force: true })
+    await updateJsonFile({ targetFile: `${wd}/new-json/primitive.json`, jsonKey: 'cosca', patch: { testKey1: 'value' }, force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
+    expect(readNormalizedFile(wd, 'new-json/primitive.json')).toBe('{\n  "cosca": {\n    "testKey1": "value"\n  }\n}\n')
+  })
+
+  test('should replace existing array value with object patch', async () => {
+    await updateJsonFile({ targetFile: `${wd}/new-json/array.json`, jsonKey: 'cosca', patch: ['a', 'b'], createMissing: true, force: true })
+    await updateJsonFile({ targetFile: `${wd}/new-json/array.json`, jsonKey: 'cosca', patch: { testKey1: 'value' }, force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
+    expect(readNormalizedFile(wd, 'new-json/array.json')).toBe('{\n  "cosca": {\n    "testKey1": "value"\n  }\n}\n')
+  })
+
+  test('should add new key with empty object patch', async () => {
+    await updateJsonFile({ targetFile: `${wd}/new-json/empty.json`, jsonKey: 'cosca', patch: 'x', createMissing: true, force: true })
+    await updateJsonFile({ targetFile: `${wd}/new-json/empty.json`, jsonKey: 'other', patch: {}, force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
+    expect(readNormalizedFile(wd, 'new-json/empty.json')).toBe('{\n  "cosca": "x",\n  "other": {}\n}\n')
+  })
     
   test('should do nothing when user aborts creating', async () => {
     setPromptSpy(['n'])

@@ -123,7 +123,7 @@ type JsonValue = JsonPrimitive | JsonObject | JsonArray
 
 Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must be a valid JSON file. It is parsed using plain `JSON.parse`.
 
-Currently it only allows adding new values under top-level keys (dot notation is not supported). If `jsonKey` does not exist, a new key is added. If `patch` is an object, its keys are shallow-merged into the existing value. Other values (primitives, arrays and `null`) replace the existing value. The function tracks if any real change was made and notifies the user if not.
+Currently it only allows adding new values under top-level keys (dot notation is not supported). If `jsonKey` does not exist, a new key is added. If `patch` is an object, its keys are shallow-merged into the existing value. If the existing value is not an object, it is replaced. Other values (primitives, arrays and `null`) replace the existing value. The function tracks if any real change was made and notifies the user if not.
 
 If `targetFile` does not exist, the function throws an error by default. Setting `opts.createMissing` to `true` will instead create the file (including missing directories) as an empty JSON object with `patch` applied. The user is asked to confirm the creation unless `opts.force` is `true`.
 
