@@ -1,24 +1,24 @@
 # COSCA
 
-Library of file-writing functions that help building CLI scripts for making changes in target projects - like adding default configuration files or new sections in `package.json`.
+Library of I/O functions helping with building CLI scripts for making changes in target projects - like adding default configuration files or new sections in `package.json`.
 
 The first experimental "customers" are my [Nuxt Spec](https://github.com/AloisSeckar/nuxt-spec) and [Nuxt Ignis](https://github.com/AloisSeckar/nuxt-ignis) projects.
 
-The **"COSCA"** abbreviation stands for **CO**de **SCA**ffolding which points out the library's purpose of providing methods for altering existing and adding new files from scratch using Node-based filesystem APIs.
+The **"COSCA"** abbreviation stands for **CO**de **SCA**ffolding, which points out the library's purpose of providing methods for altering existing files and adding new ones from scratch using Node-based filesystem APIs.
 
 ## How to use
 
-**NOTE:** The library is **ESM only** and it is advised to use with at least **Node 18**.
+**NOTE:** The library is **ESM only** and it is advised to use it with at least **Node 22**.
 
-`npm install elrh-cosca` to include into your project.
+Run `npm install elrh-cosca` to include it in your project.
 
 ### Options objects
 
-All functions with arguments take one required `opts` object with 1-n params. Each options type is exported from `elrh-cosca` and defined in [src/types/functions.ts](src/types/functions.ts).
+All functions with arguments take a single required `opts` object with one or more properties. Each options type is exported from `elrh-cosca` and defined in [src/types/functions.ts](src/types/functions.ts).
 
 ### List of file-manipulation functions
 
-All file-manipulation options extend the following shared shape. `force` defaults to `false`; an omitted or empty `prompt` uses the function's built-in confirmation question.
+All file-manipulation options extend the following shared shape. `force` defaults to `false`. An omitted or empty `prompt` uses the function's built-in initial confirmation question.
 
 ```ts
 interface FileOperationOptions {
@@ -37,13 +37,13 @@ interface CreateFileFromTemplateOptions extends FileOperationOptions {
 async function createFileFromTemplate(opts: CreateFileFromTemplateOptions): Promise<void>
 ```
 
-Gets a file definition from given `templateFile` and will create a fresh copy in target project.
+Takes the file given by `templateFile` from an installed package and creates a fresh copy of it in the target project.
 
-Path to `templateFile` must be prefixed with the package name to allow proper resolution, e.g. `your-package:path/to/template`. The package name can be scoped.
+Path to `templateFile` must be prefixed with the package name to allow proper resolution, e.g. `your-package:path/to/template` (the path is relative to the package root). The package name can be scoped (e.g. `@scope/package`). The package is resolved using [`resolvePackagePath`](#resolvepackagepath).
 
-Path to `targetFile` is relative to `process.cwd()` which allows consumers to run `npx your-script` in their project roots during development.  Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed. If the target directory does not exist, it will be automatically created.
+Path to `targetFile` is relative to `process.cwd()`, which allows consumers to run `npx your-script` in their project roots during development. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. If the target directory does not exist, it will be created automatically.
 
-By default the function asks for confirmation before attempting to create the file and if the file with the same name as `targetFile` is detected. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own question to the user.
+By default the function asks for confirmation before attempting to create the file and again if a file with the same name as `targetFile` already exists. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
 
 #### `createFileFromWebTemplate`
 
@@ -55,13 +55,13 @@ interface CreateFileFromWebTemplateOptions extends FileOperationOptions {
 async function createFileFromWebTemplate(opts: CreateFileFromWebTemplateOptions): Promise<void>
 ```
 
-Gets a file definition from given `url` and will create a fresh copy in target project.
+Downloads the file given by `url` and creates a fresh copy of it in the target project.
 
-Contents of `url` must be accessible via `node:https.get` function and will be fetched as raw text data.
+Contents of `url` must be accessible via the `node:https.get` function and will be fetched as raw text data. Redirects (5) are followed before the fetch fails.
 
-Path to `targetFile` is relative to `process.cwd()` which allows consumers to run `npx your-script` in their project roots during development.  Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed. If the target directory does not exist, it will be automatically created.
+Path to `targetFile` is relative to `process.cwd()`, which allows consumers to run `npx your-script` in their project roots during development. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. If the target directory does not exist, it will be created automatically.
 
-By default the function asks for confirmation before attempting to create the file and if the file with the same name as `targetFile` is detected. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own question to the user.
+By default the function asks for confirmation before attempting to create the file and again if a file with the same name as `targetFile` already exists. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
 
 #### `updateConfigFile`
 
@@ -76,20 +76,21 @@ async function updateConfigFile(opts: UpdateConfigFileOptions): Promise<void>
 
 Takes a path to a configuration file and updates it with the provided `newConfig` object.
 
-Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed. The file currently must use ESM format with either `default` or named export of **exactly one** configuration object or function call with a configuration object as its argument.
+Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file currently must use ESM format with either a `default` export or **exactly one** named export. The exported value must be a configuration object or a function call with a configuration object as its first argument (e.g. `defineConfig({...})`). CommonJS `module.exports` is not supported.
 
 If `targetFile` does not exist, the function throws an error by default. Setting `opts.createMissing` to `true` will instead create the file (including missing directories) as `export default {}` with `newConfig` merged in. The user is asked to confirm the creation unless `opts.force` is `true`.
 
-The merger is performed using [unjs/magicast](https://github.com/unjs/magicast). It should:
+The merge is performed using [unjs/magicast](https://github.com/unjs/magicast). It should:
 
 - preserve comments
 - work recursively to allow deep-merge
-- extend existing object with new keys from `newConfig`
-- overwrite keys with same name with values from `newConfig`
-- create a unique-union in case of arrays
+- extend the existing object with new keys from `newConfig`
+- overwrite keys with the same name with values from `newConfig`
+- create a unique union in case of arrays
+
 Please [report](https://github.com/AloisSeckar/elrh-cosca/issues) any logical flaws and issues of the process.
 
-**Warning**: The function will fail, if the extracted object is proxied (e.g. when created using `defu`). In such case, the error would be:
+**Warning**: The function will fail if the extracted object is proxied (e.g. when created using `defu`). In such case, the error would be:
 
 ```text
 TypeError: 'set' on proxy: trap returned falsish for property '<YOUR_PROPERTY>'
@@ -97,7 +98,7 @@ TypeError: 'set' on proxy: trap returned falsish for property '<YOUR_PROPERTY>'
 
 If possible, you need to alter your logic, e.g. by creating a new object via the spread operator.
 
-By default the function asks for confirmation before attempting to alter the `targetFile`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own question to the user.
+By default the function asks for confirmation before attempting to alter the `targetFile`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
 
 #### `updateJsonFile`
 
@@ -111,7 +112,7 @@ interface UpdateJsonFileOptions extends FileOperationOptions {
 async function updateJsonFile(opts: UpdateJsonFileOptions): Promise<void>
 ```
 
-Takes a path to a JSON file and injects `patch` under `jsonKey` key. A `patch` is of `JsonValue` - a custom type defined as follows:
+Takes a path to a JSON file and injects `patch` under the `jsonKey` key. The `patch` is of type `JsonValue` - a custom type defined as follows:
 
 ```ts
 type JsonPrimitive = string | number | boolean | null
@@ -120,13 +121,13 @@ type JsonArray = JsonValue[]
 type JsonValue = JsonPrimitive | JsonObject | JsonArray
 ```
 
-Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed. The file must be a valid JSON file. It is parsed using plain `JSON.parse`.
+Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must be a valid JSON file. It is parsed using plain `JSON.parse`.
 
-Currently it only allows adding new values under top-level keys. If the `jsonKey` exists, new values are merged into existing ones. Otherwise, new key is added. The function tracks if any real change was made and notifies the user if not.
+Currently it only allows adding new values under top-level keys (dot notation is not supported). If `jsonKey` does not exist, a new key is added. If `patch` is an object, its keys are shallow-merged into the existing value. Other values (primitives, arrays and `null`) replace the existing value. The function tracks if any real change was made and notifies the user if not.
 
 If `targetFile` does not exist, the function throws an error by default. Setting `opts.createMissing` to `true` will instead create the file (including missing directories) as an empty JSON object with `patch` applied. The user is asked to confirm the creation unless `opts.force` is `true`.
 
-By default the function asks for confirmation before attempting to alter the `targetFile`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own question to the user.
+By default the function asks for confirmation before attempting to alter the `targetFile`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
 
 #### `updateTextFile`
 
@@ -140,13 +141,13 @@ interface UpdateTextFileOptions extends FileOperationOptions {
 async function updateTextFile(opts: UpdateTextFileOptions): Promise<void>
 ```
 
-Takes a path to a plain text file and injects `rowsToAdd` at the end of the file, **providing they are not already present in the file**. Setting `opts.allowDuplicates` to `true` disables this check and all `rowsToAdd` are appended regardless of the current file contents. The function tracks if any real change was made and notifies the user if not.
+Takes a path to a plain text file and appends `rowsToAdd` at the end of the file, **provided they are not already present in the file** (as an exact line match). Setting `opts.allowDuplicates` to `true` disables this check and all `rowsToAdd` are appended regardless of the current file contents. The function tracks if any real change was made and notifies the user if not.
 
-Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed.
+Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed.
 
 If `targetFile` does not exist, the function throws an error by default. Setting `opts.createMissing` to `true` will instead create the file (including missing directories) containing `rowsToAdd`. The user is asked to confirm the creation unless `opts.force` is `true`.
 
-By default the function asks for confirmation before attempting to alter the `targetFile`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own question to the user.
+By default the function asks for confirmation before attempting to alter the `targetFile`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
 
 #### `removeFromJsonFile`
 
@@ -160,11 +161,11 @@ async function removeFromJsonFile(opts: RemoveFromJsonFileOptions): Promise<void
 
 Takes a path to a JSON file and removes the specified `jsonKey`.
 
-Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed. The file must be a valid JSON file. It is parsed using plain `JSON.parse`.
+Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist and be a valid JSON file. It is parsed using plain `JSON.parse`.
 
-Given `jsonKey` might point to a nested key using dot notation, e.g. `a.b.c`. If the key is not present, the function does nothing.
+The given `jsonKey` might point to a nested key using dot notation, e.g. `a.b.c`. If the key is not present, the file is left untouched and the user is notified.
 
-By default the function asks for confirmation before attempting to alter the `targetFile`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own question to the user.
+By default the function asks for confirmation before attempting to alter the `targetFile`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
 
 #### `removeFromTextFile`
 
@@ -178,9 +179,9 @@ async function removeFromTextFile(opts: RemoveFromTextFileOptions): Promise<void
 
 Takes a path to a plain text file and removes all lines that include the given `searchText`. The matching is done using `String.includes()`, so partial matches within a line will cause that line to be removed. The function tracks if any real change was made and notifies the user if not.
 
-Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed.
+Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist.
 
-By default the function asks for confirmation before attempting to alter the `targetFile`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own question to the user.
+By default the function asks for confirmation before attempting to alter the `targetFile`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
 
 #### `deletePath`
 
@@ -191,11 +192,11 @@ interface DeletePathOptions extends FileOperationOptions {
 async function deletePath(opts: DeletePathOptions): Promise<void>
 ```
 
-Deletes given `targetPath` from FS. Path is resolved relatively to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed.
+Deletes the given `targetPath` (a file or a directory, recursively) from FS. Path is resolved relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed.
 
-If the `targetPath` does not exist, the function does nothing.
+If the `targetPath` does not exist, nothing is deleted and the user is notified.
 
-By default the function asks for confirmation before attempting to delete the `targetPath`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own question to the user.
+By default the function asks for confirmation before attempting to delete the `targetPath`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
 
 ### List of content checkers
 
@@ -208,9 +209,9 @@ interface PathExistsOptions {
 function pathExists(opts: PathExistsOptions): boolean
 ```
 
-Checks if the specified `targetPath` exists on FS. Path is resolved relatively to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed.
+Checks if the specified `targetPath` (a file or a directory) exists on FS. Path is resolved relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed.
 
-If the path exists , the function returns true, false otherwise.
+If the path exists, the function returns `true`, `false` otherwise.
 
 #### `hasJsonKey`
 
@@ -222,9 +223,9 @@ interface HasJsonKeyOptions {
 function hasJsonKey(opts: HasJsonKeyOptions): boolean
 ```
 
-Checks whether given `jsonKey` exists in JSON file located at `targetFile`. Path is resolved relatively to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed.
+Checks whether the given `jsonKey` exists in the JSON file located at `targetFile`. Path is resolved relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist and be a valid JSON file.
 
-Given `jsonKey` might point to a nested key using dot notation, e.g. `a.b.c`. If the key is present, the function returns true, false otherwise.
+The given `jsonKey` might point to a nested key using dot notation, e.g. `a.b.c`. If the key is present, the function returns `true`, `false` otherwise.
 
 #### `hasText`
 
@@ -237,9 +238,9 @@ interface HasTextOptions {
 function hasText(opts: HasTextOptions): boolean
 ```
 
-Checks whether given `pattern` exists in text file located at `targetFile`. Path is resolved relatively to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths being passed in. Path traversal outside of CWD or providing absolute paths is disallowed.
+Checks whether the given `pattern` exists in the text file located at `targetFile`. Path is resolved relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist.
 
-The `pattern` might be a plain string or a regular expression. If it is present, the function returns true, false otherwise. By default partial matches are allowed for string patterns (`exact` defaults to `false`). If you set the optional `exact` property to true, the string must completely match at least one line in the file. However, surrounding whitespaces are trimmed in both cases.
+The `pattern` might be a plain string or a regular expression. The file is checked line by line. If the pattern is found, the function returns `true`, `false` otherwise. By default partial matches are allowed for string patterns (`exact` defaults to `false`). If you set the optional `exact` property to `true`, the string must completely match at least one line in the file. Surrounding whitespace is trimmed from the lines and from string patterns in both cases. The `exact` property is ignored for regular expressions.
 
 #### `getPackageManager`
 
@@ -247,7 +248,7 @@ The `pattern` might be a plain string or a regular expression. If it is present,
 function getPackageManager(): 'npm' | 'yarn' | 'pnpm' | 'deno' | 'bun'
 ```
 
-Tries to detect the package manager used in the current environment by checking for specific global variables and user agent strings. Fallbacks to `npm` if common checks fail to detect otherwise.
+Tries to detect the package manager (or runtime) used in the current environment by checking for `Deno` and `Bun` global variables and the `npm_config_user_agent` environment variable. Falls back to `npm` if the checks fail to detect anything else.
 
 ### List of terminal helpers
 
@@ -262,7 +263,7 @@ interface PromptUserOptions {
 async function promptUser(opts: PromptUserOptions): Promise<boolean>
 ```
 
-Prints out a `question` to the console and waits for the input. Returns `true` when `y` is pressed and `false` otherwise.
+Prints out a `question` (with ` (y/N): ` appended) to the console and waits for the input. Returns `true` when the user answers `y` or `yes` (case-insensitive) and `false` otherwise.
 
 By default it uses `process.stdin` and `process.stdout` streams. To use custom NodeJS streams, pass `input` and `output` directly in `opts`, e.g. `promptUser({ question: 'Continue?', input, output })`.
 
@@ -302,7 +303,7 @@ interface GetEnvValueOptions {
 function getEnvValue(opts: GetEnvValueOptions): string | undefined
 ```
 
-Reads a `.env` file and returns the value of the specified key or `undefined` if key not found. By default it reads from `.env` in the current working directory at call time (usually the root of the project). You can specify a custom path to the `.env` file with the `envFilePath` property.
+Reads a `.env` file and returns the value of the specified `key` (without surrounding quotes) or `undefined` if the file or the key is not found. By default it reads from `.env` in the current working directory at call time (usually the root of the project). You can specify a custom path to the `.env` file with the `envFilePath` property.
 
 #### `parseQualifiedPath`
 
@@ -313,7 +314,7 @@ interface ParseQualifiedPathOptions {
 function parseQualifiedPath(opts: ParseQualifiedPathOptions): { pkg: string; file: string }
 ```
 
-Expects path to file in `"package:relative/path/to/file"` format and splits it into `{ pkg, file }`. The package name can be scoped (e.g. `@scope/package`).
+Expects a path to a file in `"package:relative/path/to/file"` format and splits it into `{ pkg, file }`. The package name can be scoped (e.g. `@scope/package`). Throws an error if the input format is invalid.
 
 #### `resolvePackagePath`
 
@@ -324,13 +325,13 @@ interface ResolvePackagePathOptions {
 function resolvePackagePath(opts: ResolvePackagePathOptions): string
 ```
 
-Resolve a package's installed root directory *from the target app* - which can be either from within itself during development or from corresponding package dir inside *node_modules*. The package name can be scoped (e.g. `@scope/package`).
+Resolves a package's root directory *from the target app* (CWD). Returns CWD itself if its `package.json` has the same name (i.e. the package is being developed), otherwise looks for the package inside *node_modules* in CWD. The package name can be scoped (e.g. `@scope/package`). Throws an error if the package cannot be found.
 
 ## Tech stack
 
 - Developed with [TypeScript](https://www.typescriptlang.org/) in mind
 - Using [magicast](https://github.com/unjs/magicast) for parsing files
-- Build with [Vite](https://vitejs.dev/)
+- Built with [Vite](https://vitejs.dev/)
 - Tested with [Vitest](https://vitest.dev/)
 
 See [Changelog](https://github.com/AloisSeckar/elrh-cosca/blob/main/CHANGELOG.md) for project history and development.
