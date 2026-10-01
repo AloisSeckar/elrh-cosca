@@ -16,6 +16,23 @@ Run `npm install elrh-cosca` to include it in your project.
 
 All functions with arguments take a single required `opts` object with one or more properties. Each options type is exported from `elrh-cosca` and defined in [src/types/functions.ts](src/types/functions.ts).
 
+### Bundle size and lazy loading
+
+The library has no runtime dependencies. Third-party parsers are bundled into the published package, but split into separate chunks that are only loaded on demand:
+
+| Chunk | Approx. size | Loaded by |
+| --- | --- | --- |
+| `dist/elrh-cosca.mjs` (main entry) | ~19 kB | always |
+| `dist/chunks/magicast-*.mjs` ([magicast](https://github.com/unjs/magicast) incl. `@babel/parser`) | ~590 kB | [`updateConfigFile`](#updateconfigfile) |
+| `dist/chunks/yaml-*.mjs` ([yaml](https://github.com/eemeli/yaml)) | ~140 kB | [`updateYamlFile`](#updateyamlfile), [`removeFromYamlFile`](#removefromyamlfile), [`hasYamlKey`](#hasyamlkey) |
+
+What this means in practice:
+
+- **Installed package size** is (sadly) not reduced - all chunks are always downloaded with the package.
+- **Nothing extra to install** - all chunks are part of the `elrh-cosca` package, so the parsers are always available and never clash with other versions in your dependency tree.
+- **Running with Node** (e.g. a CLI script) - only the main entry is loaded on startup. A parser chunk is loaded via dynamic `import()` the first time a function needing it is called, and it is cached by Node afterwards.
+- **Bundling into your own code** - the package is marked as `"sideEffects": false`, so unused functions can be tree-shaken. If you don't use any of the functions listed above, bundlers like Vite drop the related chunks entirely. Other bundlers may still emit them as separate files, but they are never loaded.
+
 ### List of file-manipulation functions
 
 All file-manipulation options extend the following shared shape. `force` defaults to `false`. An omitted or empty `prompt` uses the function's built-in initial confirmation question.
@@ -390,7 +407,6 @@ Resolves a package's root directory *from the target app* (CWD). Returns CWD its
 - Developed with [TypeScript](https://www.typescriptlang.org/) in mind
 - Using [magicast](https://github.com/unjs/magicast) for parsing files
 - Using [yaml](https://github.com/eemeli/yaml) for parsing YAML files
-- Both parsers are bundled as separate chunks that are only loaded when a function needing them is called
 - Built with [Vite](https://vitejs.dev/)
 - Tested with [Vitest](https://vitest.dev/)
 
