@@ -3,7 +3,7 @@ import type { DataValue } from '../types/data.js'
 import { dirname, resolve } from 'node:path'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { isDeepStrictEqual } from 'node:util'
-import { type Document, type YAMLMap, isMap, isNode, isScalar, parseDocument } from 'yaml'
+import type { Document, YAMLMap } from 'yaml'
 import { promptUser } from '../terminal/prompt-user.js'
 import { checkPath } from '../_private/check-path.js'
 
@@ -50,6 +50,9 @@ export async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void>
       }
     }
 
+    // lazy-loaded so the code is only parsed when needed
+    const yaml = await import('yaml')
+    const { isMap, parseDocument } = yaml
     const yamlRaw = created ? '' : readFileSync(yamlFilePath, 'utf8')
     const doc: Document = parseDocument(yamlRaw)
     if (doc.errors.length > 0) {
@@ -80,7 +83,7 @@ export async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void>
     }
 
     if (patch === null || typeof patch !== 'object' || Array.isArray(patch)) {
-      modified = setValue(doc, parent, targetKey, patch) || modified
+      modified = setValue(yaml, doc, parent, targetKey, patch) || modified
     } else {
       let target: unknown = parent.get(targetKey, true)
       if (!isMap(target)) {
@@ -90,7 +93,7 @@ export async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void>
         modified = true
       }
       for (const [key, value] of Object.entries(patch)) {
-        modified = setValue(doc, target as YAMLMap, key, value) || modified
+        modified = setValue(yaml, doc, target as YAMLMap, key, value) || modified
       }
     }
 
@@ -108,7 +111,7 @@ export async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void>
   }
 }
 
-function setValue(doc: Document, map: YAMLMap, key: string, value: DataValue): boolean {
+function setValue({ isNode, isScalar }: typeof import('yaml'), doc: Document, map: YAMLMap, key: string, value: DataValue): boolean {
   const current = map.get(key, true)
   if (map.has(key) && isDeepStrictEqual(isNode(current) ? current.toJSON() : current, value)) {
     return false

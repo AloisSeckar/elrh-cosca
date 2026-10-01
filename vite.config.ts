@@ -27,6 +27,16 @@ export default defineConfig({
       ],
       output: {
         exports: 'named',
+        // optimize bundle size by putting external libs into separate chunks
+        chunkFileNames: 'chunks/[name]-[hash].mjs',
+        manualChunks(id) {
+          if (id.includes('/node_modules/yaml/')) {
+            return 'yaml'
+          }
+          if (/\/node_modules\/(magicast|@babel|source-map-js)\//.test(id)) {
+            return 'magicast'
+          }
+        },
       }
     },
   },

@@ -1,7 +1,6 @@
 import type { UpdateConfigFileOptions } from '../types/functions.js'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
-import { loadFile, parseModule, generateCode } from 'magicast'
 import { deepMergeObject } from '../_private/deep-merge-object.js'
 import { promptUser } from '../terminal/prompt-user.js'
 import { checkPath } from '../_private/check-path.js'
@@ -45,6 +44,9 @@ export async function updateConfigFile(opts: UpdateConfigFileOptions): Promise<v
         return
       }
     }
+
+    // lazy-loaded so the code is only parsed when needed
+    const { loadFile, parseModule, generateCode } = await import('magicast')
 
     // load the file as a Magicast module (.ts/.js/.mjs)
     const module = created ? parseModule('export default {}\n') : await loadFile(configFilePath)

@@ -276,12 +276,14 @@ interface HasYamlKeyOptions {
   targetFile: string
   yamlKey: string
 }
-function hasYamlKey(opts: HasYamlKeyOptions): boolean
+async function hasYamlKey(opts: HasYamlKeyOptions): Promise<boolean>
 ```
 
 Checks whether the given `yamlKey` exists in the YAML file located at `targetFile`. Path is resolved relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist and be a valid single-document YAML file. It is parsed using [eemeli/yaml](https://github.com/eemeli/yaml) package.
 
-The given `yamlKey` might point to a nested key using dot notation, e.g. `a.b.c`. If the key is present, the function returns `true`, `false` otherwise (including when the file is empty or its root is not a map).
+The given `yamlKey` might point to a nested key using dot notation, e.g. `a.b.c`. If the key is present, the function resolves to `true`, `false` otherwise (including when the file is empty or its root is not a map).
+
+Unlike other checks, this function runs asynchronously, because the YAML parser is loaded lazily on demand.
 
 #### `hasText`
 
@@ -388,6 +390,7 @@ Resolves a package's root directory *from the target app* (CWD). Returns CWD its
 - Developed with [TypeScript](https://www.typescriptlang.org/) in mind
 - Using [magicast](https://github.com/unjs/magicast) for parsing files
 - Using [yaml](https://github.com/eemeli/yaml) for parsing YAML files
+- Both parsers are bundled as separate chunks that are only loaded when a function needing them is called
 - Built with [Vite](https://vitejs.dev/)
 - Tested with [Vitest](https://vitest.dev/)
 

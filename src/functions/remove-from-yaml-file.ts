@@ -1,7 +1,6 @@
 import type { RemoveFromYamlFileOptions } from '../types/functions.js'
 import { resolve } from 'node:path'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { isMap, isScalar, parseDocument } from 'yaml'
 import { promptUser } from '../terminal/prompt-user.js'
 import { checkPath } from '../_private/check-path.js'
 
@@ -30,6 +29,8 @@ export async function removeFromYamlFile(opts: RemoveFromYamlFileOptions): Promi
       throw new Error(`No '${targetFile}' found — cannot delete its keys.`)
     }
 
+    // lazy-loaded so the code is only parsed when needed
+    const { isMap, isScalar, parseDocument } = await import('yaml')
     const doc = parseDocument(readFileSync(yamlFilePath, 'utf8'))
     if (doc.errors.length > 0) {
       throw new Error(`Could not parse '${targetFile}' — cannot delete its keys.\n${doc.errors[0]}`)

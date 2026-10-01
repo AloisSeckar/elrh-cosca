@@ -1,7 +1,6 @@
 import type { HasYamlKeyOptions } from '../types/functions.js'
 import { resolve } from 'node:path'
 import { existsSync, readFileSync } from 'node:fs'
-import { isMap, parseDocument } from 'yaml'
 import { checkPath } from '../_private/check-path.js'
 
 /**
@@ -10,10 +9,10 @@ import { checkPath } from '../_private/check-path.js'
  * @param {HasYamlKeyOptions} opts - Options for this operation.
  * @param {string} opts.targetFile - The path to the YAML file to be checked (relative to CWD).
  * @param {string} opts.yamlKey - The key in the YAML file to be checked for existence (may use dot notation for nested keys).
- * @returns {boolean} True if the key exists in target file, false otherwise.
+ * @returns {Promise<boolean>} A promise resolving to true if the key exists in target file, false otherwise.
  * @throws Will throw an error if the path is invalid, file does not exist or cannot be parsed as YAML.
  */
-export function hasYamlKey(opts: HasYamlKeyOptions): boolean {
+export async function hasYamlKey(opts: HasYamlKeyOptions): Promise<boolean> {
   const { targetFile, yamlKey } = opts
   const check = checkPath(targetFile)
   if (!check.valid) {
@@ -25,6 +24,8 @@ export function hasYamlKey(opts: HasYamlKeyOptions): boolean {
     throw new Error(`No '${targetFile}' found — cannot check its keys.`)
   }
 
+  // lazy-loaded so the code is only parsed when needed
+  const { isMap, parseDocument } = await import('yaml')
   const doc = parseDocument(readFileSync(yamlFilePath, 'utf8'))
   if (doc.errors.length > 0) {
     throw new Error(`Could not parse '${targetFile}' — cannot check its keys.\n${doc.errors[0]}`)

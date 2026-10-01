@@ -2,6 +2,7 @@
   "name": "elrh-cosca",
   "version": "0.3.6",
   "type": "module",
+  "sideEffects": false,
   "files": [
     "dist"
   ],
