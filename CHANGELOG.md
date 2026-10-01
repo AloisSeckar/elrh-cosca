@@ -2,6 +2,26 @@
 
 Overview of the newest features in COSCA.
 
+## 0.4.0
+
+`2026-10-01`
+
+- **BREAKING:** all functions with arguments now take a single `opts` object instead of positional parameters (#17)
+- **BREAKING:** `JsonValue` type renamed to `DataValue` (and other `Json*` types to `Data*`)
+- feat: new `hasYamlKey`, `updateYamlFile` and `removeFromYamlFile` functions to work with YAML files (#16)
+- feat: `updateJsonFile` now also supports nested keys (#21)
+- feat: new `createMissing` option allows creating the target file in `updateConfigFile`, `updateJsonFile` and `updateTextFile` (#5)
+- feat: new `allowDuplicates` option in `updateTextFile` (#18)
+- feat: `createFileFromWebTemplate` no longer requires strict HTTP `200` response code follows (up to 5) redirects (#19)
+- feat: optimized bundle size by emitting `magicast` and `yaml` parsers as separate lazy-loaded chunks (#1)
+- fix: improved object handling in `updateJsonFile` (#20)
+- fix: use `accessSync` in `resolvePackagePath`
+- fix: clearer error message when target file is not found
+- docs: included latest additions and changes
+- docs: updated JSDocs and README wording
+- tests: added Vitest coverage reports and increased coverage to effectively 100% (#9)
+- build: bump deps (`vite`, `vitest`, `magicast`, `yaml`, `typescript`, `@types/node`)
+
 ## 0.3.6
 
 `2026-06-02`
