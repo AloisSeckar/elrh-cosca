@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, test, vi} from 'vitest'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { updateConfigFile } from '../src/main'
+import { checkPath } from '../src/_private/check-path'
 import { getConsoleSpy, setPromptSpy, readNormalizedFile, getPromptUserSpy } from './cosca-test-utils'
 
 // `checkPath` function must be mocked as it disallows paths outside of CWD
@@ -24,6 +25,56 @@ describe('Test updateConfigFile function', () => {
 
   test('should be defined', () => {
     expect(updateConfigFile).toBeDefined()
+  })
+
+  test('should fail when path check fails', async () => {
+    vi.mocked(checkPath).mockReturnValueOnce({ valid: false, error: 'Invalid path' })
+    await expect(updateConfigFile({ targetFile: 'a', newConfig: { testKey1: 0 }, force: true })).rejects.toThrow(/Invalid path/)
+  })
+
+  test('should update config wrapped in a function call', async () => {
+    const file = join(wd, 'config-function-call.ts')
+    writeFileSync(file, 'export default defineConfig({\n  testKey1: 1,\n})\n')
+    await updateConfigFile({ targetFile: file, newConfig: { testKey2: 2 }, force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
+    expect(readFileSync(file, 'utf8')).toMatch(/testKey2: 2/)
+  })
+
+  test('should merge arrays in config as unique union', async () => {
+    const file = join(wd, 'config-array.ts')
+    writeFileSync(file, 'export default {\n  list: [\'a\'],\n}\n')
+    await updateConfigFile({ targetFile: file, newConfig: { list: ['a', 'b'], other: ['c'] }, force: true })
+
+    const content = readFileSync(file, 'utf8')
+    expect(content.match(/['"]a['"]/g)).toHaveLength(1)
+    expect(content).toMatch(/['"]b['"]/)
+    expect(content).toMatch(/other:\s*\[\s*['"]c['"]/)
+  })
+
+  test('should fail when function call has no config object', async () => {
+    const file = join(wd, 'config-no-args.ts')
+    writeFileSync(file, 'export default defineConfig()\n')
+    await expect(updateConfigFile({ targetFile: file, newConfig: { testKey1: 0 }, force: true })).rejects.toThrow(/Could not access config object/)
+  })
+
+  test('should fail when config export is not an object', async () => {
+    const file = join(wd, 'config-primitive.ts')
+    writeFileSync(file, 'export default 5\n')
+    await expect(updateConfigFile({ targetFile: file, newConfig: { testKey1: 0 }, force: true })).rejects.toThrow(/Could not access config object/)
+  })
+
+  test('should fail when module has no suitable export', async () => {
+    // magicast always exposes `exports` as an object, so the module must be faked
+    vi.doMock('magicast', async (importOriginal) => ({
+      ...(await importOriginal<typeof import('magicast')>()),
+      loadFile: async () => ({ exports: () => {} }),
+    }))
+    try {
+      await expect(updateConfigFile({ targetFile: `${wd}/config-file-default.ts`, newConfig: { testKey1: 0 }, force: true })).rejects.toThrow(/No suitable config export found/)
+    } finally {
+      vi.doUnmock('magicast')
+    }
   })
 
   test('should fail because of non-existent file', async () => {

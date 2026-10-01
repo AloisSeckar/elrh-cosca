@@ -59,6 +59,10 @@ describe('Test hasYamlKey checker', () => {
     expect(await hasYamlKey({ targetFile: `${wd}/yaml-file.yaml`, yamlKey: 'array-key.0' })).toBe(false)
   })
 
+  test('should not find deeply nested key under non-map value', async () => {
+    expect(await hasYamlKey({ targetFile: `${wd}/yaml-file.yaml`, yamlKey: 'string-key.nested-key.deeper-key' })).toBe(false)
+  })
+
   test('should not find key in empty file', async () => {
     writeFileSync(join(wd, 'has-yaml-key-empty.yaml'), '')
     expect(await hasYamlKey({ targetFile: `${wd}/has-yaml-key-empty.yaml`, yamlKey: 'key' })).toBe(false)

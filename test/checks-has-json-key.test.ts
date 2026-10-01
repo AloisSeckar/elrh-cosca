@@ -51,6 +51,10 @@ describe('Test hasJsonKey checker', () => {
     expect(hasJsonKey({ targetFile: `${wd}/json-file.json`, jsonKey: 'object-key.non-existent-key' })).toBe(false)
   })
 
+  test('should not find nested key under non-existent parent key', async () => {
+    expect(hasJsonKey({ targetFile: `${wd}/json-file.json`, jsonKey: 'non-existent-key.nested-key' })).toBe(false)
+  })
+
   test('should not find nested key under non-object value', async () => {
     expect(hasJsonKey({ targetFile: `${wd}/json-file.json`, jsonKey: 'string-key.nested-key' })).toBe(false)
   })

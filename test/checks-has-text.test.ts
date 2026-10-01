@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { hasText } from '../src/main'
+import { checkPath } from '../src/_private/check-path'
 
 // `checkPath` function must be mocked as it disallows paths outside of CWD
 // which is not possible because tests run in temporary folder
@@ -19,6 +20,11 @@ describe('Test hasText checker', () => {
 
   test('should be defined', () => {
     expect(hasText).toBeDefined()
+  })
+
+  test('should fail when path check fails', () => {
+    vi.mocked(checkPath).mockReturnValueOnce({ valid: false, error: 'Invalid path' })
+    expect(() => hasText({ targetFile: 'a', pattern: 'Row 1' })).toThrow(/Invalid path/)
   })
   
   test('should fail because of non-existent file', async () => {

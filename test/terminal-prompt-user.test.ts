@@ -70,4 +70,25 @@ describe('Test promptUser terminal helper', () => {
     setPromptSpy(['Yess'])
     expect(await promptUser({ question: 'Is it today?' })).toBe(false)
   })
+
+  test('should close the interface upon SIGINT', () => {
+    const input = new PassThrough()
+    const output = new PassThrough()
+    const createInterfaceSpy = vi.spyOn(readline, 'createInterface')
+    const questionSpy = vi.spyOn(readline.Interface.prototype, 'question').mockImplementation(() => {})
+    try {
+      createInterfaceSpy.mockClear()
+      // the promise stays pending as the question is never answered
+      void promptUser({ question: 'Continue?', input, output })
+      const rl = createInterfaceSpy.mock.results[0].value as readline.Interface
+      const closeSpy = vi.spyOn(rl, 'close')
+      rl.emit('SIGINT')
+      expect(closeSpy).toHaveBeenCalled()
+    } finally {
+      questionSpy.mockRestore()
+      createInterfaceSpy.mockRestore()
+      input.destroy()
+      output.destroy()
+    }
+  })
 })

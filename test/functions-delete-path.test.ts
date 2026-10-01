@@ -2,8 +2,14 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { deletePath } from '../src/main'
 import { checkPath } from '../src/_private/check-path'
 import { getConsoleSpy, getPromptUserSpy, setPromptSpy } from './cosca-test-utils'
-import { existsSync } from 'node:fs'
+import { existsSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
+
+// wraps the real `rmSync` so a single call can be stubbed
+vi.mock('node:fs', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('node:fs')>()
+  return { ...actual, rmSync: vi.fn(actual.rmSync) }
+})
 
 // `checkPath` function must be mocked as it disallows paths outside of CWD
 // which is not possible because tests run in temporary folder
@@ -58,6 +64,12 @@ describe('Test deletePath function', () => {
   test('should be rejected when path check fails', async () => {
     vi.mocked(checkPath).mockReturnValueOnce({ valid: false, error: 'Invalid path' })
     await expect(deletePath({ targetPath: 'a', force: true })).rejects.toThrow(/Invalid path/)
+  })
+
+  test('should fail when the path is not removed', async () => {
+    vi.mocked(rmSync).mockImplementationOnce(() => {})
+    await expect(deletePath({ targetPath: join(wd, 'text-file.txt'), force: true })).rejects.toThrow(/Failed to delete/)
+    expect(existsSync(join(wd, 'text-file.txt'))).toBe(true)
   })
 
   test('should do nothing when user aborts deleting', async () => {

@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import { writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { removeFromYamlFile } from '../src/main'
+import { checkPath } from '../src/_private/check-path'
 import { getConsoleSpy, getPromptUserSpy, readNormalizedFile, setPromptSpy } from './cosca-test-utils'
 
 // `checkPath` function must be mocked as it disallows paths outside of CWD
@@ -24,6 +25,21 @@ describe('Test removeFromYamlFile function', () => {
 
   test('should be defined', () => {
     expect(removeFromYamlFile).toBeDefined()
+  })
+
+  test('should fail when path check fails', async () => {
+    vi.mocked(checkPath).mockReturnValueOnce({ valid: false, error: 'Invalid path' })
+    await expect(removeFromYamlFile({ targetFile: 'a', yamlKey: 'cosca', force: true })).rejects.toThrow(/Invalid path/)
+  })
+
+  test('should do nothing for nested key under non-map value', async () => {
+    const file = join(wd, 'remove-yaml-nested.yaml')
+    writeFileSync(file, 'str: x\n')
+    spy.mockClear()
+    await removeFromYamlFile({ targetFile: file, yamlKey: 'str.a.b', force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/already up to date/))
+    expect(readFileSync(file, 'utf8')).toBe('str: x\n')
   })
 
   test('should fail because of non-existent file', async () => {

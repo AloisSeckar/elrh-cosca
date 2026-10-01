@@ -1,6 +1,8 @@
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { createFileFromWebTemplate } from '../src/main'
+import { checkPath } from '../src/_private/check-path'
+import { fetchFile } from '../src/_private/fetch-file'
 import { getConsoleSpy, setPromptSpy, readNormalizedFile, getPromptUserSpy } from './cosca-test-utils'
 
 // `checkPath` function must be mocked as it disallows paths outside of CWD
@@ -10,6 +12,16 @@ vi.mock('../src/_private/check-path', () => ({
     return { valid: true }
   })
 }))
+
+// wrap the real implementations so single calls can be stubbed
+vi.mock('../src/_private/fetch-file', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../src/_private/fetch-file')>()
+  return { ...actual, fetchFile: vi.fn(actual.fetchFile) }
+})
+vi.mock('node:fs', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('node:fs')>()
+  return { ...actual, writeFileSync: vi.fn(actual.writeFileSync) }
+})
 
 describe('Test createFileFromWebTemplate function', () => {
 
@@ -23,6 +35,28 @@ describe('Test createFileFromWebTemplate function', () => {
 
   test('should be defined', () => {
     expect(createFileFromWebTemplate).toBeDefined()
+  })
+
+  test('should fail when path check fails', async () => {
+    vi.mocked(fetchFile).mockResolvedValueOnce('content')
+    vi.mocked(checkPath).mockReturnValueOnce({ valid: false, error: 'Invalid path' })
+    await expect(createFileFromWebTemplate({ url: `https://example.com/file.txt`, targetFile: 'a', force: true })).rejects.toThrow(/Invalid path/)
+  })
+
+  test('should fail when the file is not created', async () => {
+    vi.mocked(fetchFile).mockResolvedValueOnce('content')
+    vi.mocked(writeFileSync).mockImplementationOnce(() => {})
+    await expect(createFileFromWebTemplate({ url: `https://example.com/file.txt`, targetFile: `${wd}/web-file-missing.txt`, force: true })).rejects.toThrow(/Failed to create/)
+  })
+
+  test('should overwrite existing file when user confirms', async () => {
+    writeFileSync(`${wd}/web-file-overwrite.txt`, 'old')
+    vi.mocked(fetchFile).mockResolvedValueOnce('new content')
+    setPromptSpy(['y', 'y'])
+    await createFileFromWebTemplate({ url: `https://example.com/file.txt`, targetFile: `${wd}/web-file-overwrite.txt` })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/successfully created/))
+    expect(readFileSync(`${wd}/web-file-overwrite.txt`, 'utf8')).toBe('new content')
   })
   
   test('should fail because of invalid path', async () => {
@@ -41,11 +75,11 @@ describe('Test createFileFromWebTemplate function', () => {
   })
 
   test('should create the file even in non-existent directory', async () => {
-    await createFileFromWebTemplate({ url: `https://raw.githubusercontent.com/AloisSeckar/nuxt-spec/refs/heads/main/config/templates/vitest.config.ts.template`, targetFile: `${wd}/first/second/file.txt`, force: true })
+    await createFileFromWebTemplate({ url: `https://raw.githubusercontent.com/AloisSeckar/nuxt-spec/refs/heads/main/config/templates/vitest.config.ts.template`, targetFile: `${wd}/web-first/second/file.txt`, force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/successfully created/))
 
-    await expect(readNormalizedFile(wd, 'first/second/file.txt')).toMatchFileSnapshot('snapshots/created-web-file.txt')
+    await expect(readNormalizedFile(wd, 'web-first/second/file.txt')).toMatchFileSnapshot('snapshots/created-web-file.txt')
   })
 
   test('should follow redirects', async () => {

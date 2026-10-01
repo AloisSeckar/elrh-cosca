@@ -46,6 +46,16 @@ describe('Test getEnvValue util function', () => {
     expect(value).toBeUndefined()
   })
 
+  test('should skip lines without assignment', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'cosca-env-'))
+    try {
+      writeFileSync(join(directory, '.env'), 'INVALID\nA=1\n')
+      expect(getEnvValue({ key: 'A', envFilePath: join(directory, '.env') })).toBe('1')
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
+    }
+  })
+
   test('should return undefined from non-existing .env file', () => {
     const value = getEnvValue({ key: 'A', envFilePath: 'test/fixtures/.env.none' })
     expect(value).toBeUndefined()

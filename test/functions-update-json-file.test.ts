@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, expectTypeOf, test, vi } from 'vitest'
-import { existsSync } from 'node:fs'
+import { existsSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { updateJsonFile } from '../src/main'
 import type { UpdateJsonFileOptions } from '../src/main'
+import { checkPath } from '../src/_private/check-path'
 import { getConsoleSpy, getPromptUserSpy, readNormalizedFile, setPromptSpy } from './cosca-test-utils'
 
 // `checkPath` function must be mocked as it disallows paths outside of CWD
@@ -25,6 +26,20 @@ describe('Test updateJsonFile function', () => {
 
   test('should be defined', () => {
     expect(updateJsonFile).toBeDefined()
+  })
+
+  test('should fail when path check fails', async () => {
+    vi.mocked(checkPath).mockReturnValueOnce({ valid: false, error: 'Invalid path' })
+    await expect(updateJsonFile({ targetFile: 'a', jsonKey: 'cosca', patch: 1, force: true })).rejects.toThrow(/Invalid path/)
+  })
+
+  test('should not modify file when scalar patch equals the existing value', async () => {
+    const file = join(wd, 'update-json-same.json')
+    writeFileSync(file, '{\n  "a": 1\n}\n')
+    spy.mockClear()
+    await updateJsonFile({ targetFile: file, jsonKey: 'a', patch: 1, force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/already up to date/))
   })
 
   test('should require one options object with targetFile, jsonKey and patch', () => {

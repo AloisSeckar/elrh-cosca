@@ -1,6 +1,6 @@
-import { describe, expect, test } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 import { checkPath } from "../src/_private/check-path"
-import { join } from "path"
+import { join, resolve, sep } from "path"
 
 describe('Test checkPath function', () => {
   test('simple file is a valid path', async () => {
@@ -61,6 +61,20 @@ describe('Test checkPath function', () => {
     const check = checkPath(join('a', '..', '..', 'b'))
     expect(check.valid).toBe(false)
     expect(check.error).toContain(`Path traversal not allowed`)
+  })
+
+  test('path resolved outside of CWD is an invalid path', async () => {
+    // CWD changing between the calls simulates a path escaping the working directory
+    const cwdSpy = vi.spyOn(process, 'cwd')
+      .mockReturnValueOnce(resolve(sep, 'cosca-a'))
+      .mockReturnValueOnce(resolve(sep, 'cosca-b'))
+    try {
+      const check = checkPath('a')
+      expect(check.valid).toBe(false)
+      expect(check.error).toContain(`Path outside of CWD not allowed`)
+    } finally {
+      cwdSpy.mockRestore()
+    }
   })
   
 }) 

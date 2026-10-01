@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { readFileSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { removeFromJsonFile } from '../src/main'
+import { checkPath } from '../src/_private/check-path'
 import { getConsoleSpy, getPromptUserSpy, readNormalizedFile, setPromptSpy } from './cosca-test-utils'
 
 // `checkPath` function must be mocked as it disallows paths outside of CWD
@@ -22,6 +25,24 @@ describe('Test removeFromJsonFile function', () => {
 
   test('should be defined', () => {
     expect(removeFromJsonFile).toBeDefined()
+  })
+
+  test('should fail when path check fails', async () => {
+    vi.mocked(checkPath).mockReturnValueOnce({ valid: false, error: 'Invalid path' })
+    await expect(removeFromJsonFile({ targetFile: 'a', jsonKey: 'cosca', force: true })).rejects.toThrow(/Invalid path/)
+  })
+
+  test('should do nothing for nested key under non-existent or non-object parent', async () => {
+    const file = join(wd, 'remove-json-nested.json')
+    const content = JSON.stringify({ str: 'x', arr: [1] }, null, 2)
+    writeFileSync(file, content)
+    spy.mockClear()
+    for (const jsonKey of ['missing.key', 'str.key', 'arr.key']) {
+      await removeFromJsonFile({ targetFile: file, jsonKey, force: true })
+    }
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/already up to date/))
+    expect(readFileSync(file, 'utf8')).toBe(content)
   })
 
   test('should fail because of non-existent file', async () => {

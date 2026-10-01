@@ -1,6 +1,7 @@
-import { existsSync } from 'node:fs'
+import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { createFileFromTemplate } from '../src/main'
+import { checkPath } from '../src/_private/check-path'
 import { getConsoleSpy, setPromptSpy, readNormalizedFile, getPromptUserSpy } from './cosca-test-utils'
 
 // `checkPath` function must be mocked as it disallows paths outside of CWD
@@ -10,6 +11,12 @@ vi.mock('../src/_private/check-path', () => ({
     return { valid: true }
   })
 }))
+
+// wraps the real `copyFileSync` so a single call can be stubbed
+vi.mock('node:fs', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('node:fs')>()
+  return { ...actual, copyFileSync: vi.fn(actual.copyFileSync) }
+})
 
 describe('Test createFileFromTemplate function', () => {
 
@@ -23,6 +30,25 @@ describe('Test createFileFromTemplate function', () => {
 
   test('should be defined', () => {
     expect(createFileFromTemplate).toBeDefined()
+  })
+
+  test('should fail when path check fails', async () => {
+    vi.mocked(checkPath).mockReturnValueOnce({ valid: false, error: 'Invalid path' })
+    await expect(createFileFromTemplate({ templateFile: `elrh-cosca:test/fixtures/text-file.txt`, targetFile: 'a', force: true })).rejects.toThrow(/Invalid path/)
+  })
+
+  test('should fail when the file is not created', async () => {
+    vi.mocked(copyFileSync).mockImplementationOnce(() => {})
+    await expect(createFileFromTemplate({ templateFile: `elrh-cosca:test/fixtures/text-file.txt`, targetFile: `${wd}/local-file-missing.txt`, force: true })).rejects.toThrow(/Failed to create/)
+  })
+
+  test('should overwrite existing file when user confirms', async () => {
+    writeFileSync(`${wd}/local-file-overwrite.txt`, 'old')
+    setPromptSpy(['y', 'y'])
+    await createFileFromTemplate({ templateFile: `elrh-cosca:test/fixtures/text-file.txt`, targetFile: `${wd}/local-file-overwrite.txt` })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/successfully created/))
+    expect(readFileSync(`${wd}/local-file-overwrite.txt`, 'utf8')).toContain('Row 1')
   })
   
   test('should fail because of invalid path', async () => {

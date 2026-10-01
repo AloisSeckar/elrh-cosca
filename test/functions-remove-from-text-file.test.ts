@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { removeFromTextFile } from '../src/main'
+import { checkPath } from '../src/_private/check-path'
 import { getConsoleSpy, getPromptUserSpy, readNormalizedFile, setPromptSpy } from './cosca-test-utils'
 
 // `checkPath` function must be mocked as it disallows paths outside of CWD
@@ -22,6 +23,11 @@ describe('Test removeFromTextFile function', () => {
 
   test('should be defined', () => {
     expect(removeFromTextFile).toBeDefined()
+  })
+
+  test('should fail when path check fails', async () => {
+    vi.mocked(checkPath).mockReturnValueOnce({ valid: false, error: 'Invalid path' })
+    await expect(removeFromTextFile({ targetFile: 'a', searchText: 'Row 1', force: true })).rejects.toThrow(/Invalid path/)
   })
   
   test('should fail because of non-existent file', async () => {

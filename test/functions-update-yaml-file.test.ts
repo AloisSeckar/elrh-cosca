@@ -3,6 +3,7 @@ import { existsSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { updateYamlFile } from '../src/main'
 import type { UpdateYamlFileOptions } from '../src/main'
+import { checkPath } from '../src/_private/check-path'
 import { getConsoleSpy, getPromptUserSpy, readNormalizedFile, setPromptSpy } from './cosca-test-utils'
 
 // `checkPath` function must be mocked as it disallows paths outside of CWD
@@ -25,6 +26,11 @@ describe('Test updateYamlFile function', () => {
 
   test('should be defined', () => {
     expect(updateYamlFile).toBeDefined()
+  })
+
+  test('should fail when path check fails', async () => {
+    vi.mocked(checkPath).mockReturnValueOnce({ valid: false, error: 'Invalid path' })
+    await expect(updateYamlFile({ targetFile: 'a', yamlKey: 'cosca', patch: 1, force: true })).rejects.toThrow(/Invalid path/)
   })
 
   test('should require one options object with targetFile, yamlKey and patch', () => {
