@@ -38,25 +38,33 @@ describe('Test createFileFromWebTemplate function', () => {
   })
 
   test('should fail when path check fails', async () => {
-    vi.mocked(fetchFile).mockResolvedValueOnce('content')
+    vi.mocked(fetchFile).mockResolvedValueOnce(Buffer.from('content'))
     vi.mocked(checkPath).mockReturnValueOnce({ valid: false, error: 'Invalid path' })
     await expect(createFileFromWebTemplate({ url: `https://example.com/file.txt`, targetFile: 'a', force: true })).rejects.toThrow(/Invalid path/)
   })
 
   test('should fail when the file is not created', async () => {
-    vi.mocked(fetchFile).mockResolvedValueOnce('content')
+    vi.mocked(fetchFile).mockResolvedValueOnce(Buffer.from('content'))
     vi.mocked(writeFileSync).mockImplementationOnce(() => {})
     await expect(createFileFromWebTemplate({ url: `https://example.com/file.txt`, targetFile: `${wd}/web-file-missing.txt`, force: true })).rejects.toThrow(/Failed to create/)
   })
 
   test('should overwrite existing file when user confirms', async () => {
     writeFileSync(`${wd}/web-file-overwrite.txt`, 'old')
-    vi.mocked(fetchFile).mockResolvedValueOnce('new content')
+    vi.mocked(fetchFile).mockResolvedValueOnce(Buffer.from('new content'))
     setPromptSpy(['y', 'y'])
     await createFileFromWebTemplate({ url: `https://example.com/file.txt`, targetFile: `${wd}/web-file-overwrite.txt` })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/successfully created/))
     expect(readFileSync(`${wd}/web-file-overwrite.txt`, 'utf8')).toBe('new content')
+  })
+
+  test('should create binary file unchanged', async () => {
+    const png = Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0xFF, 0x00])
+    vi.mocked(fetchFile).mockResolvedValueOnce(png)
+    await createFileFromWebTemplate({ url: `https://example.com/file.png`, targetFile: `${wd}/web-file-binary.png`, force: true })
+
+    expect(readFileSync(`${wd}/web-file-binary.png`)).toEqual(png)
   })
   
   test('should fail because of invalid path', async () => {

@@ -6,7 +6,7 @@ import { fetchFile } from '../src/_private/fetch-file'
 type FakeResponse = {
   statusCode?: number
   headers?: Record<string, string>
-  chunks?: string[]
+  chunks?: (string | Buffer)[]
   error?: Error
 }
 
@@ -24,13 +24,12 @@ function mockHttps(responses: (FakeResponse | Error)[]) {
       statusCode: next.statusCode,
       headers: next.headers ?? {},
       resume: vi.fn(),
-      setEncoding: vi.fn(),
     })
     callback(res)
     if (next.error) {
       res.emit('error', next.error)
     } else {
-      next.chunks?.forEach(chunk => res.emit('data', chunk))
+      next.chunks?.forEach(chunk => res.emit('data', Buffer.from(chunk)))
       res.emit('end')
     }
     return req
@@ -45,7 +44,13 @@ describe('Test fetchFile function', () => {
 
   test('should return the response body', async () => {
     mockHttps([{ statusCode: 200, chunks: ['Hello, ', 'world'] }])
-    await expect(fetchFile('https://example.com/file.txt')).resolves.toBe('Hello, world')
+    await expect(fetchFile('https://example.com/file.txt').then(String)).resolves.toBe('Hello, world')
+  })
+
+  test('should return binary content unchanged', async () => {
+    const png = Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0xFF, 0x00])
+    mockHttps([{ statusCode: 200, chunks: [png.subarray(0, 5), png.subarray(5)] }])
+    await expect(fetchFile('https://example.com/file.png')).resolves.toEqual(png)
   })
 
   test('should follow relative redirect', async () => {
@@ -53,7 +58,7 @@ describe('Test fetchFile function', () => {
       { statusCode: 302, headers: { location: '/next' } },
       { statusCode: 200, chunks: ['done'] },
     ])
-    await expect(fetchFile('https://example.com/file.txt')).resolves.toBe('done')
+    await expect(fetchFile('https://example.com/file.txt').then(String)).resolves.toBe('done')
     expect(spy.mock.calls[1][0]).toBe('https://example.com/next')
   })
 

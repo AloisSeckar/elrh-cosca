@@ -9,7 +9,7 @@ import { checkPath } from '../_private/check-path'
  * Creates a new file as a copy of a template file downloaded from the web.
  * 
  * @param {CreateFileFromWebTemplateOptions} opts - Options for this operation.
- * @param {string} opts.url - The URL of the template file (must be accessible via `node:https.get` and return raw text data; HTTPS redirects are followed).
+ * @param {string} opts.url - The URL of the template file (must be accessible via `node:https.get`; content is copied byte-for-byte; HTTPS redirects are followed).
  * @param {string} opts.targetFile - The path to the file to create (relative to CWD). Existing file is overwritten after confirmation.
  * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
  * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
@@ -21,7 +21,7 @@ export async function createFileFromWebTemplate(opts: CreateFileFromWebTemplateO
   const shouldCreate = force || await promptUser({ question: prompt || `This will create '${targetFile}' file. Continue?` })
   if (shouldCreate) {
 
-    let fileContent: string
+    let fileContent: Buffer
     try {
       fileContent = await fetchFile(url)
     } catch (err) {
@@ -48,7 +48,7 @@ export async function createFileFromWebTemplate(opts: CreateFileFromWebTemplateO
       mkdirSync(targetDir, { recursive: true })
     }
 
-    writeFileSync(targetPath, fileContent, 'utf8')
+    writeFileSync(targetPath, fileContent)
 
     if (existsSync(targetPath)) {
       console.log(`New file '${targetFile}' successfully created.`)

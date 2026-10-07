@@ -2,7 +2,7 @@ import https from 'node:https'
 
 const MAX_REDIRECTS = 5
 
-export async function fetchFile(url: string, redirectsLeft = MAX_REDIRECTS): Promise<string> {
+export async function fetchFile(url: string, redirectsLeft = MAX_REDIRECTS): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     https.get(url, (res) => {
       const status = res.statusCode ?? 0
@@ -30,10 +30,9 @@ export async function fetchFile(url: string, redirectsLeft = MAX_REDIRECTS): Pro
         return
       }
 
-      let data = ''
-      res.setEncoding('utf8')
-      res.on('data', chunk => data += chunk)
-      res.on('end', () => resolve(data))
+      const chunks: Buffer[] = []
+      res.on('data', (chunk: Buffer) => chunks.push(chunk))
+      res.on('end', () => resolve(Buffer.concat(chunks)))
       res.on('error', reject)
     }).on('error', reject)
   })
