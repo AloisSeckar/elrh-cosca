@@ -2,6 +2,12 @@
 
 Overview of the newest features in COSCA.
 
+## 0.4.1
+
+`2026-10-07`
+
+- feat: allow binary files being scaffolded by `createFileFromWebTemplate` (#22)
+
 ## 0.4.0
 
 `2026-10-01`

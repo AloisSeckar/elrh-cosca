@@ -74,7 +74,7 @@ async function createFileFromWebTemplate(opts: CreateFileFromWebTemplateOptions)
 
 Downloads the file given by `url` and creates a fresh copy of it in the target project.
 
-Contents of `url` must be accessible via the `node:https.get` function and will be fetched as raw text data. Redirects (5) are followed before the fetch fails.
+Contents of `url` must be accessible via the `node:https.get` function and the response will be copied byte-for-byte. Redirects (5) are followed before the fetch fails.
 
 Path to `targetFile` is relative to `process.cwd()`, which allows consumers to run `npx your-script` in their project roots during development. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. If the target directory does not exist, it will be created automatically.
 
