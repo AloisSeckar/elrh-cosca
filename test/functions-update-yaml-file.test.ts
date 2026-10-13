@@ -171,6 +171,14 @@ describe('Test updateYamlFile function', () => {
     expect(readNormalizedFile(wd, 'array-comment.yaml')).toBe('cosca:\n  # comment\n  - a # item\n  - b\n')
   })
 
+  test('should set value of existing key without value node', async () => {
+    writeFileSync(join(wd, 'explicit-key.yaml'), '? cosca\nother: 1\n')
+    await updateYamlFile({ targetFile: `${wd}/explicit-key.yaml`, yamlKey: 'cosca', patch: 'value', force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
+    expect(readNormalizedFile(wd, 'explicit-key.yaml')).toBe('cosca: value\nother: 1\n')
+  })
+
   test('should not update file when appending empty array', async () => {
     await updateYamlFile({ targetFile: `${wd}/new-yaml/array-append.yaml`, yamlKey: 'cosca', patch: [], force: true })
 
