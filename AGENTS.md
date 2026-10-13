@@ -10,4 +10,6 @@ Functions are made available via re-export in `src/main.ts`.
 
 When adding/changing function, it should be documented in `README.md` accordingly.
 
+Option fields are documented twice: as `@param opts.*` tags in the function's JSDoc and as JSDoc comments on the matching interface fields in `src/types/functions.ts`. When adding/changing an option, always update both places so the texts stay identical.
+
 To accept changes, `pnpm build` must pass.
