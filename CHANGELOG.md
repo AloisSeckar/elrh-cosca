@@ -2,6 +2,12 @@
 
 Overview of the newest features in COSCA.
 
+## 0.4.3
+
+`2026-10-13`
+
+- feat: improved handling of duplicates and existing items (follow-up to #23)
+
 ## 0.4.2
 
 `2026-10-13`
