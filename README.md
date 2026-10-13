@@ -125,6 +125,7 @@ interface UpdateJsonFileOptions extends FileOperationOptions {
   jsonKey: string
   patch: DataValue
   createMissing?: boolean
+  overwriteArrays?: boolean
 }
 async function updateJsonFile(opts: UpdateJsonFileOptions): Promise<void>
 ```
@@ -140,7 +141,7 @@ type DataValue = DataPrimitive | DataObject | DataArray
 
 Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must be a valid JSON file. It is parsed using plain `JSON.parse`.
 
-The given `jsonKey` might point to a nested key using dot notation, e.g. `a.b.c`. Missing intermediate levels are created as empty objects, and existing intermediate levels that are not objects (primitives, arrays and `null`) are replaced with objects. Empty key segments (e.g. `a..b`) and the segments `__proto__`, `constructor` and `prototype` are rejected with an error. If `jsonKey` does not exist, a new key is added. If `patch` is an object, its keys are shallow-merged into the existing value. If the existing value is not an object, it is replaced. Other values (primitives, arrays and `null`) replace the existing value. The function tracks if any real change was made and notifies the user if not.
+The given `jsonKey` might point to a nested key using dot notation, e.g. `a.b.c`. Missing intermediate levels are created as empty objects, and existing intermediate levels that are not objects (primitives, arrays and `null`) are replaced with objects. Empty key segments (e.g. `a..b`) and the segments `__proto__`, `constructor` and `prototype` are rejected with an error. If `jsonKey` does not exist, a new key is added. If `patch` is an object, its keys are shallow-merged into the existing value. If the existing value is not an object, it is replaced. If `patch` is an array and the existing value is also an array, the items of `patch` are appended to it (this also applies to arrays among the keys of an object `patch`). Setting `opts.overwriteArrays` to `true` results in full array replacement instead. Other values (primitives, arrays replacing a non-array and `null`) replace the existing value. The function tracks if any real change was made (values are compared deeply) and notifies the user if not.
 
 If `targetFile` does not exist, the function throws an error by default. Setting `opts.createMissing` to `true` will instead create the file (including missing directories) as an empty JSON object with `patch` applied. The user is asked to confirm the creation unless `opts.force` is `true`.
 
@@ -154,6 +155,7 @@ interface UpdateYamlFileOptions extends FileOperationOptions {
   yamlKey: string
   patch: DataValue
   createMissing?: boolean
+  overwriteArrays?: boolean
 }
 async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void>
 ```
@@ -162,7 +164,7 @@ Takes a path to a YAML file and injects `patch` under the `yamlKey` key. The `pa
 
 Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must be a valid single-document YAML file with a map at its root (an empty file is accepted). It is parsed using [eemeli/yaml](https://github.com/eemeli/yaml) package.
 
-The given `yamlKey` might point to a nested key using dot notation, e.g. `a.b.c`. Missing intermediate levels are created as empty maps, and existing intermediate levels that are not maps (scalars and sequences) are replaced with maps. Empty key segments (e.g. `a..b`) and the segments `__proto__`, `constructor` and `prototype` are rejected with an error. If `yamlKey` does not exist, a new key is added. If `patch` is an object, its keys are shallow-merged into the existing value. If the existing value is not a map, it is replaced. Other values (primitives, arrays and `null`) replace the existing value. The function tracks if any real change was made (values are compared deeply) and notifies the user if not.
+The given `yamlKey` might point to a nested key using dot notation, e.g. `a.b.c`. Missing intermediate levels are created as empty maps, and existing intermediate levels that are not maps (scalars and sequences) are replaced with maps. Empty key segments (e.g. `a..b`) and the segments `__proto__`, `constructor` and `prototype` are rejected with an error. If `yamlKey` does not exist, a new key is added. If `patch` is an object, its keys are shallow-merged into the existing value. If the existing value is not a map, it is replaced. If `patch` is an array and the existing value is a sequence, the items of `patch` are appended to it (this also applies to arrays among the keys of an object `patch`). Setting `opts.overwriteArrays` to `true` results in full array replacement instead. Other values (primitives, arrays replacing a non-sequence and `null`) replace the existing value. The function tracks if any real change was made (values are compared deeply) and notifies the user if not.
 
 If `targetFile` does not exist, the function throws an error by default. Setting `opts.createMissing` to `true` will instead create the file (including missing directories) as an empty YAML map with `patch` applied. The user is asked to confirm the creation unless `opts.force` is `true`.
 

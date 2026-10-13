@@ -151,6 +151,41 @@ describe('Test updateJsonFile function', () => {
     expect(readNormalizedFile(wd, 'new-json/array.json')).toBe('{\n  "cosca": {\n    "testKey1": "value"\n  }\n}\n')
   })
 
+  test('should append array patch to existing array', async () => {
+    await updateJsonFile({ targetFile: `${wd}/new-json/array-append.json`, jsonKey: 'cosca', patch: ['a', 'b'], createMissing: true, force: true })
+    await updateJsonFile({ targetFile: `${wd}/new-json/array-append.json`, jsonKey: 'cosca', patch: ['c'], force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
+    expect(readNormalizedFile(wd, 'new-json/array-append.json')).toBe('{\n  "cosca": [\n    "a",\n    "b",\n    "c"\n  ]\n}\n')
+  })
+
+  test('should append arrays inside object patch to existing arrays', async () => {
+    await updateJsonFile({ targetFile: `${wd}/new-json/array-append-nested.json`, jsonKey: 'cosca', patch: { list: ['a'] }, createMissing: true, force: true })
+    await updateJsonFile({ targetFile: `${wd}/new-json/array-append-nested.json`, jsonKey: 'cosca', patch: { list: ['b'] }, force: true })
+
+    expect(readNormalizedFile(wd, 'new-json/array-append-nested.json')).toBe('{\n  "cosca": {\n    "list": [\n      "a",\n      "b"\n    ]\n  }\n}\n')
+  })
+
+  test('should not update file when appending empty array', async () => {
+    await updateJsonFile({ targetFile: `${wd}/new-json/array-append.json`, jsonKey: 'cosca', patch: [], force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
+  })
+
+  test('should overwrite existing array when overwriteArrays is true', async () => {
+    await updateJsonFile({ targetFile: `${wd}/new-json/array-overwrite.json`, jsonKey: 'cosca', patch: ['a', 'b'], createMissing: true, force: true })
+    await updateJsonFile({ targetFile: `${wd}/new-json/array-overwrite.json`, jsonKey: 'cosca', patch: ['c'], overwriteArrays: true, force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
+    expect(readNormalizedFile(wd, 'new-json/array-overwrite.json')).toBe('{\n  "cosca": [\n    "c"\n  ]\n}\n')
+  })
+
+  test('should not update file when overwriting array with the same values', async () => {
+    await updateJsonFile({ targetFile: `${wd}/new-json/array-overwrite.json`, jsonKey: 'cosca', patch: ['c'], overwriteArrays: true, force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
+  })
+
   test('should add new key with empty object patch', async () => {
     await updateJsonFile({ targetFile: `${wd}/new-json/empty.json`, jsonKey: 'cosca', patch: 'x', createMissing: true, force: true })
     await updateJsonFile({ targetFile: `${wd}/new-json/empty.json`, jsonKey: 'other', patch: {}, force: true })

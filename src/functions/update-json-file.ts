@@ -1,6 +1,8 @@
 import type { UpdateJsonFileOptions } from '../types/functions.js'
+import type { DataValue } from '../types/data.js'
 import { dirname, resolve } from 'node:path'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { isDeepStrictEqual } from 'node:util'
 import { promptUser } from '../terminal/prompt-user.js'
 import { checkPath } from '../_private/check-path.js'
 
@@ -13,15 +15,16 @@ const FORBIDDEN_KEYS = ['__proto__', 'constructor', 'prototype']
  * @param {UpdateJsonFileOptions} opts - Options for this operation.
  * @param {string} opts.targetFile - The path to the JSON file to update (relative to CWD).
  * @param {string} opts.jsonKey - The key in the JSON file to update (can be new or existing; may use dot notation for nested keys - missing or non-object intermediate levels are replaced with objects).
- * @param {DataValue} opts.patch - The value for the specified key. Objects are shallow-merged into the existing value (a non-object existing value is replaced), other values (primitives, arrays, null) replace it.
+ * @param {DataValue} opts.patch - The value for the specified key. Objects are shallow-merged into the existing value (a non-object existing value is replaced), arrays are appended to an existing array by default, other values (primitives, null) replace it.
  * @param {boolean} [opts.createMissing] - If true, the file is created when it does not exist, after confirmation unless `force` is set (default: false).
+ * @param {boolean} [opts.overwriteArrays] - If true, existing arrays are replaced instead of appended to (default: false).
  * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
  * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
  * @returns {Promise<void>} A promise that resolves when the operation is finished or skipped.
  * @throws Will throw an error if the path or the key is invalid, the file does not exist (and `createMissing` is not set) or cannot be parsed as JSON.
  */
 export async function updateJsonFile(opts: UpdateJsonFileOptions): Promise<void> {
-  const { targetFile, jsonKey, patch, createMissing = false, force = false, prompt = '' } = opts
+  const { targetFile, jsonKey, patch, createMissing = false, overwriteArrays = false, force = false, prompt = '' } = opts
   const shouldUpdate = force || await promptUser({ question: prompt || `This will update '${targetFile}' file. Continue?` })
   if (shouldUpdate) {
     const check = checkPath(targetFile)
@@ -68,12 +71,8 @@ export async function updateJsonFile(opts: UpdateJsonFileOptions): Promise<void>
       parent = parent[key]
     }
 
-    if (patch === null || typeof patch === 'string' || 
-      typeof patch === 'number' || typeof patch === 'boolean' || Array.isArray(patch)) {
-      if (parent[targetKey] !== patch) {
-        parent[targetKey] = patch
-        modified = true
-      }
+    if (patch === null || typeof patch !== 'object' || Array.isArray(patch)) {
+      modified = setValue(parent, targetKey, patch, overwriteArrays) || modified
     } else {
       if (!isJsonObject(parent[targetKey])) {
         // non-object values cannot be merged into, so they are replaced
@@ -81,10 +80,7 @@ export async function updateJsonFile(opts: UpdateJsonFileOptions): Promise<void>
         modified = true
       }
       for (const [key, value] of Object.entries(patch)) {
-        if (parent[targetKey][key] !== value) {
-          parent[targetKey][key] = value
-          modified = true
-        }
+        modified = setValue(parent[targetKey], key, value, overwriteArrays) || modified
       }
     }
 
@@ -100,6 +96,19 @@ export async function updateJsonFile(opts: UpdateJsonFileOptions): Promise<void>
   } else {
     console.log(`Updating '${targetFile}' skipped.`)
   }
+}
+
+function setValue(obj: Record<string, unknown>, key: string, value: DataValue, overwriteArrays: boolean): boolean {
+  const current = obj[key]
+  if (!overwriteArrays && Array.isArray(current) && Array.isArray(value)) {
+    current.push(...value)
+    return value.length > 0
+  }
+  if (key in obj && isDeepStrictEqual(current, value)) {
+    return false
+  }
+  obj[key] = value
+  return true
 }
 
 function isJsonObject(value: unknown): boolean {

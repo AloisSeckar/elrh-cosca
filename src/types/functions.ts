@@ -68,6 +68,7 @@ export interface UpdateJsonFileOptions extends FileOperationOptions {
 	jsonKey: string
 	patch: DataValue
 	createMissing?: boolean
+	overwriteArrays?: boolean
 }
 
 export interface UpdateYamlFileOptions extends FileOperationOptions {
@@ -75,6 +76,7 @@ export interface UpdateYamlFileOptions extends FileOperationOptions {
 	yamlKey: string
 	patch: DataValue
 	createMissing?: boolean
+	overwriteArrays?: boolean
 }
 
 export interface UpdateTextFileOptions extends FileOperationOptions {

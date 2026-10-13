@@ -127,8 +127,8 @@ describe('Test updateYamlFile function', () => {
     await expect(readNormalizedFile(wd, 'yaml-file.yaml')).toMatchFileSnapshot('snapshots/updated-yaml-file-5.yaml')
   })
 
-  test('should not update array with the same values', async () => {
-    await updateYamlFile({ targetFile: `${wd}/yaml-file.yaml`, yamlKey: 'cosca3', patch: ['value1', 'value2'], force: true })
+  test('should not update array with the same values when overwriteArrays is true', async () => {
+    await updateYamlFile({ targetFile: `${wd}/yaml-file.yaml`, yamlKey: 'cosca3', patch: ['value1', 'value2'], overwriteArrays: true, force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
   })
@@ -147,6 +147,42 @@ describe('Test updateYamlFile function', () => {
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
     expect(readNormalizedFile(wd, 'new-yaml/array.yaml')).toBe('cosca:\n  testKey1: value\n')
+  })
+
+  test('should append array patch to existing sequence', async () => {
+    await updateYamlFile({ targetFile: `${wd}/new-yaml/array-append.yaml`, yamlKey: 'cosca', patch: ['a', 'b'], createMissing: true, force: true })
+    await updateYamlFile({ targetFile: `${wd}/new-yaml/array-append.yaml`, yamlKey: 'cosca', patch: ['c'], force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
+    expect(readNormalizedFile(wd, 'new-yaml/array-append.yaml')).toBe('cosca:\n  - a\n  - b\n  - c\n')
+  })
+
+  test('should append arrays inside object patch to existing sequences', async () => {
+    await updateYamlFile({ targetFile: `${wd}/new-yaml/array-append-nested.yaml`, yamlKey: 'cosca', patch: { list: ['a'] }, createMissing: true, force: true })
+    await updateYamlFile({ targetFile: `${wd}/new-yaml/array-append-nested.yaml`, yamlKey: 'cosca', patch: { list: ['b'] }, force: true })
+
+    expect(readNormalizedFile(wd, 'new-yaml/array-append-nested.yaml')).toBe('cosca:\n  list:\n    - a\n    - b\n')
+  })
+
+  test('should keep sequence comments when appending', async () => {
+    writeFileSync(join(wd, 'array-comment.yaml'), 'cosca:\n  # comment\n  - a # item\n')
+    await updateYamlFile({ targetFile: `${wd}/array-comment.yaml`, yamlKey: 'cosca', patch: ['b'], force: true })
+
+    expect(readNormalizedFile(wd, 'array-comment.yaml')).toBe('cosca:\n  # comment\n  - a # item\n  - b\n')
+  })
+
+  test('should not update file when appending empty array', async () => {
+    await updateYamlFile({ targetFile: `${wd}/new-yaml/array-append.yaml`, yamlKey: 'cosca', patch: [], force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
+  })
+
+  test('should overwrite existing sequence when overwriteArrays is true', async () => {
+    await updateYamlFile({ targetFile: `${wd}/new-yaml/array-overwrite.yaml`, yamlKey: 'cosca', patch: ['a', 'b'], createMissing: true, force: true })
+    await updateYamlFile({ targetFile: `${wd}/new-yaml/array-overwrite.yaml`, yamlKey: 'cosca', patch: ['c'], overwriteArrays: true, force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
+    expect(readNormalizedFile(wd, 'new-yaml/array-overwrite.yaml')).toBe('cosca:\n  - c\n')
   })
 
   test('should set null value', async () => {

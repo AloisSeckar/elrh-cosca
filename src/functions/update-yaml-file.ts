@@ -16,15 +16,16 @@ const FORBIDDEN_KEYS = ['__proto__', 'constructor', 'prototype']
  * @param {UpdateYamlFileOptions} opts - Options for this operation.
  * @param {string} opts.targetFile - The path to the YAML file to update (relative to CWD).
  * @param {string} opts.yamlKey - The key in the YAML file to update (can be new or existing; may use dot notation for nested keys - missing or non-map intermediate levels are replaced with maps).
- * @param {DataValue} opts.patch - The value for the specified key. Objects are shallow-merged into the existing value (a non-map existing value is replaced), other values (primitives, arrays, null) replace it.
+ * @param {DataValue} opts.patch - The value for the specified key. Objects are shallow-merged into the existing value (a non-map existing value is replaced), arrays are appended to an existing sequence by default, other values (primitives, null) replace it.
  * @param {boolean} [opts.createMissing] - If true, the file is created when it does not exist, after confirmation unless `force` is set (default: false).
+ * @param {boolean} [opts.overwriteArrays] - If true, existing sequences are replaced instead of appended to (default: false).
  * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
  * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
  * @returns {Promise<void>} A promise that resolves when the operation is finished or skipped.
  * @throws Will throw an error if the path or the key is invalid, the file does not exist (and `createMissing` is not set), cannot be parsed as YAML or its root is not a map.
  */
 export async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void> {
-  const { targetFile, yamlKey, patch, createMissing = false, force = false, prompt = '' } = opts
+  const { targetFile, yamlKey, patch, createMissing = false, overwriteArrays = false, force = false, prompt = '' } = opts
   const shouldUpdate = force || await promptUser({ question: prompt || `This will update '${targetFile}' file. Continue?` })
   if (shouldUpdate) {
     const check = checkPath(targetFile)
@@ -83,7 +84,7 @@ export async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void>
     }
 
     if (patch === null || typeof patch !== 'object' || Array.isArray(patch)) {
-      modified = setValue(yaml, doc, parent, targetKey, patch) || modified
+      modified = setValue(yaml, doc, parent, targetKey, patch, overwriteArrays) || modified
     } else {
       let target: unknown = parent.get(targetKey, true)
       if (!isMap(target)) {
@@ -93,7 +94,7 @@ export async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void>
         modified = true
       }
       for (const [key, value] of Object.entries(patch)) {
-        modified = setValue(yaml, doc, target as YAMLMap, key, value) || modified
+        modified = setValue(yaml, doc, target as YAMLMap, key, value, overwriteArrays) || modified
       }
     }
 
@@ -111,8 +112,14 @@ export async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void>
   }
 }
 
-function setValue({ isNode, isScalar }: typeof import('yaml'), doc: Document, map: YAMLMap, key: string, value: DataValue): boolean {
+function setValue({ isNode, isScalar, isSeq }: typeof import('yaml'), doc: Document, map: YAMLMap, key: string, value: DataValue, overwriteArrays: boolean): boolean {
   const current = map.get(key, true)
+  if (!overwriteArrays && isSeq(current) && Array.isArray(value)) {
+    for (const item of value) {
+      current.add(doc.createNode(item))
+    }
+    return value.length > 0
+  }
   if (map.has(key) && isDeepStrictEqual(isNode(current) ? current.toJSON() : current, value)) {
     return false
   }
