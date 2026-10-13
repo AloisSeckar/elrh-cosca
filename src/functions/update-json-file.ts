@@ -14,9 +14,9 @@ const FORBIDDEN_KEYS = ['__proto__', 'constructor', 'prototype']
  * 
  * @param {string} opts.targetFile - The path to the JSON file to update (relative to CWD).
  * @param {string} opts.jsonKey - The key in the JSON file to update (can be new or existing; may use dot notation for nested keys - missing or non-object intermediate levels are replaced with objects).
- * @param {DataValue} opts.patch - The value for the specified key. Objects are shallow-merged into the existing value (a non-object existing value is replaced), arrays are appended to an existing array by default, other values (primitives, null) replace it.
+ * @param {DataValue} opts.patch - The value for the specified key. Objects are shallow-merged into the existing value (a non-object existing value is replaced), arrays are appended to the existing value by default (duplicates are skipped, a non-array existing value becomes the first item), other values (primitives, null) replace it.
  * @param {boolean} [opts.createMissing] - If true, the file is created when it does not exist, after confirmation unless `force` is set (default: false).
- * @param {boolean} [opts.overwriteArrays] - If true, existing arrays are replaced instead of appended to (default: false).
+ * @param {boolean} [opts.overwriteArrays] - If true, an array patch replaces the existing value instead of appending (default: false).
  * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
  * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
  * @returns {Promise<void>} A promise that resolves when the operation is finished or skipped.
@@ -98,12 +98,23 @@ export async function updateJsonFile(opts: UpdateJsonFileOptions): Promise<void>
 }
 
 function setValue(obj: Record<string, unknown>, key: string, value: DataValue, overwriteArrays: boolean): boolean {
+  const exists = Object.prototype.hasOwnProperty.call(obj, key)
   const current = obj[key]
-  if (!overwriteArrays && Array.isArray(current) && Array.isArray(value)) {
-    current.push(...value)
-    return value.length > 0
+  if (!overwriteArrays && Array.isArray(value) && exists && current !== null) {
+    const items = Array.isArray(current) ? current : [current]
+    let added = false
+    for (const item of value) {
+      if (!items.some(existing => isDeepStrictEqual(existing, item))) {
+        items.push(item)
+        added = true
+      }
+    }
+    if (added) {
+      obj[key] = items
+    }
+    return added
   }
-  if (key in obj && isDeepStrictEqual(current, value)) {
+  if (exists && isDeepStrictEqual(current, value)) {
     return false
   }
   obj[key] = value

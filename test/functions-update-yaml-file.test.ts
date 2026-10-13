@@ -185,6 +185,49 @@ describe('Test updateYamlFile function', () => {
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
   })
 
+  test('should skip array items that are already present', async () => {
+    await updateYamlFile({ targetFile: `${wd}/new-yaml/array-dedupe.yaml`, yamlKey: 'cosca', patch: ['a', { local: 'x' }], createMissing: true, force: true })
+    await updateYamlFile({ targetFile: `${wd}/new-yaml/array-dedupe.yaml`, yamlKey: 'cosca', patch: ['a', { local: 'x' }, 'b', 'b'], force: true })
+
+    expect(readNormalizedFile(wd, 'new-yaml/array-dedupe.yaml')).toBe('cosca:\n  - a\n  - local: x\n  - b\n')
+  })
+
+  test('should not update file when all array items are already present', async () => {
+    await updateYamlFile({ targetFile: `${wd}/new-yaml/array-dedupe.yaml`, yamlKey: 'cosca', patch: [{ local: 'x' }, 'b'], force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
+  })
+
+  test('should turn existing scalar into sequence when appending and keep its comment', async () => {
+    writeFileSync(join(wd, 'array-wrap-scalar.yaml'), 'include: a.yml # mine\n')
+    await updateYamlFile({ targetFile: `${wd}/array-wrap-scalar.yaml`, yamlKey: 'include', patch: ['b.yml', 'a.yml'], force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
+    expect(readNormalizedFile(wd, 'array-wrap-scalar.yaml')).toBe('include:\n  - a.yml # mine\n  - b.yml\n')
+  })
+
+  test('should turn existing map into sequence when appending', async () => {
+    writeFileSync(join(wd, 'array-wrap-map.yaml'), 'cosca:\n  list:\n    local: x\n')
+    await updateYamlFile({ targetFile: `${wd}/array-wrap-map.yaml`, yamlKey: 'cosca', patch: { list: [{ local: 'y' }] }, force: true })
+
+    expect(readNormalizedFile(wd, 'array-wrap-map.yaml')).toBe('cosca:\n  list:\n    - local: x\n    - local: y\n')
+  })
+
+  test('should not update file when existing single value equals the only array item', async () => {
+    writeFileSync(join(wd, 'array-wrap-same.yaml'), 'cosca: a\n')
+    await updateYamlFile({ targetFile: `${wd}/array-wrap-same.yaml`, yamlKey: 'cosca', patch: ['a'], force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
+    expect(readNormalizedFile(wd, 'array-wrap-same.yaml')).toBe('cosca: a\n')
+  })
+
+  test('should replace existing null with sequence', async () => {
+    writeFileSync(join(wd, 'array-null.yaml'), 'cosca: null\n')
+    await updateYamlFile({ targetFile: `${wd}/array-null.yaml`, yamlKey: 'cosca', patch: ['a'], force: true })
+
+    expect(readNormalizedFile(wd, 'array-null.yaml')).toBe('cosca:\n  - a\n')
+  })
+
   test('should overwrite existing sequence when overwriteArrays is true', async () => {
     await updateYamlFile({ targetFile: `${wd}/new-yaml/array-overwrite.yaml`, yamlKey: 'cosca', patch: ['a', 'b'], createMissing: true, force: true })
     await updateYamlFile({ targetFile: `${wd}/new-yaml/array-overwrite.yaml`, yamlKey: 'cosca', patch: ['c'], overwriteArrays: true, force: true })

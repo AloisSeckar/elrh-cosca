@@ -172,6 +172,49 @@ describe('Test updateJsonFile function', () => {
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
   })
 
+  test('should skip array items that are already present', async () => {
+    await updateJsonFile({ targetFile: `${wd}/new-json/array-dedupe.json`, jsonKey: 'cosca', patch: ['a', { local: 'x' }], createMissing: true, force: true })
+    await updateJsonFile({ targetFile: `${wd}/new-json/array-dedupe.json`, jsonKey: 'cosca', patch: ['a', { local: 'x' }, 'b', 'b'], force: true })
+
+    expect(readNormalizedFile(wd, 'new-json/array-dedupe.json')).toBe('{\n  "cosca": [\n    "a",\n    {\n      "local": "x"\n    },\n    "b"\n  ]\n}\n')
+  })
+
+  test('should not update file when all array items are already present', async () => {
+    await updateJsonFile({ targetFile: `${wd}/new-json/array-dedupe.json`, jsonKey: 'cosca', patch: [{ local: 'x' }, 'b'], force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
+  })
+
+  test('should turn existing primitive into array when appending', async () => {
+    await updateJsonFile({ targetFile: `${wd}/new-json/array-wrap-primitive.json`, jsonKey: 'cosca', patch: 'a', createMissing: true, force: true })
+    await updateJsonFile({ targetFile: `${wd}/new-json/array-wrap-primitive.json`, jsonKey: 'cosca', patch: ['b', 'a'], force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
+    expect(readNormalizedFile(wd, 'new-json/array-wrap-primitive.json')).toBe('{\n  "cosca": [\n    "a",\n    "b"\n  ]\n}\n')
+  })
+
+  test('should turn existing object into array when appending', async () => {
+    await updateJsonFile({ targetFile: `${wd}/new-json/array-wrap-object.json`, jsonKey: 'cosca', patch: { list: { local: 'x' } }, createMissing: true, force: true })
+    await updateJsonFile({ targetFile: `${wd}/new-json/array-wrap-object.json`, jsonKey: 'cosca', patch: { list: [{ local: 'y' }] }, force: true })
+
+    expect(readNormalizedFile(wd, 'new-json/array-wrap-object.json')).toBe('{\n  "cosca": {\n    "list": [\n      {\n        "local": "x"\n      },\n      {\n        "local": "y"\n      }\n    ]\n  }\n}\n')
+  })
+
+  test('should not update file when existing single value equals the only array item', async () => {
+    await updateJsonFile({ targetFile: `${wd}/new-json/array-wrap-same.json`, jsonKey: 'cosca', patch: 'a', createMissing: true, force: true })
+    await updateJsonFile({ targetFile: `${wd}/new-json/array-wrap-same.json`, jsonKey: 'cosca', patch: ['a'], force: true })
+
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
+    expect(readNormalizedFile(wd, 'new-json/array-wrap-same.json')).toBe('{\n  "cosca": "a"\n}\n')
+  })
+
+  test('should replace existing null with array', async () => {
+    await updateJsonFile({ targetFile: `${wd}/new-json/array-null.json`, jsonKey: 'cosca', patch: null, createMissing: true, force: true })
+    await updateJsonFile({ targetFile: `${wd}/new-json/array-null.json`, jsonKey: 'cosca', patch: ['a'], force: true })
+
+    expect(readNormalizedFile(wd, 'new-json/array-null.json')).toBe('{\n  "cosca": [\n    "a"\n  ]\n}\n')
+  })
+
   test('should overwrite existing array when overwriteArrays is true', async () => {
     await updateJsonFile({ targetFile: `${wd}/new-json/array-overwrite.json`, jsonKey: 'cosca', patch: ['a', 'b'], createMissing: true, force: true })
     await updateJsonFile({ targetFile: `${wd}/new-json/array-overwrite.json`, jsonKey: 'cosca', patch: ['c'], overwriteArrays: true, force: true })

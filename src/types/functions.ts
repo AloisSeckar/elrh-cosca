@@ -89,11 +89,11 @@ export interface UpdateJsonFileOptions extends FileOperationOptions {
 	targetFile: string
 	/** The key in the JSON file to update (can be new or existing; may use dot notation for nested keys - missing or non-object intermediate levels are replaced with objects). */
 	jsonKey: string
-	/** The value for the specified key. Objects are shallow-merged into the existing value (a non-object existing value is replaced), arrays are appended to an existing array by default, other values (primitives, null) replace it. */
+	/** The value for the specified key. Objects are shallow-merged into the existing value (a non-object existing value is replaced), arrays are appended to the existing value by default (duplicates are skipped, a non-array existing value becomes the first item), other values (primitives, null) replace it. */
 	patch: DataValue
 	/** If true, the file is created when it does not exist, after confirmation unless `force` is set (default: false). */
 	createMissing?: boolean
-	/** If true, existing arrays are replaced instead of appended to (default: false). */
+	/** If true, an array patch replaces the existing value instead of appending (default: false). */
 	overwriteArrays?: boolean
 }
 
@@ -102,11 +102,11 @@ export interface UpdateYamlFileOptions extends FileOperationOptions {
 	targetFile: string
 	/** The key in the YAML file to update (can be new or existing; may use dot notation for nested keys - missing or non-map intermediate levels are replaced with maps). */
 	yamlKey: string
-	/** The value for the specified key. Objects are shallow-merged into the existing value (a non-map existing value is replaced), arrays are appended to an existing sequence by default, other values (primitives, null) replace it. */
+	/** The value for the specified key. Objects are shallow-merged into the existing value (a non-map existing value is replaced), arrays are appended to the existing value by default (duplicates ares skipped, a non-sequence existing value becomes the first item), other values (primitives, null) replace it. */
 	patch: DataValue
 	/** If true, the file is created when it does not exist, after confirmation unless `force` is set (default: false). */
 	createMissing?: boolean
-	/** If true, existing sequences are replaced instead of appended to (default: false). */
+	/** If true, an array patch replaces the existing value instead of appending (default: false). */
 	overwriteArrays?: boolean
 }
 

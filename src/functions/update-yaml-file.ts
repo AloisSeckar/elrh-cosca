@@ -3,7 +3,7 @@ import type { DataValue } from '../types/data.js'
 import { dirname, resolve } from 'node:path'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { isDeepStrictEqual } from 'node:util'
-import type { Document, YAMLMap } from 'yaml'
+import type { Document, YAMLMap, YAMLSeq } from 'yaml'
 import { promptUser } from '../terminal/prompt-user.js'
 import { checkPath } from '../_private/check-path.js'
 
@@ -15,9 +15,9 @@ const FORBIDDEN_KEYS = ['__proto__', 'constructor', 'prototype']
  * 
  * @param {string} opts.targetFile - The path to the YAML file to update (relative to CWD).
  * @param {string} opts.yamlKey - The key in the YAML file to update (can be new or existing; may use dot notation for nested keys - missing or non-map intermediate levels are replaced with maps).
- * @param {DataValue} opts.patch - The value for the specified key. Objects are shallow-merged into the existing value (a non-map existing value is replaced), arrays are appended to an existing sequence by default, other values (primitives, null) replace it.
+ * @param {DataValue} opts.patch - The value for the specified key. Objects are shallow-merged into the existing value (a non-map existing value is replaced), arrays are appended to the existing value by default (duplicates are skipped, a non-sequence existing value becomes the first item), other values (primitives, null) replace it.
  * @param {boolean} [opts.createMissing] - If true, the file is created when it does not exist, after confirmation unless `force` is set (default: false).
- * @param {boolean} [opts.overwriteArrays] - If true, existing sequences are replaced instead of appended to (default: false).
+ * @param {boolean} [opts.overwriteArrays] - If true, an array patch replaces the existing value instead of appending (default: false).
  * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
  * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
  * @returns {Promise<void>} A promise that resolves when the operation is finished or skipped.
@@ -113,11 +113,31 @@ export async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void>
 
 function setValue({ isNode, isScalar, isSeq }: typeof import('yaml'), doc: Document, map: YAMLMap, key: string, value: DataValue, overwriteArrays: boolean): boolean {
   const current = map.get(key, true)
-  if (!overwriteArrays && isSeq(current) && Array.isArray(value)) {
+  if (!overwriteArrays && Array.isArray(value) && isNode(current) && !(isScalar(current) && current.value === null)) {
+    const items: unknown[] = isSeq(current) ? current.toJSON() : [current.toJSON()]
+    const added: DataValue[] = []
     for (const item of value) {
-      current.add(doc.createNode(item))
+      if (!items.some(existing => isDeepStrictEqual(existing, item))) {
+        items.push(item)
+        added.push(item)
+      }
     }
-    return value.length > 0
+    if (added.length === 0) {
+      return false
+    }
+    let seq: YAMLSeq
+    if (isSeq(current)) {
+      seq = current
+    } else {
+      // existing node is moved into the new sequence to keep its comments
+      seq = doc.createNode([]) as YAMLSeq
+      seq.add(current)
+      map.set(key, seq)
+    }
+    for (const item of added) {
+      seq.add(doc.createNode(item))
+    }
+    return true
   }
   if (map.has(key) && isDeepStrictEqual(isNode(current) ? current.toJSON() : current, value)) {
     return false
