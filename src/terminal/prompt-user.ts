@@ -4,7 +4,6 @@ import readline from 'node:readline'
 /**
  * Prompts the user with a yes/no question (` (y/N): ` is appended) and returns their response.
  * 
- * @param {PromptUserOptions} opts - Options for this operation.
  * @param {string} opts.question - The question to ask the user.
  * @param {NodeJS.ReadableStream} [opts.input] - Custom input stream (default: process.stdin).
  * @param {NodeJS.WritableStream} [opts.output] - Custom output stream (default: process.stdout).

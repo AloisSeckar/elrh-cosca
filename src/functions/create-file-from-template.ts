@@ -9,7 +9,6 @@ import { checkPath } from '../_private/check-path'
 /**
  * Creates a new file as a copy of a template file from an installed package.
  * 
- * @param {CreateFileFromTemplateOptions} opts - Options for this operation.
  * @param {string} opts.templateFile - The path to the template file in `package:relative/path/to/file` format (relative to the package root).
  * @param {string} opts.targetFile - The path to the file to create (relative to CWD). Existing file is overwritten after confirmation.
  * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).

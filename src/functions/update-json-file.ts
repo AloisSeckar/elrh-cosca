@@ -12,7 +12,6 @@ const FORBIDDEN_KEYS = ['__proto__', 'constructor', 'prototype']
 /**
  * Updates a JSON file by setting a key with new value(s). The key can be nested and can alter between primitives to objects and arrays as needed.
  * 
- * @param {UpdateJsonFileOptions} opts - Options for this operation.
  * @param {string} opts.targetFile - The path to the JSON file to update (relative to CWD).
  * @param {string} opts.jsonKey - The key in the JSON file to update (can be new or existing; may use dot notation for nested keys - missing or non-object intermediate levels are replaced with objects).
  * @param {DataValue} opts.patch - The value for the specified key. Objects are shallow-merged into the existing value (a non-object existing value is replaced), arrays are appended to an existing array by default, other values (primitives, null) replace it.

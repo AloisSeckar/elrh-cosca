@@ -6,7 +6,6 @@ import { checkPath } from '../_private/check-path.js'
 /**
  * Checks if the specified path exists on FS. The search is limited to CWD.
  * 
- * @param {PathExistsOptions} opts - Options for this operation.
  * @param {string} opts.targetPath - The path to the file or directory to be checked (relative to CWD).
  * @returns {boolean} True if the path exists, false otherwise.
  * @throws Will throw an error if the path is invalid.

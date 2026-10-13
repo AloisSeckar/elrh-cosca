@@ -7,7 +7,6 @@ import { checkPath } from '../_private/check-path.js'
 /**
  * Updates a YAML file by deleting a specified key. Comments and formatting of untouched parts are preserved.
  * 
- * @param {RemoveFromYamlFileOptions} opts - Options for this operation.
  * @param {string} opts.targetFile - The path to the YAML file to update (relative to CWD).
  * @param {string} opts.yamlKey - The key in the YAML file to be deleted (may use dot notation for nested keys).
  * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).

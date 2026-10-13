@@ -14,7 +14,6 @@ import { checkPath } from '../_private/check-path.js'
  * - Deep-merges `newConfig` into the existing config, so `newConfig` takes precedence; arrays are merged as a unique union.
  * - Applies the merged result back onto the AST to preserve TS/ESM structure.
  *
- * @param {UpdateConfigFileOptions} opts - Options for this operation.
  * @param {string} opts.targetFile - The path to the config file to update (relative to CWD).
  * @param {Record<string | number | symbol, any>} opts.newConfig - The config to merge in (takes precedence).
  * @param {boolean} [opts.createMissing] - If true, the file is created (with `export default {}`) when it does not exist, after confirmation unless `force` is set (default: false).

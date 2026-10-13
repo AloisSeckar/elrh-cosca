@@ -7,7 +7,6 @@ import { checkPath } from '../_private/check-path.js'
 /**
  * Updates a text file by adding new rows.
  * 
- * @param {UpdateTextFileOptions} opts - Options for this operation.
  * @param {string} opts.targetFile - The path to the text file to update (relative to CWD).
  * @param {string[]} opts.rowsToAdd - New rows to be added at the end of the file.
  * @param {boolean} [opts.allowDuplicates] - If true, rows are added even if identical lines already exist in the file (default: false).

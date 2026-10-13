@@ -7,7 +7,6 @@ import { checkPath } from '../_private/check-path.js'
 /**
  * Removes lines from a text file that include the given search text.
  * 
- * @param {RemoveFromTextFileOptions} opts - Options for this operation.
  * @param {string} opts.targetFile - The path to the text file to update (relative to CWD).
  * @param {string} opts.searchText - The text to search for; any line that includes this text will be removed.
  * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).

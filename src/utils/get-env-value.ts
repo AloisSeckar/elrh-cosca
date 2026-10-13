@@ -5,7 +5,6 @@ import { resolve } from 'node:path'
 /**
  * Retrieves the value of an environment variable from a .env file.
  * 
- * @param {GetEnvValueOptions} opts - Options for this operation.
  * @param {string} opts.key - The name of the environment variable to retrieve.
  * @param {string} [opts.envFilePath] - The path to the .env file (default: `.env` in CWD).
  * @returns {string | undefined} The value of the environment variable (without surrounding quotes), or undefined if the file or the variable is not found.

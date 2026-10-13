@@ -7,7 +7,6 @@ import { checkPath } from '../_private/check-path.js'
 /**
  * Deletes a file or a directory (recursively) from FS.
  * 
- * @param {DeletePathOptions} opts - Options for this operation.
  * @param {string} opts.targetPath - The path to the file or directory to delete (relative to CWD).
  * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
  * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).

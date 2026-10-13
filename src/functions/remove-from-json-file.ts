@@ -8,7 +8,6 @@ import { checkPath } from '../_private/check-path.js'
 /**
  * Updates a JSON file by deleting a specified key.
  * 
- * @param {RemoveFromJsonFileOptions} opts - Options for this operation.
  * @param {string} opts.targetFile - The path to the JSON file to update (relative to CWD).
  * @param {string} opts.jsonKey - The key in the JSON file to be deleted (may use dot notation for nested keys).
  * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).

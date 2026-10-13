@@ -6,7 +6,6 @@ import { checkPath } from '../_private/check-path.js'
 /**
  * Checks if a text file contains specified text.
  * 
- * @param {HasTextOptions} opts - Options for this operation.
  * @param {string} opts.targetFile - The path to the text file to be checked (relative to CWD).
  * @param {string | RegExp} opts.pattern - The text or regular expression pattern to search for (lines and text pattern are trimmed before matching).
  * @param {boolean} [opts.exact] - If true, a text pattern must match a whole line; ignored for RegExp patterns (default: false).

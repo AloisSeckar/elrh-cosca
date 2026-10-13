@@ -7,7 +7,6 @@ import { join } from 'node:path'
  * Returns CWD itself if its `package.json` has the same name, otherwise looks into `node_modules` in CWD.
  * The package name can be scoped (e.g. `@scope/package`).
  * 
- * @param {ResolvePackagePathOptions} opts - Options for this operation.
  * @param {string} opts.packageName - The name of the package to resolve.
  * @returns {string} The absolute path to the package's root directory.
  * @throws Will throw an error if the package cannot be found or accessed.

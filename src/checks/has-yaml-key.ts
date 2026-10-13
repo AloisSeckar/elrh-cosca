@@ -6,7 +6,6 @@ import { checkPath } from '../_private/check-path.js'
 /**
  * Checks if a YAML file contains specified key.
  * 
- * @param {HasYamlKeyOptions} opts - Options for this operation.
  * @param {string} opts.targetFile - The path to the YAML file to be checked (relative to CWD).
  * @param {string} opts.yamlKey - The key in the YAML file to be checked for existence (may use dot notation for nested keys).
  * @returns {Promise<boolean>} A promise resolving to true if the key exists in target file, false otherwise.

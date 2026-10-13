@@ -13,7 +13,6 @@ const FORBIDDEN_KEYS = ['__proto__', 'constructor', 'prototype']
 /**
  * Updates a YAML file by setting a key with new value(s). The key can be nested and can alter between primitives to objects and arrays as needed. Comments and formatting of untouched parts are preserved.
  * 
- * @param {UpdateYamlFileOptions} opts - Options for this operation.
  * @param {string} opts.targetFile - The path to the YAML file to update (relative to CWD).
  * @param {string} opts.yamlKey - The key in the YAML file to update (can be new or existing; may use dot notation for nested keys - missing or non-map intermediate levels are replaced with maps).
  * @param {DataValue} opts.patch - The value for the specified key. Objects are shallow-merged into the existing value (a non-map existing value is replaced), arrays are appended to an existing sequence by default, other values (primitives, null) replace it.

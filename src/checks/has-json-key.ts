@@ -7,7 +7,6 @@ import { checkPath } from '../_private/check-path.js'
 /**
  * Checks if a JSON file contains specified key.
  * 
- * @param {HasJsonKeyOptions} opts - Options for this operation.
  * @param {string} opts.targetFile - The path to the JSON file to be checked (relative to CWD).
  * @param {string} opts.jsonKey - The key in the JSON file to be checked for existence (may use dot notation for nested keys).
  * @returns {boolean} True if the key exists in target file, false otherwise.
