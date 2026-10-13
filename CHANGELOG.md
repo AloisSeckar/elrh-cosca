@@ -2,6 +2,13 @@
 
 Overview of the newest features in COSCA.
 
+## 0.4.2
+
+`2026-10-13`
+
+- feat: append to arrays instead of overwriting in `updateJsonFile` and `updateYamlFile` (#23)
+- docs: add JSDoc to types exported from `types/functions.ts`
+
 ## 0.4.1
 
 `2026-10-07`
