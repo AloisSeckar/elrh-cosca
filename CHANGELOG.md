@@ -2,6 +2,12 @@
 
 Overview of the newest features in COSCA.
 
+## 0.4.4
+
+`2026-11-01`
+
+- feat: add silent option to functions with logging (#24)
+
 ## 0.4.3
 
 `2026-10-13`
