@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { writeFileSync } from 'node:fs'
 import { removeFromTextFile } from '../src/main'
 import { checkPath } from '../src/_private/check-path'
 import { getConsoleSpy, getPromptUserSpy, readNormalizedFile, setPromptSpy } from './cosca-test-utils'
@@ -73,6 +74,27 @@ describe('Test removeFromTextFile function', () => {
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/skipped/))
   })
     
+  test('should not log when silent is true', async () => {
+    spy.mockClear()
+    const file = `${wd}/silent-text.txt`
+    writeFileSync(file, 'Row A\nRow B\n')
+    await removeFromTextFile({ targetFile: file, searchText: 'Row A', force: true, silent: true })
+    expect(spy).not.toHaveBeenCalled()
+    expect(readNormalizedFile(wd, 'silent-text.txt')).toBe('Row B\n')
+
+    setPromptSpy(['n'])
+    await removeFromTextFile({ targetFile: file, searchText: 'Row B', silent: true })
+    expect(spy).not.toHaveBeenCalled()
+  })
+
+  test('should log when silent is false', async () => {
+    spy.mockClear()
+    const file = `${wd}/silent-text-2.txt`
+    writeFileSync(file, 'Row C\n')
+    await removeFromTextFile({ targetFile: file, searchText: 'Row X', force: true, silent: false })
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/already up to date/))
+  })
+
   // test prompting
 
   test('should not display custom prompt', async () => {

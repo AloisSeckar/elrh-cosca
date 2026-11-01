@@ -10,11 +10,12 @@ import { checkPath } from '../_private/check-path.js'
  * @param {string} opts.targetPath - The path to the file or directory to delete (relative to CWD).
  * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
  * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
+ * @param {boolean} [opts.silent] - If true, suppresses all console log output (default: false).
  * @returns {Promise<void>} A promise that resolves when the operation is finished or skipped.
  * @throws Will throw an error if the path is invalid or the path failed to be deleted.
  */
 export async function deletePath(opts: DeletePathOptions): Promise<void> {
-  const { targetPath, force = false, prompt = '' } = opts
+  const { targetPath, force = false, prompt = '', silent = false } = opts
   const shouldUpdate = force || await promptUser({ question: prompt || `This will delete '${targetPath}'. Continue?` })
   if (shouldUpdate) {
     const check = checkPath(targetPath)
@@ -28,14 +29,14 @@ export async function deletePath(opts: DeletePathOptions): Promise<void> {
       rmSync(fullPath, { recursive: true, force: true })
 
       if (!existsSync(fullPath)) {
-        console.log(`'${targetPath}' deleted from project.`)
+        if (!silent) console.log(`'${targetPath}' deleted from project.`)
       } else {
         throw new Error(`Failed to delete '${targetPath}'.`)
       }
     } else {
-      console.log(`'${targetPath}' does not exist — nothing to delete.`)
+      if (!silent) console.log(`'${targetPath}' does not exist — nothing to delete.`)
     }
   } else {
-    console.log(`Removing '${targetPath}' skipped.`)
+    if (!silent) console.log(`Removing '${targetPath}' skipped.`)
   }
 }

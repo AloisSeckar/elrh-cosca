@@ -11,11 +11,12 @@ import { checkPath } from '../_private/check-path.js'
  * @param {string} opts.yamlKey - The key in the YAML file to be deleted (may use dot notation for nested keys).
  * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
  * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
+ * @param {boolean} [opts.silent] - If true, suppresses all console log output (default: false).
  * @returns {Promise<void>} A promise that resolves when the operation is finished or skipped.
  * @throws Will throw an error if the path is invalid, the file does not exist or cannot be parsed as YAML.
  */
 export async function removeFromYamlFile(opts: RemoveFromYamlFileOptions): Promise<void> {
-  const { targetFile, yamlKey, force = false, prompt = '' } = opts
+  const { targetFile, yamlKey, force = false, prompt = '', silent = false } = opts
   const shouldUpdate = force || await promptUser({ question: prompt || `This will delete '${yamlKey}' from '${targetFile}' file. Continue?` })
   if (shouldUpdate) {
     const check = checkPath(targetFile)
@@ -54,11 +55,11 @@ export async function removeFromYamlFile(opts: RemoveFromYamlFileOptions): Promi
         parent.commentBefore = undefined
       }
       writeFileSync(yamlFilePath, doc.toString(), 'utf8')
-      console.log(`'${targetFile}' file updated.`)
+      if (!silent) console.log(`'${targetFile}' file updated.`)
     } else {
-      console.log(`'${targetFile}' file already up to date.`)
+      if (!silent) console.log(`'${targetFile}' file already up to date.`)
     }
   } else {
-    console.log(`Updating '${targetFile}' skipped.`)
+    if (!silent) console.log(`Updating '${targetFile}' skipped.`)
   }
 }

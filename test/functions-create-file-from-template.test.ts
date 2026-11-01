@@ -109,6 +109,23 @@ describe('Test createFileFromTemplate function', () => {
     await expect(readNormalizedFile(wd, 'npm-file-copy.txt')).toMatchFileSnapshot('snapshots/created-npm-file.txt')
   })
 
+  test('should not log when silent is true', async () => {
+    spy.mockClear()
+    await createFileFromTemplate({ templateFile: `elrh-cosca:test/fixtures/text-file.txt`, targetFile: `${wd}/silent-local-file.txt`, force: true, silent: true })
+    expect(spy).not.toHaveBeenCalled()
+    expect(existsSync(`${wd}/silent-local-file.txt`)).toBe(true)
+
+    setPromptSpy(['n'])
+    await createFileFromTemplate({ templateFile: `vitest:README.md`, targetFile: `${wd}/silent-local-file-2.txt`, silent: true })
+    expect(spy).not.toHaveBeenCalled()
+  })
+
+  test('should log when silent is false', async () => {
+    spy.mockClear()
+    await createFileFromTemplate({ templateFile: `elrh-cosca:test/fixtures/text-file.txt`, targetFile: `${wd}/silent-local-file-3.txt`, force: true, silent: false })
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/successfully created/))
+  })
+
   // test prompting
 
   test('should not display custom prompt', async () => {

@@ -287,6 +287,28 @@ describe('Test updateYamlFile function', () => {
     await expect(readNormalizedFile(wd, 'yaml-file.yaml')).toMatchFileSnapshot('snapshots/updated-yaml-file-5.yaml')
   })
 
+  test('should not log when silent is true', async () => {
+    spy.mockClear()
+    const file = join(wd, 'silent-update.yaml')
+    writeFileSync(file, 'a: 1\n')
+    await updateYamlFile({ targetFile: file, yamlKey: 'c', patch: 2, force: true, silent: true })
+    expect(spy).not.toHaveBeenCalled()
+    expect(readNormalizedFile(wd, 'silent-update.yaml')).toBe('a: 1\nc: 2\n')
+
+    setPromptSpy(['n'])
+    await updateYamlFile({ targetFile: file, yamlKey: 'd', patch: 4, silent: true })
+    expect(spy).not.toHaveBeenCalled()
+    expect(readNormalizedFile(wd, 'silent-update.yaml')).toBe('a: 1\nc: 2\n')
+  })
+
+  test('should log when silent is false', async () => {
+    spy.mockClear()
+    const file = join(wd, 'silent-update-2.yaml')
+    writeFileSync(file, 'a: 1\n')
+    await updateYamlFile({ targetFile: file, yamlKey: 'a', patch: 1, force: true, silent: false })
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/already up to date/))
+  })
+
   // test prompting
 
   test('should not display custom prompt', async () => {

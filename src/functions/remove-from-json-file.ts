@@ -12,11 +12,12 @@ import { checkPath } from '../_private/check-path.js'
  * @param {string} opts.jsonKey - The key in the JSON file to be deleted (may use dot notation for nested keys).
  * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
  * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
+ * @param {boolean} [opts.silent] - If true, suppresses all console log output (default: false).
  * @returns {Promise<void>} A promise that resolves when the operation is finished or skipped.
  * @throws Will throw an error if the path is invalid, the file does not exist or cannot be parsed as JSON.
  */
 export async function removeFromJsonFile(opts: RemoveFromJsonFileOptions): Promise<void> {
-  const { targetFile, jsonKey, force = false, prompt = '' } = opts
+  const { targetFile, jsonKey, force = false, prompt = '', silent = false } = opts
   const shouldUpdate = force || await promptUser({ question: prompt || `This will delete '${jsonKey}' from '${targetFile}' file. Continue?` })
   if (shouldUpdate) {
     const check = checkPath(targetFile)
@@ -43,12 +44,12 @@ export async function removeFromJsonFile(opts: RemoveFromJsonFileOptions): Promi
 
     if (oldJson !== newJson) {
       writeFileSync(jsonFilePath, newJson + '\n', 'utf8')
-      console.log(`'${targetFile}' file updated.`)
+      if (!silent) console.log(`'${targetFile}' file updated.`)
     } else {
-      console.log(`'${targetFile}' file already up to date.`)
+      if (!silent) console.log(`'${targetFile}' file already up to date.`)
     }
   } else {
-    console.log(`Updating '${targetFile}' skipped.`)
+    if (!silent) console.log(`Updating '${targetFile}' skipped.`)
   }
 }
 

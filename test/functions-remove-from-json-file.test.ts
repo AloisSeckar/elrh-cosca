@@ -98,6 +98,28 @@ describe('Test removeFromJsonFile function', () => {
     await expect(readNormalizedFile(wd, 'json-file-2.json')).toMatchFileSnapshot('snapshots/removed-from-json-file-2.json')
   })
   
+  test('should not log when silent is true', async () => {
+    spy.mockClear()
+    const file = join(wd, 'remove-json-silent.json')
+    writeFileSync(file, '{\n  "a": 1,\n  "b": 2\n}\n')
+    await removeFromJsonFile({ targetFile: file, jsonKey: 'a', force: true, silent: true })
+    expect(spy).not.toHaveBeenCalled()
+    expect(JSON.parse(readFileSync(file, 'utf8'))).toEqual({ b: 2 })
+
+    setPromptSpy(['n'])
+    await removeFromJsonFile({ targetFile: file, jsonKey: 'b', silent: true })
+    expect(spy).not.toHaveBeenCalled()
+    expect(JSON.parse(readFileSync(file, 'utf8'))).toEqual({ b: 2 })
+  })
+
+  test('should log when silent is false', async () => {
+    spy.mockClear()
+    const file = join(wd, 'remove-json-silent-2.json')
+    writeFileSync(file, '{\n  "a": 1\n}\n')
+    await removeFromJsonFile({ targetFile: file, jsonKey: 'missing', force: true, silent: false })
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/already up to date/))
+  })
+
   // test prompting
 
   test('should not display custom prompt', async () => {

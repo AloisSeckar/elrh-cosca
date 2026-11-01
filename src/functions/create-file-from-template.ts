@@ -13,11 +13,12 @@ import { checkPath } from '../_private/check-path'
  * @param {string} opts.targetFile - The path to the file to create (relative to CWD). Existing file is overwritten after confirmation.
  * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
  * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
+ * @param {boolean} [opts.silent] - If true, suppresses all console log output (default: false).
  * @returns {Promise<void>} A promise that resolves when the operation is finished or skipped.
  * @throws Will throw an error if the path is invalid, the template path cannot be parsed, the package or the template file cannot be found or the target file failed to be created.
  */
 export async function createFileFromTemplate(opts: CreateFileFromTemplateOptions): Promise<void> {
-  const { templateFile, targetFile, force = false, prompt = '' } = opts
+  const { templateFile, targetFile, force = false, prompt = '', silent = false } = opts
   const shouldCreate = force || await promptUser({ question: prompt || `This will create '${targetFile}' file. Continue?` })
   if (shouldCreate) {
     const { pkg, file } = parseQualifiedPath({ path: templateFile });
@@ -38,7 +39,7 @@ export async function createFileFromTemplate(opts: CreateFileFromTemplateOptions
     if (existsSync(targetPath)) {
       const shouldOverwrite = force || await promptUser({ question: `File '${targetFile}' already exists. Overwrite?` })
       if (!shouldOverwrite) {
-        console.log('Aborted.')
+        if (!silent) console.log('Aborted.')
         return
       }
     }
@@ -51,11 +52,11 @@ export async function createFileFromTemplate(opts: CreateFileFromTemplateOptions
     copyFileSync(templatePath, targetPath)
 
     if (existsSync(targetPath)) {
-      console.log(`New file '${targetFile}' successfully created.`)
+      if (!silent) console.log(`New file '${targetFile}' successfully created.`)
     } else {
       throw new Error(`Failed to create '${targetFile}'.`)
     }
   } else {
-    console.log(`Creation of '${targetFile}' skipped.`)
+    if (!silent) console.log(`Creation of '${targetFile}' skipped.`)
   }
 }

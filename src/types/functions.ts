@@ -5,6 +5,8 @@ interface FileOperationOptions {
 	force?: boolean
 	/** Custom text of the initial confirmation question (default: built-in question). */
 	prompt?: string
+	/** If true, suppresses all console log output (default: false). */
+	silent?: boolean
 }
 
 export interface HasJsonKeyOptions {

@@ -35,12 +35,13 @@ What this means in practice:
 
 ### List of file-manipulation functions
 
-All file-manipulation options extend the following shared shape. `force` defaults to `false`. An omitted or empty `prompt` uses the function's built-in initial confirmation question.
+All file-manipulation options extend the following shared shape. `force` defaults to `false`. An omitted or empty `prompt` uses the function's built-in initial confirmation question. `silent` defaults to `false`; when `true`, the function suppresses all of its `console.log` output.
 
 ```ts
 interface FileOperationOptions {
   force?: boolean
   prompt?: string
+  silent?: boolean
 }
 ```
 

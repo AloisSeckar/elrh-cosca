@@ -11,11 +11,12 @@ import { checkPath } from '../_private/check-path.js'
  * @param {string} opts.searchText - The text to search for; any line that includes this text will be removed.
  * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
  * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
+ * @param {boolean} [opts.silent] - If true, suppresses all console log output (default: false).
  * @returns {Promise<void>} A promise that resolves when the operation is finished or skipped.
  * @throws Will throw an error if the path is invalid or the file does not exist.
  */
 export async function removeFromTextFile(opts: RemoveFromTextFileOptions): Promise<void> {
-  const { targetFile, searchText, force = false, prompt = '' } = opts
+  const { targetFile, searchText, force = false, prompt = '', silent = false } = opts
   const shouldUpdate = force || await promptUser({ question: prompt || `This will remove lines containing '${searchText}' from '${targetFile}' file. Continue?` })
   if (shouldUpdate) {
     const check = checkPath(targetFile)
@@ -35,11 +36,11 @@ export async function removeFromTextFile(opts: RemoveFromTextFileOptions): Promi
 
     if (filtered.length !== lines.length) {
       writeFileSync(textFilePath, filtered.join('\n'), 'utf8')
-      console.log(`'${targetFile}' file updated.`)
+      if (!silent) console.log(`'${targetFile}' file updated.`)
     } else {
-      console.log(`'${targetFile}' file already up to date.`)
+      if (!silent) console.log(`'${targetFile}' file already up to date.`)
     }
   } else {
-    console.log(`Updating '${targetFile}' skipped.`)
+    if (!silent) console.log(`Updating '${targetFile}' skipped.`)
   }
 }

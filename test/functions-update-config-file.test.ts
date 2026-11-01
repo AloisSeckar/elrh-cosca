@@ -219,6 +219,28 @@ describe('Test updateConfigFile function', () => {
     await expect(readNormalizedFile(wd, 'config-file-named.ts')).toMatchFileSnapshot('snapshots/updated-config-file-named-4.ts')
   })
   
+  test('should not log when silent is true', async () => {
+    spy.mockClear()
+    const file = join(wd, 'config-silent.ts')
+    writeFileSync(file, 'export default {\n  a: 1,\n}\n')
+    await updateConfigFile({ targetFile: file, newConfig: { b: 2 }, force: true, silent: true })
+    expect(spy).not.toHaveBeenCalled()
+    expect(readFileSync(file, 'utf8')).toMatch(/b: 2/)
+
+    setPromptSpy(['n'])
+    await updateConfigFile({ targetFile: file, newConfig: { c: 3 }, silent: true })
+    expect(spy).not.toHaveBeenCalled()
+    expect(readFileSync(file, 'utf8')).not.toMatch(/c: 3/)
+  })
+
+  test('should log when silent is false', async () => {
+    spy.mockClear()
+    const file = join(wd, 'config-silent-2.ts')
+    writeFileSync(file, 'export default {\n  b: 2,\n}\n')
+    await updateConfigFile({ targetFile: file, newConfig: { b: 2 }, force: true, silent: false })
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/already up to date/))
+  })
+
   // test prompting
   
   test('should not display custom prompt', async () => {

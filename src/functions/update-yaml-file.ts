@@ -20,11 +20,12 @@ const FORBIDDEN_KEYS = ['__proto__', 'constructor', 'prototype']
  * @param {boolean} [opts.overwriteArrays] - If true, an array patch replaces the existing value instead of appending (default: false).
  * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
  * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
+ * @param {boolean} [opts.silent] - If true, suppresses all console log output (default: false).
  * @returns {Promise<void>} A promise that resolves when the operation is finished or skipped.
  * @throws Will throw an error if the path or the key is invalid, the file does not exist (and `createMissing` is not set), cannot be parsed as YAML or its root is not a map.
  */
 export async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void> {
-  const { targetFile, yamlKey, patch, createMissing = false, overwriteArrays = false, force = false, prompt = '' } = opts
+  const { targetFile, yamlKey, patch, createMissing = false, overwriteArrays = false, force = false, prompt = '', silent = false } = opts
   const shouldUpdate = force || await promptUser({ question: prompt || `This will update '${targetFile}' file. Continue?` })
   if (shouldUpdate) {
     const check = checkPath(targetFile)
@@ -45,7 +46,7 @@ export async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void>
       }
       const shouldCreate = force || await promptUser({ question: `File '${targetFile}' does not exist. Create it?` })
       if (!shouldCreate) {
-        console.log(`Creation of '${targetFile}' skipped.`)
+        if (!silent) console.log(`Creation of '${targetFile}' skipped.`)
         return
       }
     }
@@ -102,12 +103,12 @@ export async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void>
         mkdirSync(dirname(yamlFilePath), { recursive: true })
       }
       writeFileSync(yamlFilePath, doc.toString(), 'utf8')
-      console.log(`'${targetFile}' file ${created ? 'created' : 'updated'}.`)
+      if (!silent) console.log(`'${targetFile}' file ${created ? 'created' : 'updated'}.`)
     } else {
-      console.log(`'${targetFile}' file already up to date.`)
+      if (!silent) console.log(`'${targetFile}' file already up to date.`)
     }
   } else {
-    console.log(`Updating '${targetFile}' skipped.`)
+    if (!silent) console.log(`Updating '${targetFile}' skipped.`)
   }
 }
 

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import { existsSync } from 'node:fs'
+import { existsSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { updateTextFile } from '../src/main'
 import { checkPath } from '../src/_private/check-path'
@@ -114,6 +114,27 @@ describe('Test updateTextFile function', () => {
     await expect(readNormalizedFile(wd, 'text-file.txt')).toMatchFileSnapshot('snapshots/updated-text-file-3.txt')
   })
     
+  test('should not log when silent is true', async () => {
+    spy.mockClear()
+    const file = `${wd}/silent-update.txt`
+    writeFileSync(file, 'Row 1')
+    await updateTextFile({ targetFile: file, rowsToAdd: ['Row 2'], force: true, silent: true })
+    expect(spy).not.toHaveBeenCalled()
+    expect(readNormalizedFile(wd, 'silent-update.txt')).toBe('Row 1\nRow 2\n')
+
+    setPromptSpy(['n'])
+    await updateTextFile({ targetFile: file, rowsToAdd: ['Row 3'], silent: true })
+    expect(spy).not.toHaveBeenCalled()
+  })
+
+  test('should log when silent is false', async () => {
+    spy.mockClear()
+    const file = `${wd}/silent-update-2.txt`
+    writeFileSync(file, 'Row 1\n')
+    await updateTextFile({ targetFile: file, rowsToAdd: ['Row 1'], force: true, silent: false })
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/already up to date/))
+  })
+
   // test prompting
 
   test('should not display custom prompt', async () => {

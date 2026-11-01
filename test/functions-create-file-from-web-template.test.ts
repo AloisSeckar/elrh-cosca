@@ -125,6 +125,25 @@ describe('Test createFileFromWebTemplate function', () => {
     await expect(readNormalizedFile(wd, 'web-file-copy.txt')).toMatchFileSnapshot('snapshots/created-web-file.txt')
   })
   
+  test('should not log when silent is true', async () => {
+    spy.mockClear()
+    vi.mocked(fetchFile).mockResolvedValueOnce(Buffer.from('content'))
+    await createFileFromWebTemplate({ url: `https://example.com/file.txt`, targetFile: `${wd}/silent-web-file.txt`, force: true, silent: true })
+    expect(spy).not.toHaveBeenCalled()
+    expect(readFileSync(`${wd}/silent-web-file.txt`, 'utf8')).toBe('content')
+
+    setPromptSpy(['n'])
+    await createFileFromWebTemplate({ url: `https://example.com/file.txt`, targetFile: `${wd}/silent-web-file-2.txt`, silent: true })
+    expect(spy).not.toHaveBeenCalled()
+  })
+
+  test('should log when silent is false', async () => {
+    spy.mockClear()
+    vi.mocked(fetchFile).mockResolvedValueOnce(Buffer.from('content'))
+    await createFileFromWebTemplate({ url: `https://example.com/file.txt`, targetFile: `${wd}/silent-web-file-3.txt`, force: true, silent: false })
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/successfully created/))
+  })
+
   // test prompting
 
   test('should not display custom prompt', async () => {

@@ -111,6 +111,28 @@ describe('Test removeFromYamlFile function', () => {
     await expect(readNormalizedFile(wd, 'yaml-file-2.yaml')).toMatchFileSnapshot('snapshots/removed-from-yaml-file-2.yaml')
   })
 
+  test('should not log when silent is true', async () => {
+    spy.mockClear()
+    const file = join(wd, 'remove-yaml-silent.yaml')
+    writeFileSync(file, 'a: 1\nb: 2\n')
+    await removeFromYamlFile({ targetFile: file, yamlKey: 'a', force: true, silent: true })
+    expect(spy).not.toHaveBeenCalled()
+    expect(readFileSync(file, 'utf8')).toBe('b: 2\n')
+
+    setPromptSpy(['n'])
+    await removeFromYamlFile({ targetFile: file, yamlKey: 'b', silent: true })
+    expect(spy).not.toHaveBeenCalled()
+    expect(readFileSync(file, 'utf8')).toBe('b: 2\n')
+  })
+
+  test('should log when silent is false', async () => {
+    spy.mockClear()
+    const file = join(wd, 'remove-yaml-silent-2.yaml')
+    writeFileSync(file, 'a: 1\n')
+    await removeFromYamlFile({ targetFile: file, yamlKey: 'missing', force: true, silent: false })
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/already up to date/))
+  })
+
   // test prompting
 
   test('should not display custom prompt', async () => {

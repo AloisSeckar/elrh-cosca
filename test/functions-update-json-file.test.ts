@@ -281,6 +281,28 @@ describe('Test updateJsonFile function', () => {
     await expect(readNormalizedFile(wd, 'json-file.json')).toMatchFileSnapshot('snapshots/updated-json-file-5.json')
   })
   
+  test('should not log when silent is true', async () => {
+    spy.mockClear()
+    const file = join(wd, 'update-json-silent.json')
+    writeFileSync(file, '{\n  "a": 1\n}\n')
+    await updateJsonFile({ targetFile: file, jsonKey: 'c', patch: 2, force: true, silent: true })
+    expect(spy).not.toHaveBeenCalled()
+    expect(JSON.parse(readNormalizedFile(wd, 'update-json-silent.json'))).toEqual({ a: 1, c: 2 })
+
+    setPromptSpy(['n'])
+    await updateJsonFile({ targetFile: file, jsonKey: 'd', patch: 4, silent: true })
+    expect(spy).not.toHaveBeenCalled()
+    expect(JSON.parse(readNormalizedFile(wd, 'update-json-silent.json'))).toEqual({ a: 1, c: 2 })
+  })
+
+  test('should log when silent is false', async () => {
+    spy.mockClear()
+    const file = join(wd, 'update-json-silent-2.json')
+    writeFileSync(file, '{\n  "a": 1\n}\n')
+    await updateJsonFile({ targetFile: file, jsonKey: 'a', patch: 1, force: true, silent: false })
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/already up to date/))
+  })
+
   // test prompting
 
   test('should not display custom prompt', async () => {

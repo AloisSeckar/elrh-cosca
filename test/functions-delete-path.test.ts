@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { deletePath } from '../src/main'
 import { checkPath } from '../src/_private/check-path'
 import { getConsoleSpy, getPromptUserSpy, setPromptSpy } from './cosca-test-utils'
-import { existsSync, rmSync } from 'node:fs'
+import { existsSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 // wraps the real `rmSync` so a single call can be stubbed
@@ -77,6 +77,26 @@ describe('Test deletePath function', () => {
     await deletePath({ targetPath: join(wd, 'json-file.json') })
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/skipped/))
     expect(existsSync(join(wd, 'json-file.json'))).toBe(true)
+  })
+
+  test('should not log when silent is true', async () => {
+    spy.mockClear()
+    writeFileSync(join(wd, 'silent-delete.txt'), 'content')
+    await deletePath({ targetPath: join(wd, 'silent-delete.txt'), force: true, silent: true })
+    await deletePath({ targetPath: join(wd, 'unknown-silent'), force: true, silent: true })
+    expect(spy).not.toHaveBeenCalled()
+    expect(existsSync(join(wd, 'silent-delete.txt'))).toBe(false)
+
+    setPromptSpy(['n'])
+    await deletePath({ targetPath: join(wd, 'json-file.json'), silent: true })
+    expect(spy).not.toHaveBeenCalled()
+  })
+
+  test('should log when silent is false', async () => {
+    spy.mockClear()
+    writeFileSync(join(wd, 'silent-delete-2.txt'), 'content')
+    await deletePath({ targetPath: join(wd, 'silent-delete-2.txt'), force: true, silent: false })
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/deleted from project/))
   })
 
   // test prompting
