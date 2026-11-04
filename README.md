@@ -332,12 +332,13 @@ By default it uses `process.stdin` and `process.stdout` streams. To use custom N
 ```ts
 interface ShowMessageOptions {
   message: string
+  linesBefore?: number
   linesAfter?: number
 }
 function showMessage(opts: ShowMessageOptions): void
 ```
 
-Prints out a `message` to `process.stdout` followed by a newline and optionally adds `linesAfter` extra newlines after it (default is 0). This function is synchronous.
+Prints out a `message` to `process.stdout` followed by a newline, optionally preceded by `linesBefore` newlines and followed by `linesAfter` extra newlines (both default to 0). This function is synchronous.
 
 #### `showError`
 
@@ -345,7 +346,7 @@ Prints out a `message` to `process.stdout` followed by a newline and optionally 
 function showError(opts: ShowMessageOptions): void
 ```
 
-Prints out a `message` to `process.stderr` followed by a newline and optionally adds `linesAfter` extra newlines after it (default is 0). This function is synchronous.
+Prints out a `message` to `process.stderr` followed by a newline, optionally preceded by `linesBefore` newlines and followed by `linesAfter` extra newlines (both default to 0). This function is synchronous.
 
 ### List of other utils
 

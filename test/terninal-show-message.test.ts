@@ -33,6 +33,18 @@ describe('Test showMessage terminal helper', () => {
     expect(spy).toHaveBeenCalledTimes(3) // 1 for message, 1 own newline, 1 extra newline
   })
 
+  test('should write newlines BEFORE the message', () => {
+    showMessage({ message: 'Hello!', linesBefore: 2 })
+
+    expect(spy.mock.calls.map((c: any[]) => c[0])).toEqual(['\n', '\n', 'Hello!', '\n'])
+  })
+
+  test.each([0, -1])('should write no leading newlines when linesBefore is %i', (linesBefore) => {
+    showMessage({ message: 'Hello!', linesBefore })
+
+    expect(spy.mock.calls.map((c: any[]) => c[0])).toEqual(['Hello!', '\n'])
+  })
+
   test.each([0, -1])('should write message + ONE newline when linesAfter is %i', (linesAfter) => {
     showMessage({ message: 'Hello!', linesAfter })
 
