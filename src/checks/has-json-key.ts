@@ -1,8 +1,6 @@
 import type { HasJsonKeyOptions } from '../types/functions.js'
-import { resolve } from 'node:path'
-import { existsSync, readFileSync } from 'node:fs'
 import type { DataObject } from '../types/data.js'
-import { checkPath } from '../_private/check-path.js'
+import { readTargetFile } from '../_private/file-helpers.js'
 
 /**
  * Checks if a JSON file contains specified key.
@@ -14,20 +12,11 @@ import { checkPath } from '../_private/check-path.js'
  */
 export function hasJsonKey(opts: HasJsonKeyOptions): boolean {
   const { targetFile, jsonKey } = opts
-  const check = checkPath(targetFile)
-  if (!check.valid) {
-    throw new Error(check.error)
-  }
-
-  const jsonFilePath = resolve(process.cwd(), targetFile)
-  if (!existsSync(jsonFilePath)) {
-    throw new Error(`No '${targetFile}' found — cannot check its keys.`)
-  }
+  const { content } = readTargetFile(targetFile, 'check its keys')
   
-  const jsonRaw = readFileSync(jsonFilePath, 'utf8')
   let json
   try {
-    json = JSON.parse(jsonRaw)
+    json = JSON.parse(content)
   } catch (err) {
     throw new Error(`Could not parse '${targetFile}' — cannot check its keys.\n${err}`)
   }

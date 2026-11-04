@@ -1,7 +1,5 @@
 import type { HasTextOptions } from '../types/functions.js'
-import { resolve } from 'node:path'
-import { existsSync, readFileSync } from 'node:fs'
-import { checkPath } from '../_private/check-path.js'
+import { readTargetFile } from '../_private/file-helpers.js'
 
 /**
  * Checks if a text file contains specified text.
@@ -14,18 +12,8 @@ import { checkPath } from '../_private/check-path.js'
  */
 export function hasText(opts: HasTextOptions): boolean {
     const { targetFile, pattern, exact = false } = opts
-    const check = checkPath(targetFile)
-    if (!check.valid) {
-        throw new Error(check.error)
-    }
-
-    const textFilePath = resolve(process.cwd(), targetFile)
-    if (!existsSync(textFilePath)) {
-        throw new Error(`No '${targetFile}' found — cannot check its contents.`)
-    }
-
-    const textRaw = readFileSync(textFilePath, 'utf8')
-    const lines = textRaw.split(/\r?\n/).map(line => line.trim())
+    const { content } = readTargetFile(targetFile, 'check its contents')
+    const lines = content.split(/\r?\n/).map(line => line.trim())
 
     // Handle RegExp pattern
     if (pattern instanceof RegExp) {

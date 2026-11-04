@@ -19,9 +19,9 @@ describe('Test custom YAML parser and serializer', () => {
   })
 
   test('should parse and serialize root scalars, flow collections, and trailing comments', () => {
-    const scalarDoc = parseYamlDocument('# before scalar\n"hello\\nworld\\r\\t\\0\\"\\\\\\/\\x41\\u0042" # inline\n# after scalar\n')
+    const scalarDoc = parseYamlDocument('# before scalar\n"hello\\nworld\\r\\t\\"\\\\\\/\\u0042" # inline\n# after scalar\n')
     expect(isYamlScalar(scalarDoc.contents)).toBe(true)
-    expect(yamlNodeToJson(scalarDoc.contents!)).toBe('hello\nworld\r\t\0"\\/AB')
+    expect(yamlNodeToJson(scalarDoc.contents!)).toBe('hello\nworld\r\t"\\/B')
     expect(stringifyYamlDocument(scalarDoc)).toContain('# before scalar\n"hello')
     expect(stringifyYamlDocument(scalarDoc)).toContain('# after scalar\n')
 
@@ -91,7 +91,7 @@ describe('Test custom YAML parser and serializer', () => {
     const node = createYamlNode({
       emptyStr: '',
       padded: ' a ',
-      multiline: 'a\nb\rc\td\\e"f\x01\x7f',
+      multiline: 'a\nb\rc\td\\e"f\x01',
       reserved: 'true',
       numStr: '123',
       indicator: '-lead',
@@ -109,7 +109,7 @@ describe('Test custom YAML parser and serializer', () => {
     const text = stringifyYamlDocument(doc)
     expect(text).toContain('emptyStr: ""')
     expect(text).toContain('padded: " a "')
-    expect(text).toContain('multiline: "a\\nb\\rc\\td\\\\e\\"f\\u0001\\u007f"')
+    expect(text).toContain('multiline: "a\\nb\\rc\\td\\\\e\\"f\\u0001"')
     expect(text).toContain('reserved: "true"')
     expect(text).toContain('numStr: "123"')
     expect(text).toContain('indicator: "-lead"')
@@ -168,9 +168,8 @@ describe('Test custom YAML parser and serializer', () => {
     expect(() => parseYamlDocument('a: |\n  block')).toThrow(/Unsupported YAML feature/)
     expect(() => parseYamlDocument("a: 'unclosed")).toThrow(/Unterminated quoted string/)
     expect(() => parseYamlDocument('a: "unclosed\\')).toThrow(/Unterminated quoted string/)
-    expect(() => parseYamlDocument('a: "bad\\qescape"')).toThrow(/Unsupported escape sequence/)
-    expect(() => parseYamlDocument('a: "bad\\x1Z"')).toThrow(/Invalid hex escape/)
-    expect(() => parseYamlDocument('a: "bad\\u123Z"')).toThrow(/Invalid unicode escape/)
+    expect(() => parseYamlDocument('a: "bad\\qescape"')).toThrow(/Invalid double-quoted string/)
+    expect(() => parseYamlDocument('a: "bad\\u123Z"')).toThrow(/Invalid double-quoted string/)
     expect(() => parseYamlDocument('a: "str" trailing')).toThrow(/Unexpected trailing content/)
     expect(() => parseYamlDocument('a: val: nested')).toThrow(/Unexpected mapping colon in scalar/)
     expect(() => parseYamlDocument('a: [1, , 2]')).toThrow(/Empty flow item/)

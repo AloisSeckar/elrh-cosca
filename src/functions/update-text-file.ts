@@ -1,8 +1,5 @@
 import type { UpdateTextFileOptions } from '../types/functions.js'
-import { dirname, resolve } from 'node:path'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { promptUser } from '../terminal/prompt-user.js'
-import { checkPath } from '../_private/check-path.js'
+import { confirmAction, prepareTargetFile, writeUpdatedFile } from '../_private/file-helpers.js'
 
 /**
  * Updates a text file by adding new rows.
@@ -18,48 +15,25 @@ import { checkPath } from '../_private/check-path.js'
  * @throws Will throw an error if the path is invalid or the file does not exist (and `createMissing` is not set).
  */
 export async function updateTextFile(opts: UpdateTextFileOptions): Promise<void> {
-  const { targetFile, rowsToAdd, allowDuplicates = false, createMissing = false, force = false, prompt = '', silent = false } = opts
-  const shouldUpdate = force || await promptUser({ question: prompt || `This will update '${targetFile}' file. Continue?` })
-  if (shouldUpdate) {
-    const check = checkPath(targetFile)
-    if (!check.valid) {
-      throw new Error(check.error)
-    }
-
-    const textFilePath = resolve(process.cwd(), targetFile)
-    const created = !existsSync(textFilePath)
-    if (created) {
-      if (!createMissing) {
-        throw new Error(`No '${targetFile}' found — cannot update its contents.`)
-      }
-      const shouldCreate = force || await promptUser({ question: `File '${targetFile}' does not exist. Create it?` })
-      if (!shouldCreate) {
-        if (!silent) console.log(`Creation of '${targetFile}' skipped.`)
-        return
-      }
-    }
-
-    const lines = created ? [] : readFileSync(textFilePath, 'utf8').split(/\r?\n/)
-
-    let modified = created
-
-    for (const row of rowsToAdd) {
-      if (allowDuplicates || !lines.includes(row)) {
-        lines.push(row)
-        modified = true
-      }
-    }
-
-    if (modified) {
-      if (created) {
-        mkdirSync(dirname(textFilePath), { recursive: true })
-      }
-      writeFileSync(textFilePath, lines.join('\n') + '\n', 'utf8')
-      if (!silent) console.log(`'${targetFile}' file ${created ? 'created' : 'updated'}.`)
-    } else {
-      if (!silent) console.log(`'${targetFile}' file already up to date.`)
-    }
-  } else {
-    if (!silent) console.log(`Updating '${targetFile}' skipped.`)
+  const { targetFile, rowsToAdd, allowDuplicates = false, silent = false } = opts
+  if (!await confirmAction(opts, `This will update '${targetFile}' file. Continue?`, `Updating '${targetFile}' skipped.`)) {
+    return
   }
+
+  const target = await prepareTargetFile(targetFile, opts)
+  if (!target) {
+    return
+  }
+
+  const lines = target.content === null ? [] : target.content.split(/\r?\n/)
+  let modified = target.created
+
+  for (const row of rowsToAdd) {
+    if (allowDuplicates || !lines.includes(row)) {
+      lines.push(row)
+      modified = true
+    }
+  }
+
+  writeUpdatedFile(targetFile, target.fullPath, lines.join('\n') + '\n', modified, target.created, silent)
 }

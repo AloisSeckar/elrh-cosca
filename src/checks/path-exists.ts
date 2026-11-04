@@ -1,7 +1,6 @@
 import type { PathExistsOptions } from '../types/functions.js'
-import { resolve } from 'node:path'
 import { existsSync } from 'node:fs'
-import { checkPath } from '../_private/check-path.js'
+import { resolveCheckedPath } from '../_private/file-helpers.js'
 
 /**
  * Checks if the specified path exists on FS. The search is limited to CWD.
@@ -11,12 +10,6 @@ import { checkPath } from '../_private/check-path.js'
  * @throws Will throw an error if the path is invalid.
  */
 export function pathExists(opts: PathExistsOptions): boolean {
-    const { targetPath } = opts
-    const check = checkPath(targetPath)
-    if (!check.valid) {
-        throw new Error(check.error)
-    }
-
-    const path = resolve(process.cwd(), targetPath)
-    return existsSync(path)
+  const { targetPath } = opts
+  return existsSync(resolveCheckedPath(targetPath))
 }

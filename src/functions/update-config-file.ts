@@ -1,9 +1,6 @@
 import type { UpdateConfigFileOptions } from '../types/functions.js'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
 import { mergeConfig } from '../_private/merge-config.js'
-import { promptUser } from '../terminal/prompt-user.js'
-import { checkPath } from '../_private/check-path.js'
+import { confirmAction, prepareTargetFile, writeUpdatedFile } from '../_private/file-helpers.js'
 
 /**
  * Updates the config object exported from a JS/TS config file.
@@ -24,40 +21,18 @@ import { checkPath } from '../_private/check-path.js'
  * @throws Will throw an error if the path or `newConfig` is invalid, the file does not exist (and `createMissing` is not set), no suitable config export is found or it cannot be processed.
  */
 export async function updateConfigFile(opts: UpdateConfigFileOptions): Promise<void> {
-  const { targetFile, newConfig, createMissing = false, force = false, prompt = '', silent = false } = opts
-  const shouldUpdate = force || await promptUser({ question: prompt || `This will update '${targetFile}' file. Continue?` })
-  if (shouldUpdate) {
-    const check = checkPath(targetFile)
-    if (!check.valid) {
-      throw new Error(check.error)
-    }
-
-    const configFilePath = resolve(process.cwd(), targetFile)
-    const created = !existsSync(configFilePath)
-    if (created) {
-      if (!createMissing) {
-        throw new Error(`No '${targetFile}' found — cannot update its contents.`)
-      }
-      const shouldCreate = force || await promptUser({ question: `File '${targetFile}' does not exist. Create it?` })
-      if (!shouldCreate) {
-        if (!silent) console.log(`Creation of '${targetFile}' skipped.`)
-        return
-      }
-    }
-
-    const raw = created ? 'export default {}\n' : readFileSync(configFilePath, 'utf8')
-    const { code, modified } = mergeConfig(raw, newConfig, targetFile)
-
-    if (created || modified) {
-      if (created) {
-        mkdirSync(dirname(configFilePath), { recursive: true })
-      }
-      writeFileSync(configFilePath, code, 'utf8')
-      if (!silent) console.log(`'${targetFile}' file ${created ? 'created' : 'updated'}.`)
-    } else {
-      if (!silent) console.log(`'${targetFile}' file already up to date.`)
-    }
-  } else {
-    if (!silent) console.log(`Updating '${targetFile}' skipped.`)
+  const { targetFile, newConfig, silent = false } = opts
+  if (!await confirmAction(opts, `This will update '${targetFile}' file. Continue?`, `Updating '${targetFile}' skipped.`)) {
+    return
   }
+
+  const target = await prepareTargetFile(targetFile, opts)
+  if (!target) {
+    return
+  }
+
+  const raw = target.content ?? 'export default {}\n'
+  const { code, modified } = mergeConfig(raw, newConfig, targetFile)
+
+  writeUpdatedFile(targetFile, target.fullPath, code, target.created || modified, target.created, silent)
 }

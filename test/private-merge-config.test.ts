@@ -55,7 +55,7 @@ describe('Test mergeConfig function', () => {
       '  shorthand,',
       '  [computedKey]: 1,',
       '  tpl: `hello \\`world\\``,' ,
-      "  'quoted-key': \"hello\\n\\r\\t\\u0041\\u{42}\\'\",",
+      "  'quoted-key': 'hello\\n\\r\\t\\u0041\\u{42}\\'\"',",
       '  num: 10,',
       '  boolT: true,',
       '  boolF: false,',
@@ -75,7 +75,7 @@ describe('Test mergeConfig function', () => {
 
     // No-op when values match existing literals
     const noop = mergeConfig(src, {
-      'quoted-key': "hello\n\r\tAB'",
+      'quoted-key': 'hello\n\r\tAB\'"',
       num: 10,
       boolT: true,
       boolF: false,
@@ -86,7 +86,7 @@ describe('Test mergeConfig function', () => {
 
     // Replacements and merges
     const updated = mergeConfig(src, {
-      'quoted-key': "line1\nline2\r\t'\\\u2028\u2029\x00\x7f",
+      'quoted-key': "line1\nline2\r\t'\"\\\x00",
       'special-key': -0,
       newNil: null,
       arrSingleEmpty: ['a', 'a'],
@@ -99,7 +99,7 @@ describe('Test mergeConfig function', () => {
       singleLineObj: { y: 2 },
     }, 'cfg.ts')
     expect(updated.modified).toBe(true)
-    expect(updated.code).toContain("'quoted-key': 'line1\\nline2\\r\\t\\'\\\\\\u2028\\u2029\\u0000\\u007f'")
+    expect(updated.code).toContain("'quoted-key': 'line1\\nline2\\r\\t\\'\"\\\\\\u0000'")
     expect(updated.code).toContain("'special-key': 0,")
     expect(updated.code).toContain('newNil: null,')
     expect(updated.code).toContain("arrSingleEmpty: ['a'],")

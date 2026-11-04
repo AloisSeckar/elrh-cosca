@@ -1,8 +1,7 @@
 import type { DataObject, DataValue } from '../types/data.js'
 import { isDeepStrictEqual } from 'node:util'
+import { PROTOTYPE_POLLUTION_KEYS } from './file-helpers.js'
 
-// guards against prototype pollution via crafted property names
-const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
 const IDENTIFIER_RE = /^[A-Za-z_$][A-Za-z0-9_$]*$/
 
 interface TextEdit {
@@ -66,7 +65,7 @@ function validateConfigObject(obj: unknown): asserts obj is DataObject {
     throw new Error('Invalid newConfig: symbol keys are not supported.')
   }
   for (const [key, value] of Object.entries(obj)) {
-    if (FORBIDDEN_KEYS.has(key)) {
+    if (PROTOTYPE_POLLUTION_KEYS.has(key)) {
       throw new Error(`Invalid config key '${key}'.`)
     }
     validateConfigValue(value)
@@ -211,7 +210,7 @@ function updateObjectLiteral(
   const props = parseObjectProperties(src, objStart, objEnd)
   const propMap = new Map<string, ObjectProperty>()
   for (const prop of props) {
-    if (prop.key !== null && !FORBIDDEN_KEYS.has(prop.key)) {
+    if (prop.key !== null && !PROTOTYPE_POLLUTION_KEYS.has(prop.key)) {
       propMap.set(prop.key, prop)
     }
   }
@@ -500,7 +499,7 @@ function tryParseLiteral(
     const props = parseObjectProperties(src, start, end)
     const obj: DataObject = {}
     for (const prop of props) {
-      if (prop.key === null || FORBIDDEN_KEYS.has(prop.key)) return { ok: false }
+      if (prop.key === null || PROTOTYPE_POLLUTION_KEYS.has(prop.key)) return { ok: false }
       const valParsed = tryParseLiteral(src, prop.valStart, prop.valEnd)
       if (!valParsed.ok) return { ok: false }
       obj[prop.key] = valParsed.value
@@ -542,54 +541,18 @@ function formatKey(key: string): string {
 }
 
 function formatString(str: string): string {
-  let out = "'"
-  for (let i = 0; i < str.length; i++) {
-    const ch = str[i]
-    const code = str.charCodeAt(i)
-    if (ch === '\\') out += '\\\\'
-    else if (ch === "'") out += "\\'"
-    else if (ch === '\n') out += '\\n'
-    else if (ch === '\r') out += '\\r'
-    else if (ch === '\t') out += '\\t'
-    else if (code === 0x2028) out += '\\u2028'
-    else if (code === 0x2029) out += '\\u2029'
-    else if (code < 0x20 || (code >= 0x7f && code <= 0x9f)) {
-      out += '\\u' + code.toString(16).padStart(4, '0')
-    } else {
-      out += ch
-    }
-  }
-  return out + "'"
+  return `'${JSON.stringify(str).slice(1, -1).replace(/\\"|'/g, m => (m === "'" ? "\\'" : '"'))}'`
 }
 
 function unescapeString(raw: string): string {
-  const inner = raw.slice(1, -1)
-  let out = ''
-  for (let i = 0; i < inner.length; i++) {
-    const ch = inner[i]
-    if (ch !== '\\') {
-      out += ch
-      continue
-    }
-    i++
-    const esc = inner[i]
-    if (esc === 'n') out += '\n'
-    else if (esc === 'r') out += '\r'
-    else if (esc === 't') out += '\t'
-    else if (esc === 'u') {
-      if (inner[i + 1] === '{') {
-        const closeIdx = inner.indexOf('}', i + 2)
-        out += String.fromCodePoint(parseInt(inner.slice(i + 2, closeIdx), 16))
-        i = closeIdx
-      } else {
-        out += String.fromCharCode(parseInt(inner.slice(i + 1, i + 5), 16))
-        i += 4
-      }
-    } else {
-      out += esc
-    }
-  }
-  return out
+  const normalized = raw
+    .slice(1, -1)
+    .replace(/\\(?:u\{([0-9a-fA-F]+)\}|(.))|"/g, (match, codePoint, escaped) => {
+      if (codePoint !== undefined) return JSON.stringify(String.fromCodePoint(parseInt(codePoint, 16))).slice(1, -1)
+      if (escaped !== undefined) return /^["\\/bfnrtu]$/.test(escaped) ? match : escaped
+      return '\\"'
+    })
+  return JSON.parse(`"${normalized}"`)
 }
 
 function skipTrivia(src: string, pos: number, end: number): number {

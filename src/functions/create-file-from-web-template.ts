@@ -1,9 +1,7 @@
 import type { CreateFileFromWebTemplateOptions } from '../types/functions.js'
-import { dirname, resolve } from 'node:path'
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
-import { promptUser } from '../terminal/prompt-user'
+import { writeFileSync } from 'node:fs'
 import { fetchFile } from '../_private/fetch-file'
-import { checkPath } from '../_private/check-path'
+import { confirmAction, resolveCheckedPath, writeCreatedFile } from '../_private/file-helpers.js'
 
 /**
  * Creates a new file as a copy of a template file downloaded from the web.
@@ -17,45 +15,18 @@ import { checkPath } from '../_private/check-path'
  * @throws Will throw an error if the path is invalid, the template file cannot be fetched or the target file failed to be created.
  */
 export async function createFileFromWebTemplate(opts: CreateFileFromWebTemplateOptions): Promise<void> {
-  const { url, targetFile, force = false, prompt = '', silent = false } = opts
-  const shouldCreate = force || await promptUser({ question: prompt || `This will create '${targetFile}' file. Continue?` })
-  if (shouldCreate) {
-
-    let fileContent: Buffer
-    try {
-      fileContent = await fetchFile(url)
-    } catch (err) {
-      throw new Error(`Failed to fetch template from external source ${url}:\n${err}`)
-    }
-
-    const check = checkPath(targetFile)
-    if (!check.valid) {
-      throw new Error(check.error)
-    }
-
-    const targetPath = resolve(process.cwd(), targetFile)
-
-    if (existsSync(targetPath)) {
-      const shouldOverwrite = force || await promptUser({ question: `File '${targetFile}' already exists. Overwrite?` })
-      if (!shouldOverwrite) {
-        if (!silent) console.log('Aborted.')
-        return
-      }
-    }
-
-    const targetDir = dirname(targetPath)
-    if (!existsSync(targetDir)) {
-      mkdirSync(targetDir, { recursive: true })
-    }
-
-    writeFileSync(targetPath, fileContent)
-
-    if (existsSync(targetPath)) {
-      if (!silent) console.log(`New file '${targetFile}' successfully created.`)
-    } else {
-      throw new Error(`Failed to create '${targetFile}'.`)
-    }
-  } else {
-    if (!silent) console.log(`Creation of '${targetFile}' skipped.`)
+  const { url, targetFile } = opts
+  if (!await confirmAction(opts, `This will create '${targetFile}' file. Continue?`, `Creation of '${targetFile}' skipped.`)) {
+    return
   }
+
+  let fileContent: Buffer
+  try {
+    fileContent = await fetchFile(url)
+  } catch (err) {
+    throw new Error(`Failed to fetch template from external source ${url}:\n${err}`)
+  }
+
+  const targetPath = resolveCheckedPath(targetFile)
+  await writeCreatedFile(targetFile, targetPath, () => writeFileSync(targetPath, fileContent), opts)
 }

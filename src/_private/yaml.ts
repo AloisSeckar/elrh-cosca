@@ -1,6 +1,5 @@
 import type { DataArray, DataObject, DataPrimitive, DataValue } from '../types/data.js'
-
-const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
+import { PROTOTYPE_POLLUTION_KEYS } from './file-helpers.js'
 
 const YAML_RESERVED_SCALAR_RE = /^(?:null|Null|NULL|~|true|True|TRUE|false|False|FALSE)$/
 const YAML_NUMBER_LOOKING_RE = /^[+-]?(?:\d|\.\d)/
@@ -104,7 +103,7 @@ export function createYamlNode(value: DataValue): YamlNode {
   }
   const items: YamlPair[] = []
   for (const [key, val] of Object.entries(value)) {
-    if (FORBIDDEN_KEYS.has(key)) {
+    if (PROTOTYPE_POLLUTION_KEYS.has(key)) {
       throw new Error(`Invalid YAML key '${key}'.`)
     }
     items.push({ key, value: createYamlNode(val) })
@@ -122,7 +121,7 @@ export function yamlNodeToJson(node: YamlNode): DataValue {
   }
   const obj: DataObject = {}
   for (const pair of node.items) {
-    if (!FORBIDDEN_KEYS.has(pair.key)) {
+    if (!PROTOTYPE_POLLUTION_KEYS.has(pair.key)) {
       obj[pair.key] = yamlNodeToJson(pair.value)
     }
   }
@@ -574,44 +573,14 @@ function scanQuotedStringEnd(src: string, start: number): number {
 }
 
 function unquoteString(rawQuoted: string, lineNum: number): string {
-  const quote = rawQuoted[0]
-  const inner = rawQuoted.slice(1, -1)
-  if (quote === "'") {
-    return inner.replace(/''/g, "'")
+  if (rawQuoted[0] === "'") {
+    return rawQuoted.slice(1, -1).replace(/''/g, "'")
   }
-  let out = ''
-  for (let i = 0; i < inner.length; i++) {
-    const ch = inner[i]
-    if (ch !== '\\') {
-      out += ch
-      continue
-    }
-    i++
-    const esc = inner[i]
-    if (esc === 'n') out += '\n'
-    else if (esc === 'r') out += '\r'
-    else if (esc === 't') out += '\t'
-    else if (esc === '0') out += '\0'
-    else if (esc === '"' || esc === '\\' || esc === '/') out += esc
-    else if (esc === 'x') {
-      const hex = inner.slice(i + 1, i + 3)
-      if (!/^[0-9a-fA-F]{2}$/.test(hex)) {
-        throw new SyntaxError(`Invalid hex escape on line ${lineNum}.`)
-      }
-      out += String.fromCharCode(parseInt(hex, 16))
-      i += 2
-    } else if (esc === 'u') {
-      const hex = inner.slice(i + 1, i + 5)
-      if (!/^[0-9a-fA-F]{4}$/.test(hex)) {
-        throw new SyntaxError(`Invalid unicode escape on line ${lineNum}.`)
-      }
-      out += String.fromCharCode(parseInt(hex, 16))
-      i += 4
-    } else {
-      throw new SyntaxError(`Unsupported escape sequence '\\${esc}' on line ${lineNum}.`)
-    }
+  try {
+    return JSON.parse(rawQuoted)
+  } catch {
+    throw new SyntaxError(`Invalid double-quoted string on line ${lineNum}.`)
   }
-  return out
 }
 
 function extractTrailingComment(trailing: string, lineNum: number): string | undefined {
@@ -840,12 +809,12 @@ function formatYamlScalar(value: DataPrimitive): string {
   if (value === null) return 'null'
   if (typeof value === 'boolean') return String(value)
   if (typeof value === 'number') return Object.is(value, -0) ? '0' : String(value)
-  return needsQuotingScalar(value) ? quoteDoubleString(value) : value
+  return needsQuotingScalar(value) ? JSON.stringify(value) : value
 }
 
 function formatYamlKey(key: string): string {
   if (needsQuotingScalar(key) || /[:[\]{},]/.test(key)) {
-    return quoteDoubleString(key)
+    return JSON.stringify(key)
   }
   return key
 }
@@ -858,23 +827,4 @@ function needsQuotingScalar(str: string): boolean {
   if (YAML_INDICATOR_START_RE.test(str)) return true
   if (str.includes(': ') || str.includes(' #') || str.endsWith(':')) return true
   return false
-}
-
-function quoteDoubleString(str: string): string {
-  let out = '"'
-  for (let i = 0; i < str.length; i++) {
-    const ch = str[i]
-    const code = str.charCodeAt(i)
-    if (ch === '\\') out += '\\\\'
-    else if (ch === '"') out += '\\"'
-    else if (ch === '\n') out += '\\n'
-    else if (ch === '\r') out += '\\r'
-    else if (ch === '\t') out += '\\t'
-    else if (code < 0x20 || code === 0x7f) {
-      out += '\\u' + code.toString(16).padStart(4, '0')
-    } else {
-      out += ch
-    }
-  }
-  return out + '"'
 }

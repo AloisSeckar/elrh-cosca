@@ -1,8 +1,5 @@
 import type { RemoveFromTextFileOptions } from '../types/functions.js'
-import { resolve } from 'node:path'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { promptUser } from '../terminal/prompt-user.js'
-import { checkPath } from '../_private/check-path.js'
+import { confirmAction, readTargetFile, writeUpdatedFile } from '../_private/file-helpers.js'
 
 /**
  * Removes lines from a text file that include the given search text.
@@ -16,31 +13,14 @@ import { checkPath } from '../_private/check-path.js'
  * @throws Will throw an error if the path is invalid or the file does not exist.
  */
 export async function removeFromTextFile(opts: RemoveFromTextFileOptions): Promise<void> {
-  const { targetFile, searchText, force = false, prompt = '', silent = false } = opts
-  const shouldUpdate = force || await promptUser({ question: prompt || `This will remove lines containing '${searchText}' from '${targetFile}' file. Continue?` })
-  if (shouldUpdate) {
-    const check = checkPath(targetFile)
-    if (!check.valid) {
-      throw new Error(check.error)
-    }
-
-    const textFilePath = resolve(process.cwd(), targetFile)
-    if (!existsSync(textFilePath)) {
-      throw new Error(`No '${targetFile}' found — cannot update its contents.`)
-    }
-
-    const textRaw = readFileSync(textFilePath, 'utf8')
-    const lines = textRaw.split(/\r?\n/)
-
-    const filtered = lines.filter(line => !line.includes(searchText))
-
-    if (filtered.length !== lines.length) {
-      writeFileSync(textFilePath, filtered.join('\n'), 'utf8')
-      if (!silent) console.log(`'${targetFile}' file updated.`)
-    } else {
-      if (!silent) console.log(`'${targetFile}' file already up to date.`)
-    }
-  } else {
-    if (!silent) console.log(`Updating '${targetFile}' skipped.`)
+  const { targetFile, searchText, silent = false } = opts
+  if (!await confirmAction(opts, `This will remove lines containing '${searchText}' from '${targetFile}' file. Continue?`, `Updating '${targetFile}' skipped.`)) {
+    return
   }
+
+  const { fullPath, content } = readTargetFile(targetFile, 'update its contents')
+  const lines = content.split(/\r?\n/)
+  const filtered = lines.filter(line => !line.includes(searchText))
+
+  writeUpdatedFile(targetFile, fullPath, filtered.join('\n'), filtered.length !== lines.length, false, silent)
 }

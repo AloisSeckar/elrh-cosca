@@ -1,6 +1,6 @@
 import type { DataValue } from './data.js'
 
-interface FileOperationOptions {
+export interface FileOperationOptions {
 	/** If true, skips all confirmation prompts (default: false). */
 	force?: boolean
 	/** Custom text of the initial confirmation question (default: built-in question). */

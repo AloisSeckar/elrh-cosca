@@ -1,7 +1,5 @@
 import type { HasYamlKeyOptions } from '../types/functions.js'
-import { resolve } from 'node:path'
-import { existsSync, readFileSync } from 'node:fs'
-import { checkPath } from '../_private/check-path.js'
+import { readTargetFile } from '../_private/file-helpers.js'
 import { getMapNode, hasMapKey, isYamlMap, parseYamlDocument } from '../_private/yaml.js'
 
 /**
@@ -14,19 +12,11 @@ import { getMapNode, hasMapKey, isYamlMap, parseYamlDocument } from '../_private
  */
 export function hasYamlKey(opts: HasYamlKeyOptions): boolean {
   const { targetFile, yamlKey } = opts
-  const check = checkPath(targetFile)
-  if (!check.valid) {
-    throw new Error(check.error)
-  }
-
-  const yamlFilePath = resolve(process.cwd(), targetFile)
-  if (!existsSync(yamlFilePath)) {
-    throw new Error(`No '${targetFile}' found — cannot check its keys.`)
-  }
+  const { content } = readTargetFile(targetFile, 'check its keys')
 
   let doc
   try {
-    doc = parseYamlDocument(readFileSync(yamlFilePath, 'utf8'))
+    doc = parseYamlDocument(content)
   } catch (err) {
     throw new Error(`Could not parse '${targetFile}' — cannot check its keys.\n${err}`)
   }

@@ -1,10 +1,9 @@
 import type { CreateFileFromTemplateOptions } from '../types/functions.js'
-import { dirname, resolve } from 'node:path'
-import { existsSync, copyFileSync, mkdirSync } from 'node:fs'
-import { promptUser } from '../terminal/prompt-user'
+import { resolve } from 'node:path'
+import { existsSync, copyFileSync } from 'node:fs'
 import { parseQualifiedPath } from '../utils/parse-qualified-path'
 import { resolvePackagePath } from '../utils/resolve-package-path'
-import { checkPath } from '../_private/check-path'
+import { confirmAction, resolveCheckedPath, writeCreatedFile } from '../_private/file-helpers.js'
 
 /**
  * Creates a new file as a copy of a template file from an installed package.
@@ -18,45 +17,19 @@ import { checkPath } from '../_private/check-path'
  * @throws Will throw an error if the path is invalid, the template path cannot be parsed, the package or the template file cannot be found or the target file failed to be created.
  */
 export async function createFileFromTemplate(opts: CreateFileFromTemplateOptions): Promise<void> {
-  const { templateFile, targetFile, force = false, prompt = '', silent = false } = opts
-  const shouldCreate = force || await promptUser({ question: prompt || `This will create '${targetFile}' file. Continue?` })
-  if (shouldCreate) {
-    const { pkg, file } = parseQualifiedPath({ path: templateFile });
-    const packagePath = resolvePackagePath({ packageName: pkg });
-    const templatePath = resolve(packagePath, file)
-
-    const check = checkPath(targetFile)
-    if (!check.valid) {
-      throw new Error(check.error)
-    }
-
-    const targetPath = resolve(process.cwd(), targetFile)
-
-    if (!existsSync(templatePath)) {
-      throw new Error(`Template file not found at ${templatePath}`)
-    }
-
-    if (existsSync(targetPath)) {
-      const shouldOverwrite = force || await promptUser({ question: `File '${targetFile}' already exists. Overwrite?` })
-      if (!shouldOverwrite) {
-        if (!silent) console.log('Aborted.')
-        return
-      }
-    }
-
-    const targetDir = dirname(targetPath)
-    if (!existsSync(targetDir)) {
-      mkdirSync(targetDir, { recursive: true })
-    }
-
-    copyFileSync(templatePath, targetPath)
-
-    if (existsSync(targetPath)) {
-      if (!silent) console.log(`New file '${targetFile}' successfully created.`)
-    } else {
-      throw new Error(`Failed to create '${targetFile}'.`)
-    }
-  } else {
-    if (!silent) console.log(`Creation of '${targetFile}' skipped.`)
+  const { templateFile, targetFile } = opts
+  if (!await confirmAction(opts, `This will create '${targetFile}' file. Continue?`, `Creation of '${targetFile}' skipped.`)) {
+    return
   }
+
+  const { pkg, file } = parseQualifiedPath({ path: templateFile })
+  const packagePath = resolvePackagePath({ packageName: pkg })
+  const templatePath = resolve(packagePath, file)
+  const targetPath = resolveCheckedPath(targetFile)
+
+  if (!existsSync(templatePath)) {
+    throw new Error(`Template file not found at ${templatePath}`)
+  }
+
+  await writeCreatedFile(targetFile, targetPath, () => copyFileSync(templatePath, targetPath), opts)
 }

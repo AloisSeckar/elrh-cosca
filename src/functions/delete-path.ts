@@ -1,8 +1,6 @@
 import type { DeletePathOptions } from '../types/functions.js'
-import { resolve } from 'node:path'
 import { existsSync, rmSync } from 'node:fs'
-import { promptUser } from '../terminal/prompt-user.js'
-import { checkPath } from '../_private/check-path.js'
+import { confirmAction, resolveCheckedPath } from '../_private/file-helpers.js'
 
 /**
  * Deletes a file or a directory (recursively) from FS.
@@ -15,28 +13,22 @@ import { checkPath } from '../_private/check-path.js'
  * @throws Will throw an error if the path is invalid or the path failed to be deleted.
  */
 export async function deletePath(opts: DeletePathOptions): Promise<void> {
-  const { targetPath, force = false, prompt = '', silent = false } = opts
-  const shouldUpdate = force || await promptUser({ question: prompt || `This will delete '${targetPath}'. Continue?` })
-  if (shouldUpdate) {
-    const check = checkPath(targetPath)
-    if (!check.valid) {
-      throw new Error(check.error)
-    }
+  const { targetPath, silent = false } = opts
+  if (!await confirmAction(opts, `This will delete '${targetPath}'. Continue?`, `Removing '${targetPath}' skipped.`)) {
+    return
+  }
 
-    const fullPath = resolve(process.cwd(), targetPath)
-    
-    if (existsSync(fullPath)) {
-      rmSync(fullPath, { recursive: true, force: true })
+  const fullPath = resolveCheckedPath(targetPath)
 
-      if (!existsSync(fullPath)) {
-        if (!silent) console.log(`'${targetPath}' deleted from project.`)
-      } else {
-        throw new Error(`Failed to delete '${targetPath}'.`)
-      }
+  if (existsSync(fullPath)) {
+    rmSync(fullPath, { recursive: true, force: true })
+
+    if (!existsSync(fullPath)) {
+      if (!silent) console.log(`'${targetPath}' deleted from project.`)
     } else {
-      if (!silent) console.log(`'${targetPath}' does not exist — nothing to delete.`)
+      throw new Error(`Failed to delete '${targetPath}'.`)
     }
   } else {
-    if (!silent) console.log(`Removing '${targetPath}' skipped.`)
+    if (!silent) console.log(`'${targetPath}' does not exist — nothing to delete.`)
   }
 }

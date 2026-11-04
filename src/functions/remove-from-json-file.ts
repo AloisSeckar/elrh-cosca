@@ -1,9 +1,6 @@
 import type { RemoveFromJsonFileOptions } from '../types/functions.js'
-import { resolve } from 'node:path'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { promptUser } from '../terminal/prompt-user.js'
 import type { DataObject } from '../types/data.js'
-import { checkPath } from '../_private/check-path.js'
+import { confirmAction, readTargetFile, writeUpdatedFile } from '../_private/file-helpers.js'
 
 /**
  * Updates a JSON file by deleting a specified key.
@@ -17,40 +14,24 @@ import { checkPath } from '../_private/check-path.js'
  * @throws Will throw an error if the path is invalid, the file does not exist or cannot be parsed as JSON.
  */
 export async function removeFromJsonFile(opts: RemoveFromJsonFileOptions): Promise<void> {
-  const { targetFile, jsonKey, force = false, prompt = '', silent = false } = opts
-  const shouldUpdate = force || await promptUser({ question: prompt || `This will delete '${jsonKey}' from '${targetFile}' file. Continue?` })
-  if (shouldUpdate) {
-    const check = checkPath(targetFile)
-    if (!check.valid) {
-      throw new Error(check.error)
-    }
-
-    const jsonFilePath = resolve(process.cwd(), targetFile)
-    if (!existsSync(jsonFilePath)) {
-      throw new Error(`No '${targetFile}' found — cannot delete its keys.`)
-    }
-
-    const jsonRaw = readFileSync(jsonFilePath, 'utf8')
-    let json
-    try {
-      json = JSON.parse(jsonRaw)
-    } catch (err) {
-      throw new Error(`Could not parse '${targetFile}' — cannot delete its keys.\n${err}`)
-    }
-
-    const oldJson = JSON.stringify(json, null, 2)
-    json = removeKeyIfExists(json, jsonKey)
-    const newJson = JSON.stringify(json, null, 2)
-
-    if (oldJson !== newJson) {
-      writeFileSync(jsonFilePath, newJson + '\n', 'utf8')
-      if (!silent) console.log(`'${targetFile}' file updated.`)
-    } else {
-      if (!silent) console.log(`'${targetFile}' file already up to date.`)
-    }
-  } else {
-    if (!silent) console.log(`Updating '${targetFile}' skipped.`)
+  const { targetFile, jsonKey, silent = false } = opts
+  if (!await confirmAction(opts, `This will delete '${jsonKey}' from '${targetFile}' file. Continue?`, `Updating '${targetFile}' skipped.`)) {
+    return
   }
+
+  const { fullPath, content } = readTargetFile(targetFile, 'delete its keys')
+  let json
+  try {
+    json = JSON.parse(content)
+  } catch (err) {
+    throw new Error(`Could not parse '${targetFile}' — cannot delete its keys.\n${err}`)
+  }
+
+  const oldJson = JSON.stringify(json, null, 2)
+  json = removeKeyIfExists(json, jsonKey)
+  const newJson = JSON.stringify(json, null, 2)
+
+  writeUpdatedFile(targetFile, fullPath, newJson + '\n', oldJson !== newJson, false, silent)
 }
 
 // recursive function to remove possibly nested key if exists in given JSON
