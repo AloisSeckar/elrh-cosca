@@ -12,7 +12,7 @@ export default defineConfig({
       formats: ['es'],
       fileName: () => 'elrh-cosca.mjs',
     },
-    rollupOptions: {
+    rolldownOptions: {
       external: [
           'node:fs',
           'node:https',
@@ -26,6 +26,12 @@ export default defineConfig({
       ],
       output: {
         exports: 'named',
+        comments: false,
+        minify: {
+          compress: true,
+          mangle: false,
+          codegen: { removeWhitespace: false },
+        },
       }
     },
   },
