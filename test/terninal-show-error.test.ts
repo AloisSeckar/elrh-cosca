@@ -26,18 +26,18 @@ describe('Test showError terminal helper', () => {
   })
 
   test('should write message + TWO newlines', () => {
-    showError({ message: 'Error!', linesAfter: 2 })
+    showError({ message: 'Error!', linesAfter: 1 })
 
     expect(spy).toHaveBeenCalledWith('Error!')
     expect(spy).toHaveBeenCalledWith('\n')
-    expect(spy).toHaveBeenCalledTimes(3) // 1 for message, 2 for newlines
+    expect(spy).toHaveBeenCalledTimes(3) // 1 for message, 1 own newline, 1 extra newline
   })
 
-  test.each([0, -1])('should write message + NO newlines when linesAfter is %i', (linesAfter) => {
+  test.each([0, -1])('should write message + ONE newline when linesAfter is %i', (linesAfter) => {
     showError({ message: 'Error!', linesAfter })
 
     expect(spy).toHaveBeenCalledWith('Error!')
-    expect(spy).not.toHaveBeenCalledWith('\n')
-    expect(spy).toHaveBeenCalledTimes(1) // 1 for message, 0 for newlines
+    expect(spy).toHaveBeenCalledWith('\n')
+    expect(spy).toHaveBeenCalledTimes(2) // 1 for message, 1 own newline
   })
 })

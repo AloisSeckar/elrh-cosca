@@ -106,7 +106,7 @@ export interface PromptUserOptions {
 export interface ShowMessageOptions {
 	/** The message text to display. */
 	message: string
-	/** The number of newlines to print after the message (default: 1). */
+	/** The number of extra newlines to print after the message's own newline (default: 0). */
 	linesAfter?: number
 }
 

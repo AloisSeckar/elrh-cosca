@@ -337,7 +337,7 @@ interface ShowMessageOptions {
 function showMessage(opts: ShowMessageOptions): void
 ```
 
-Prints out a `message` to `process.stdout` and adds `linesAfter` newlines after it (default is 1). Set `linesAfter: 0` to omit newlines. This function is synchronous.
+Prints out a `message` to `process.stdout` followed by a newline and optionally adds `linesAfter` extra newlines after it (default is 0). This function is synchronous.
 
 #### `showError`
 
@@ -345,7 +345,7 @@ Prints out a `message` to `process.stdout` and adds `linesAfter` newlines after 
 function showError(opts: ShowMessageOptions): void
 ```
 
-Prints out a `message` to `process.stderr` and adds `linesAfter` newlines after it (default is 1). Set `linesAfter: 0` to omit newlines. This function is synchronous.
+Prints out a `message` to `process.stderr` followed by a newline and optionally adds `linesAfter` extra newlines after it (default is 0). This function is synchronous.
 
 ### List of other utils
 
