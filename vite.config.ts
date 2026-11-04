@@ -10,7 +10,8 @@ export default defineConfig({
       entry: resolve(import.meta.dirname, 'src/main.ts'), 
       name: 'elrh-cosca',
       formats: ['es'],
-      fileName: () => 'elrh-cosca.mjs',
+      fileName: (_format, entryName) =>
+        entryName === 'main' ? 'elrh-cosca.mjs' : `${entryName}.mjs`,
     },
     rolldownOptions: {
       external: [
@@ -26,6 +27,7 @@ export default defineConfig({
       ],
       output: {
         exports: 'named',
+        preserveModules: true,
         comments: false,
         minify: {
           compress: true,
