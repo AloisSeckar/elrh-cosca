@@ -22,10 +22,13 @@ The library has no runtime dependencies and no bundled third-party parsers. Ever
 
 ### List of file-manipulation functions
 
-All file-manipulation options extend the following shared shape. `force` defaults to `false`. An omitted or empty `prompt` uses the function's built-in initial confirmation question. `silent` defaults to `false`; when `true`, the function suppresses all of its `console.log` output.
+All file-manipulation options extend the following shared shape. `targetPath` is relative to `process.cwd()`. `force` defaults to `false`. An omitted or empty `prompt` uses the function's built-in initial confirmation question. `silent` defaults to `false`; when `true`, the function suppresses all of its `console.log` output.
 
 ```ts
-interface FileOperationOptions {
+interface FilePathOptions {
+  targetPath: string
+}
+interface FileOperationOptions extends FilePathOptions {
   force?: boolean
   prompt?: string
   silent?: boolean
@@ -37,7 +40,6 @@ interface FileOperationOptions {
 ```ts
 interface CreateFileFromTemplateOptions extends FileOperationOptions {
   templateFile: string
-  targetFile: string
 }
 async function createFileFromTemplate(opts: CreateFileFromTemplateOptions): Promise<void>
 ```
@@ -46,16 +48,15 @@ Takes the file given by `templateFile` from an installed package and creates a f
 
 Path to `templateFile` must be prefixed with the package name to allow proper resolution, e.g. `your-package:path/to/template` (the path is relative to the package root). The package name can be scoped (e.g. `@scope/package`). The package is resolved using [`resolvePackagePath`](#resolvepackagepath).
 
-Path to `targetFile` is relative to `process.cwd()`, which allows consumers to run `npx your-script` in their project roots during development. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. If the target directory does not exist, it will be created automatically.
+Path to `targetPath` is relative to `process.cwd()`, which allows consumers to run `npx your-script` in their project roots during development. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. If the target directory does not exist, it will be created automatically.
 
-By default the function asks for confirmation before attempting to create the file and again if a file with the same name as `targetFile` already exists. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
+By default the function asks for confirmation before attempting to create the file and again if a file with the same name as `targetPath` already exists. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
 
 #### `createFileFromWebTemplate`
 
 ```ts
 interface CreateFileFromWebTemplateOptions extends FileOperationOptions {
   url: string
-  targetFile: string
 }
 async function createFileFromWebTemplate(opts: CreateFileFromWebTemplateOptions): Promise<void>
 ```
@@ -64,15 +65,14 @@ Downloads the file given by `url` and creates a fresh copy of it in the target p
 
 Contents of `url` must be accessible via the `node:https.get` function and the response will be copied byte-for-byte. Redirects (5) are followed before the fetch fails.
 
-Path to `targetFile` is relative to `process.cwd()`, which allows consumers to run `npx your-script` in their project roots during development. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. If the target directory does not exist, it will be created automatically.
+Path to `targetPath` is relative to `process.cwd()`, which allows consumers to run `npx your-script` in their project roots during development. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. If the target directory does not exist, it will be created automatically.
 
-By default the function asks for confirmation before attempting to create the file and again if a file with the same name as `targetFile` already exists. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
+By default the function asks for confirmation before attempting to create the file and again if a file with the same name as `targetPath` already exists. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
 
 #### `updateConfigFile`
 
 ```ts
 interface UpdateConfigFileOptions extends FileOperationOptions {
-  targetFile: string
   newConfig: Record<string | number | symbol, any>
   createMissing?: boolean
 }
@@ -81,9 +81,9 @@ async function updateConfigFile(opts: UpdateConfigFileOptions): Promise<void>
 
 Takes a path to a configuration file and updates it with the provided `newConfig` object.
 
-Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file may use ESM format with either a `default` export (`export default { ... }`) or **exactly one** named variable export (`export const x = { ... }`, `let`, or `var`), or CommonJS `module.exports = { ... }`. In all cases, the exported value must be either a configuration object literal or a function call with a configuration object literal as its first argument (e.g. `export default defineConfig({ ... })`).
+Path to `targetPath` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file may use ESM format with either a `default` export (`export default { ... }`) or **exactly one** named variable export (`export const x = { ... }`, `let`, or `var`), or CommonJS `module.exports = { ... }`. In all cases, the exported value must be either a configuration object literal or a function call with a configuration object literal as its first argument (e.g. `export default defineConfig({ ... })`).
 
-If `targetFile` does not exist, the function throws an error by default. Setting `opts.createMissing` to `true` will instead create the file (including missing directories) as `export default {}` with `newConfig` merged in. The user is asked to confirm the creation unless `opts.force` is `true`.
+If `targetPath` does not exist, the function throws an error by default. Setting `opts.createMissing` to `true` will instead create the file (including missing directories) as `export default {}` with `newConfig` merged in. The user is asked to confirm the creation unless `opts.force` is `true`.
 
 The merge is performed using a built-in linear-time static scanner and serializer (without executing the file). It guarantees to:
 
@@ -96,13 +96,12 @@ The merge is performed using a built-in linear-time static scanner and serialize
 
 Please [report](https://github.com/AloisSeckar/elrh-cosca/issues) any logical flaws and issues of the process.
 
-By default the function asks for confirmation before attempting to alter the `targetFile`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
+By default the function asks for confirmation before attempting to alter the `targetPath`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
 
 #### `updateJsonFile`
 
 ```ts
 interface UpdateJsonFileOptions extends FileOperationOptions {
-  targetFile: string
   jsonKey: string
   patch: DataValue
   createMissing?: boolean
@@ -120,19 +119,18 @@ type DataArray = DataValue[]
 type DataValue = DataPrimitive | DataObject | DataArray
 ```
 
-Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must be a valid JSON file. It is parsed using plain `JSON.parse`.
+Path to `targetPath` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must be a valid JSON file. It is parsed using plain `JSON.parse`.
 
 The given `jsonKey` might point to a nested key using dot notation, e.g. `a.b.c`. Missing intermediate levels are created as empty objects, and existing intermediate levels that are not objects (primitives, arrays and `null`) are replaced with objects. Empty key segments (e.g. `a..b`) and the segments `__proto__`, `constructor` and `prototype` are rejected with an error. If `jsonKey` does not exist, a new key is added. If `patch` is an object, its keys are shallow-merged into the existing value. If the existing value is not an object, it is replaced. If `patch` is an array and the existing value is also an array, the items of `patch` are appended to it (duplicates are skipped). If the existing non-null value is not an array, it is turned into an array with the existing value as its first item, followed by the new items. This also applies to arrays among the keys of an object `patch`. Setting `opts.overwriteArrays` to `true` results in full array replacement instead. Other values (primitives, arrays replacing a missing or `null` value and `null`) replace the existing value. The function tracks if any real change was made (values are compared deeply) and notifies the user if not.
 
-If `targetFile` does not exist, the function throws an error by default. Setting `opts.createMissing` to `true` will instead create the file (including missing directories) as an empty JSON object with `patch` applied. The user is asked to confirm the creation unless `opts.force` is `true`.
+If `targetPath` does not exist, the function throws an error by default. Setting `opts.createMissing` to `true` will instead create the file (including missing directories) as an empty JSON object with `patch` applied. The user is asked to confirm the creation unless `opts.force` is `true`.
 
-By default the function asks for confirmation before attempting to alter the `targetFile`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
+By default the function asks for confirmation before attempting to alter the `targetPath`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
 
 #### `updateYamlFile`
 
 ```ts
 interface UpdateYamlFileOptions extends FileOperationOptions {
-  targetFile: string
   yamlKey: string
   patch: DataValue
   createMissing?: boolean
@@ -143,7 +141,7 @@ async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void>
 
 Takes a path to a YAML file and injects `patch` under the `yamlKey` key. The `patch` is of type `DataValue` (see [`updateJsonFile`](#updatejsonfile)).
 
-Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must be a valid single-document YAML file with a map at its root (an empty file is accepted).
+Path to `targetPath` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must be a valid single-document YAML file with a map at its root (an empty file is accepted).
 
 The file is processed using a built-in YAML parser and serializer that preserves comments and formatting of untouched parts. It supports common configuration YAML constructs:
 
@@ -166,15 +164,14 @@ Please [report](https://github.com/AloisSeckar/elrh-cosca/issues) any logical fl
 
 The given `yamlKey` might point to a nested key using dot notation, e.g. `a.b.c`. Missing intermediate levels are created as empty maps, and existing intermediate levels that are not maps (scalars and sequences) are replaced with maps. Empty key segments (e.g. `a..b`) and the segments `__proto__`, `constructor` and `prototype` are rejected with an error. If `yamlKey` does not exist, a new key is added. If `patch` is an object, its keys are shallow-merged into the existing value. If the existing value is not a map, it is replaced. If `patch` is an array and the existing value is a sequence, the items of `patch` are appended to it (duplicates are skipped). If the existing non-null value is not a sequence, it is turned into a sequence with the existing value as its first item, followed by the new items. Comments of the existing value are preserved in both cases. This also applies to arrays among the keys of an object `patch`. Setting `opts.overwriteArrays` to `true` results in full array replacement instead. Other values (primitives, arrays replacing a missing or `null` value and `null`) replace the existing value. The function tracks if any real change was made (values are compared deeply) and notifies the user if not.
 
-If `targetFile` does not exist, the function throws an error by default. Setting `opts.createMissing` to `true` will instead create the file (including missing directories) as an empty YAML map with `patch` applied. The user is asked to confirm the creation unless `opts.force` is `true`.
+If `targetPath` does not exist, the function throws an error by default. Setting `opts.createMissing` to `true` will instead create the file (including missing directories) as an empty YAML map with `patch` applied. The user is asked to confirm the creation unless `opts.force` is `true`.
 
-By default the function asks for confirmation before attempting to alter the `targetFile`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
+By default the function asks for confirmation before attempting to alter the `targetPath`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
 
 #### `updateTextFile`
 
 ```ts
 interface UpdateTextFileOptions extends FileOperationOptions {
-  targetFile: string
   rowsToAdd: string[]
   allowDuplicates?: boolean
   createMissing?: boolean
@@ -184,17 +181,16 @@ async function updateTextFile(opts: UpdateTextFileOptions): Promise<void>
 
 Takes a path to a plain text file and appends `rowsToAdd` at the end of the file, **provided they are not already present in the file** (as an exact line match). Setting `opts.allowDuplicates` to `true` disables this check and all `rowsToAdd` are appended regardless of the current file contents. The function tracks if any real change was made and notifies the user if not.
 
-Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed.
+Path to `targetPath` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed.
 
-If `targetFile` does not exist, the function throws an error by default. Setting `opts.createMissing` to `true` will instead create the file (including missing directories) containing `rowsToAdd`. The user is asked to confirm the creation unless `opts.force` is `true`.
+If `targetPath` does not exist, the function throws an error by default. Setting `opts.createMissing` to `true` will instead create the file (including missing directories) containing `rowsToAdd`. The user is asked to confirm the creation unless `opts.force` is `true`.
 
-By default the function asks for confirmation before attempting to alter the `targetFile`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
+By default the function asks for confirmation before attempting to alter the `targetPath`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
 
 #### `removeFromJsonFile`
 
 ```ts
 interface RemoveFromJsonFileOptions extends FileOperationOptions {
-  targetFile: string
   jsonKey: string
 }
 async function removeFromJsonFile(opts: RemoveFromJsonFileOptions): Promise<void>
@@ -202,17 +198,16 @@ async function removeFromJsonFile(opts: RemoveFromJsonFileOptions): Promise<void
 
 Takes a path to a JSON file and removes the specified `jsonKey`.
 
-Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist and be a valid JSON file. It is parsed using plain `JSON.parse`.
+Path to `targetPath` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist and be a valid JSON file. It is parsed using plain `JSON.parse`.
 
 The given `jsonKey` might point to a nested key using dot notation, e.g. `a.b.c`. If the key is not present, the file is left untouched and the user is notified.
 
-By default the function asks for confirmation before attempting to alter the `targetFile`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
+By default the function asks for confirmation before attempting to alter the `targetPath`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
 
 #### `removeFromTextFile`
 
 ```ts
 interface RemoveFromTextFileOptions extends FileOperationOptions {
-  targetFile: string
   searchText: string
 }
 async function removeFromTextFile(opts: RemoveFromTextFileOptions): Promise<void>
@@ -220,15 +215,14 @@ async function removeFromTextFile(opts: RemoveFromTextFileOptions): Promise<void
 
 Takes a path to a plain text file and removes all lines that include the given `searchText`. The matching is done using `String.includes()`, so partial matches within a line will cause that line to be removed. The function tracks if any real change was made and notifies the user if not.
 
-Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist.
+Path to `targetPath` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist.
 
-By default the function asks for confirmation before attempting to alter the `targetFile`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
+By default the function asks for confirmation before attempting to alter the `targetPath`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
 
 #### `removeFromYamlFile`
 
 ```ts
 interface RemoveFromYamlFileOptions extends FileOperationOptions {
-  targetFile: string
   yamlKey: string
 }
 async function removeFromYamlFile(opts: RemoveFromYamlFileOptions): Promise<void>
@@ -236,21 +230,18 @@ async function removeFromYamlFile(opts: RemoveFromYamlFileOptions): Promise<void
 
 Takes a path to a YAML file and removes the specified `yamlKey`.
 
-Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist and be a valid single-document YAML file. It is parsed using the built-in YAML parser (see [`updateYamlFile`](#updateyamlfile) for supported syntax and limitations), which preserves comments and formatting of the untouched parts of the file.
+Path to `targetPath` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist and be a valid single-document YAML file. It is parsed using the built-in YAML parser (see [`updateYamlFile`](#updateyamlfile) for supported syntax and limitations), which preserves comments and formatting of the untouched parts of the file.
 
 The given `yamlKey` might point to a nested key using dot notation, e.g. `a.b.c`. If the key is not present (including when the file is empty or its root is not a map), the file is left untouched and the user is notified.
 
 Comments attached to the removed key are removed as well, with two exceptions. A comment directly above the first root-level key is treated as a file header and kept at the top of the file. A comment left above a nested map that became empty is dropped.
 
-By default the function asks for confirmation before attempting to alter the `targetFile`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
+By default the function asks for confirmation before attempting to alter the `targetPath`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
 
 #### `deletePath`
 
 ```ts
-interface DeletePathOptions extends FileOperationOptions {
-  targetPath: string
-}
-async function deletePath(opts: DeletePathOptions): Promise<void>
+async function deletePath(opts: FileOperationOptions): Promise<void>
 ```
 
 Deletes the given `targetPath` (a file or a directory, recursively) from FS. Path is resolved relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed.
@@ -264,10 +255,7 @@ By default the function asks for confirmation before attempting to delete the `t
 #### `pathExists`
 
 ```ts
-interface PathExistsOptions {
-  targetPath: string
-}
-function pathExists(opts: PathExistsOptions): boolean
+function pathExists(opts: FilePathOptions): boolean
 ```
 
 Checks if the specified `targetPath` (a file or a directory) exists on FS. Path is resolved relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed.
@@ -277,43 +265,40 @@ If the path exists, the function returns `true`, `false` otherwise.
 #### `hasJsonKey`
 
 ```ts
-interface HasJsonKeyOptions {
-  targetFile: string
+interface HasJsonKeyOptions extends FilePathOptions {
   jsonKey: string
 }
 function hasJsonKey(opts: HasJsonKeyOptions): boolean
 ```
 
-Checks whether the given `jsonKey` exists in the JSON file located at `targetFile`. Path is resolved relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist and be a valid JSON file.
+Checks whether the given `jsonKey` exists in the JSON file located at `targetPath`. Path is resolved relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist and be a valid JSON file.
 
 The given `jsonKey` might point to a nested key using dot notation, e.g. `a.b.c`. If the key is present, the function returns `true`, `false` otherwise.
 
 #### `hasYamlKey`
 
 ```ts
-interface HasYamlKeyOptions {
-  targetFile: string
+interface HasYamlKeyOptions extends FilePathOptions {
   yamlKey: string
 }
 function hasYamlKey(opts: HasYamlKeyOptions): boolean
 ```
 
-Checks whether the given `yamlKey` exists in the YAML file located at `targetFile`. Path is resolved relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist and be a valid single-document YAML file. It is parsed using the built-in YAML parser (see [`updateYamlFile`](#updateyamlfile) for supported syntax and limitations).
+Checks whether the given `yamlKey` exists in the YAML file located at `targetPath`. Path is resolved relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist and be a valid single-document YAML file. It is parsed using the built-in YAML parser (see [`updateYamlFile`](#updateyamlfile) for supported syntax and limitations).
 
 The given `yamlKey` might point to a nested key using dot notation, e.g. `a.b.c`. If the key is present, the function returns `true`, `false` otherwise (including when the file is empty or its root is not a map).
 
 #### `hasText`
 
 ```ts
-interface HasTextOptions {
-  targetFile: string
+interface HasTextOptions extends FilePathOptions {
   pattern: string | RegExp
   exact?: boolean
 }
 function hasText(opts: HasTextOptions): boolean
 ```
 
-Checks whether the given `pattern` exists in the text file located at `targetFile`. Path is resolved relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist.
+Checks whether the given `pattern` exists in the text file located at `targetPath`. Path is resolved relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist.
 
 The `pattern` might be a plain string or a regular expression. The file is checked line by line. If the pattern is found, the function returns `true`, `false` otherwise. By default partial matches are allowed for string patterns (`exact` defaults to `false`). If you set the optional `exact` property to `true`, the string must completely match at least one line in the file. Surrounding whitespace is trimmed from the lines and from string patterns in both cases. The `exact` property is ignored for regular expressions.
 

@@ -29,30 +29,30 @@ describe('Test removeFromYamlFile function', () => {
 
   test('should fail when path check fails', async () => {
     vi.mocked(checkPath).mockReturnValueOnce({ valid: false, error: 'Invalid path' })
-    await expect(removeFromYamlFile({ targetFile: 'a', yamlKey: 'cosca', force: true })).rejects.toThrow(/Invalid path/)
+    await expect(removeFromYamlFile({ targetPath: 'a', yamlKey: 'cosca', force: true })).rejects.toThrow(/Invalid path/)
   })
 
   test('should do nothing for nested key under non-map value', async () => {
     const file = join(wd, 'remove-yaml-nested.yaml')
     writeFileSync(file, 'str: x\n')
     spy.mockClear()
-    await removeFromYamlFile({ targetFile: file, yamlKey: 'str.a.b', force: true })
+    await removeFromYamlFile({ targetPath: file, yamlKey: 'str.a.b', force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/already up to date/))
     expect(readFileSync(file, 'utf8')).toBe('str: x\n')
   })
 
   test('should fail because of non-existent file', async () => {
-    await expect(removeFromYamlFile({ targetFile: `${wd}/uknown`, yamlKey: 'cosca', force: true })).rejects.toThrow(/No .* found/)
+    await expect(removeFromYamlFile({ targetPath: `${wd}/uknown`, yamlKey: 'cosca', force: true })).rejects.toThrow(/No .* found/)
   })
 
   test('should fail because of invalid YAML', async () => {
     writeFileSync(join(wd, 'remove-from-yaml-invalid.yaml'), 'key: [unclosed\n')
-    await expect(removeFromYamlFile({ targetFile: `${wd}/remove-from-yaml-invalid.yaml`, yamlKey: 'key', force: true })).rejects.toThrow(/Could not parse/)
+    await expect(removeFromYamlFile({ targetPath: `${wd}/remove-from-yaml-invalid.yaml`, yamlKey: 'key', force: true })).rejects.toThrow(/Could not parse/)
   })
 
   test('should remove top level key', async () => {
-    await removeFromYamlFile({ targetFile: `${wd}/yaml-file-2.yaml`, yamlKey: 'string-key', force: true })
+    await removeFromYamlFile({ targetPath: `${wd}/yaml-file-2.yaml`, yamlKey: 'string-key', force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
@@ -60,7 +60,7 @@ describe('Test removeFromYamlFile function', () => {
   })
 
   test('should handle removing non-existent key and do nothing', async () => {
-    await expect(removeFromYamlFile({ targetFile: `${wd}/yaml-file-2.yaml`, yamlKey: 'non-existent-key', force: true })).resolves.not.toThrow()
+    await expect(removeFromYamlFile({ targetPath: `${wd}/yaml-file-2.yaml`, yamlKey: 'non-existent-key', force: true })).resolves.not.toThrow()
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
 
@@ -69,7 +69,7 @@ describe('Test removeFromYamlFile function', () => {
   })
 
   test('should remove nested key', async () => {
-    await removeFromYamlFile({ targetFile: `${wd}/yaml-file-2.yaml`, yamlKey: 'object-key.nested-key', force: true })
+    await removeFromYamlFile({ targetPath: `${wd}/yaml-file-2.yaml`, yamlKey: 'object-key.nested-key', force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
@@ -77,7 +77,7 @@ describe('Test removeFromYamlFile function', () => {
   })
 
   test('should handle removing non-existent nested key and do nothing', async () => {
-    await expect(removeFromYamlFile({ targetFile: `${wd}/yaml-file-2.yaml`, yamlKey: 'object-key.nested-key', force: true })).resolves.not.toThrow()
+    await expect(removeFromYamlFile({ targetPath: `${wd}/yaml-file-2.yaml`, yamlKey: 'object-key.nested-key', force: true })).resolves.not.toThrow()
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
 
@@ -86,7 +86,7 @@ describe('Test removeFromYamlFile function', () => {
   })
 
   test('should not remove nested key under non-map value', async () => {
-    await removeFromYamlFile({ targetFile: `${wd}/yaml-file-2.yaml`, yamlKey: 'array-key.0', force: true })
+    await removeFromYamlFile({ targetPath: `${wd}/yaml-file-2.yaml`, yamlKey: 'array-key.0', force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
 
@@ -95,7 +95,7 @@ describe('Test removeFromYamlFile function', () => {
 
   test('should do nothing when root is not a map', async () => {
     writeFileSync(join(wd, 'remove-from-yaml-list.yaml'), '- key\n')
-    await removeFromYamlFile({ targetFile: `${wd}/remove-from-yaml-list.yaml`, yamlKey: 'key', force: true })
+    await removeFromYamlFile({ targetPath: `${wd}/remove-from-yaml-list.yaml`, yamlKey: 'key', force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
     expect(readNormalizedFile(wd, 'remove-from-yaml-list.yaml')).toBe('- key\n')
@@ -103,7 +103,7 @@ describe('Test removeFromYamlFile function', () => {
 
   test('should do nothing when user aborts updating', async () => {
     setPromptSpy(['n'])
-    await removeFromYamlFile({ targetFile: `${wd}/yaml-file-2.yaml`, yamlKey: 'number-key' })
+    await removeFromYamlFile({ targetPath: `${wd}/yaml-file-2.yaml`, yamlKey: 'number-key' })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/skipped/))
 
@@ -115,12 +115,12 @@ describe('Test removeFromYamlFile function', () => {
     spy.mockClear()
     const file = join(wd, 'remove-yaml-silent.yaml')
     writeFileSync(file, 'a: 1\nb: 2\n')
-    await removeFromYamlFile({ targetFile: file, yamlKey: 'a', force: true, silent: true })
+    await removeFromYamlFile({ targetPath: file, yamlKey: 'a', force: true, silent: true })
     expect(spy).not.toHaveBeenCalled()
     expect(readFileSync(file, 'utf8')).toBe('b: 2\n')
 
     setPromptSpy(['n'])
-    await removeFromYamlFile({ targetFile: file, yamlKey: 'b', silent: true })
+    await removeFromYamlFile({ targetPath: file, yamlKey: 'b', silent: true })
     expect(spy).not.toHaveBeenCalled()
     expect(readFileSync(file, 'utf8')).toBe('b: 2\n')
   })
@@ -129,7 +129,7 @@ describe('Test removeFromYamlFile function', () => {
     spy.mockClear()
     const file = join(wd, 'remove-yaml-silent-2.yaml')
     writeFileSync(file, 'a: 1\n')
-    await removeFromYamlFile({ targetFile: file, yamlKey: 'missing', force: true, silent: false })
+    await removeFromYamlFile({ targetPath: file, yamlKey: 'missing', force: true, silent: false })
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/already up to date/))
   })
 
@@ -137,13 +137,13 @@ describe('Test removeFromYamlFile function', () => {
 
   test('should not display custom prompt', async () => {
     const uSpy = getPromptUserSpy()
-    await removeFromYamlFile({ targetFile: `a`, yamlKey: 'b' })
+    await removeFromYamlFile({ targetPath: `a`, yamlKey: 'b' })
     expect(uSpy).toHaveBeenCalledWith({ question: expect.stringMatching(/This will delete/) })
   })
 
   test('should display custom prompt', async () => {
     const uSpy = getPromptUserSpy()
-    await removeFromYamlFile({ targetFile: `a`, yamlKey: 'b', force: false, prompt: "Custom prompt" })
+    await removeFromYamlFile({ targetPath: `a`, yamlKey: 'b', force: false, prompt: "Custom prompt" })
     expect(uSpy).toHaveBeenCalledWith({ question: expect.stringMatching(/Custom prompt/) })
   })
 

@@ -29,19 +29,19 @@ describe('Test updateTextFile function', () => {
 
   test('should fail when path check fails', async () => {
     vi.mocked(checkPath).mockReturnValueOnce({ valid: false, error: 'Invalid path' })
-    await expect(updateTextFile({ targetFile: 'a', rowsToAdd: ['Row 3'], force: true })).rejects.toThrow(/Invalid path/)
+    await expect(updateTextFile({ targetPath: 'a', rowsToAdd: ['Row 3'], force: true })).rejects.toThrow(/Invalid path/)
   })
   
   test('should fail because of non-existent file', async () => {
-    await expect(updateTextFile({ targetFile: `${wd}/unknown`, rowsToAdd: ['Row 3'], force: true })).rejects.toThrow(/cannot update its contents/)
+    await expect(updateTextFile({ targetPath: `${wd}/unknown`, rowsToAdd: ['Row 3'], force: true })).rejects.toThrow(/cannot update its contents/)
   })
 
   test('should fail because of non-existent file when createMissing is false', async () => {
-    await expect(updateTextFile({ targetFile: `${wd}/unknown`, rowsToAdd: ['Row 3'], createMissing: false, force: true })).rejects.toThrow(/cannot update its contents/)
+    await expect(updateTextFile({ targetPath: `${wd}/unknown`, rowsToAdd: ['Row 3'], createMissing: false, force: true })).rejects.toThrow(/cannot update its contents/)
   })
 
   test('should create non-existent file when createMissing is true', async () => {
-    await updateTextFile({ targetFile: `${wd}/new-text/created.txt`, rowsToAdd: ['Row 1', 'Row 2'], createMissing: true, force: true })
+    await updateTextFile({ targetPath: `${wd}/new-text/created.txt`, rowsToAdd: ['Row 1', 'Row 2'], createMissing: true, force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file created/))
 
@@ -50,7 +50,7 @@ describe('Test updateTextFile function', () => {
 
   test('should not create non-existent file when user declines', async () => {
     setPromptSpy(['y', 'n'])
-    await updateTextFile({ targetFile: `${wd}/new-text/declined.txt`, rowsToAdd: ['Row 1'], createMissing: true })
+    await updateTextFile({ targetPath: `${wd}/new-text/declined.txt`, rowsToAdd: ['Row 1'], createMissing: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/Creation of .* skipped/))
     expect(existsSync(join(wd, 'new-text/declined.txt'))).toBe(false)
@@ -58,14 +58,14 @@ describe('Test updateTextFile function', () => {
 
   test('should create non-existent file when user confirms', async () => {
     setPromptSpy(['y', 'y'])
-    await updateTextFile({ targetFile: `${wd}/new-text/confirmed.txt`, rowsToAdd: ['Row 1'], createMissing: true })
+    await updateTextFile({ targetPath: `${wd}/new-text/confirmed.txt`, rowsToAdd: ['Row 1'], createMissing: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file created/))
     expect(readNormalizedFile(wd, 'new-text/confirmed.txt')).toBe('Row 1\n')
   })
 
   test('should add the new line', async () => {
-    await updateTextFile({ targetFile: `${wd}/text-file.txt`, rowsToAdd: ['Row 3'], force: true })
+    await updateTextFile({ targetPath: `${wd}/text-file.txt`, rowsToAdd: ['Row 3'], force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
@@ -73,7 +73,7 @@ describe('Test updateTextFile function', () => {
   })
 
   test('should not add same line again', async () => {
-    await updateTextFile({ targetFile: `${wd}/text-file.txt`, rowsToAdd: ['Row 3'], force: true })
+    await updateTextFile({ targetPath: `${wd}/text-file.txt`, rowsToAdd: ['Row 3'], force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
 
@@ -81,7 +81,7 @@ describe('Test updateTextFile function', () => {
   })
 
   test('should add new line but ignore existing', async () => {
-    await updateTextFile({ targetFile: `${wd}/text-file.txt`, rowsToAdd: ['Row 4', 'Row 3'], force: true })
+    await updateTextFile({ targetPath: `${wd}/text-file.txt`, rowsToAdd: ['Row 4', 'Row 3'], force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
@@ -90,7 +90,7 @@ describe('Test updateTextFile function', () => {
       
   test('should do nothing when user aborts creating', async () => {
     setPromptSpy(['n'])
-    await updateTextFile({ targetFile: `${wd}/text-file.json`, rowsToAdd: ['Row 5'] })
+    await updateTextFile({ targetPath: `${wd}/text-file.json`, rowsToAdd: ['Row 5'] })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/skipped/))
 
@@ -99,7 +99,7 @@ describe('Test updateTextFile function', () => {
   })
 
   test('should add existing lines again when duplicates allowed', async () => {
-    await updateTextFile({ targetFile: `${wd}/text-file.txt`, rowsToAdd: ['Row 3', 'Row 4', 'Row 4'], allowDuplicates: true, force: true })
+    await updateTextFile({ targetPath: `${wd}/text-file.txt`, rowsToAdd: ['Row 3', 'Row 4', 'Row 4'], allowDuplicates: true, force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
@@ -107,7 +107,7 @@ describe('Test updateTextFile function', () => {
   })
 
   test('should not add existing lines when duplicates explicitly disallowed', async () => {
-    await updateTextFile({ targetFile: `${wd}/text-file.txt`, rowsToAdd: ['Row 3', 'Row 4'], allowDuplicates: false, force: true })
+    await updateTextFile({ targetPath: `${wd}/text-file.txt`, rowsToAdd: ['Row 3', 'Row 4'], allowDuplicates: false, force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
 
@@ -118,12 +118,12 @@ describe('Test updateTextFile function', () => {
     spy.mockClear()
     const file = `${wd}/silent-update.txt`
     writeFileSync(file, 'Row 1')
-    await updateTextFile({ targetFile: file, rowsToAdd: ['Row 2'], force: true, silent: true })
+    await updateTextFile({ targetPath: file, rowsToAdd: ['Row 2'], force: true, silent: true })
     expect(spy).not.toHaveBeenCalled()
     expect(readNormalizedFile(wd, 'silent-update.txt')).toBe('Row 1\nRow 2\n')
 
     setPromptSpy(['n'])
-    await updateTextFile({ targetFile: file, rowsToAdd: ['Row 3'], silent: true })
+    await updateTextFile({ targetPath: file, rowsToAdd: ['Row 3'], silent: true })
     expect(spy).not.toHaveBeenCalled()
   })
 
@@ -131,7 +131,7 @@ describe('Test updateTextFile function', () => {
     spy.mockClear()
     const file = `${wd}/silent-update-2.txt`
     writeFileSync(file, 'Row 1\n')
-    await updateTextFile({ targetFile: file, rowsToAdd: ['Row 1'], force: true, silent: false })
+    await updateTextFile({ targetPath: file, rowsToAdd: ['Row 1'], force: true, silent: false })
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/already up to date/))
   })
 
@@ -139,13 +139,13 @@ describe('Test updateTextFile function', () => {
 
   test('should not display custom prompt', async () => {
     const uSpy = getPromptUserSpy()
-    await updateTextFile({ targetFile: `a`, rowsToAdd: ['b'] })
+    await updateTextFile({ targetPath: `a`, rowsToAdd: ['b'] })
     expect(uSpy).toHaveBeenCalledWith({ question: expect.stringMatching(/This will update/) })
   })
 
   test('should display custom prompt', async () => {
     const uSpy = getPromptUserSpy()
-    await updateTextFile({ targetFile: `a`, rowsToAdd: ['b'], force: false, prompt: "Custom prompt" })
+    await updateTextFile({ targetPath: `a`, rowsToAdd: ['b'], force: false, prompt: "Custom prompt" })
     expect(uSpy).toHaveBeenCalledWith({ question: expect.stringMatching(/Custom prompt/) })
   })
 

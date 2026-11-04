@@ -15,10 +15,10 @@ export function resolveCheckedPath(targetPath: string): string {
   return resolve(process.cwd(), targetPath)
 }
 
-export function readTargetFile(targetFile: string, missingAction: string): { fullPath: string; content: string } {
-  const fullPath = resolveCheckedPath(targetFile)
+export function readTargetFile(targetPath: string, missingAction: string): { fullPath: string; content: string } {
+  const fullPath = resolveCheckedPath(targetPath)
   if (!existsSync(fullPath)) {
-    throw new Error(`No '${targetFile}' found — cannot ${missingAction}.`)
+    throw new Error(`No '${targetPath}' found — cannot ${missingAction}.`)
   }
   return { fullPath, content: readFileSync(fullPath, 'utf8') }
 }
@@ -37,19 +37,19 @@ export async function confirmAction(
 }
 
 export async function prepareTargetFile(
-  targetFile: string,
+  targetPath: string,
   opts: { createMissing?: boolean; force?: boolean; silent?: boolean },
 ): Promise<{ fullPath: string; content: string | null; created: boolean } | null> {
   const { createMissing = false, force = false, silent = false } = opts
-  const fullPath = resolveCheckedPath(targetFile)
+  const fullPath = resolveCheckedPath(targetPath)
   const created = !existsSync(fullPath)
   if (created) {
     if (!createMissing) {
-      throw new Error(`No '${targetFile}' found — cannot update its contents.`)
+      throw new Error(`No '${targetPath}' found — cannot update its contents.`)
     }
-    const shouldCreate = force || await promptUser({ question: `File '${targetFile}' does not exist. Create it?` })
+    const shouldCreate = force || await promptUser({ question: `File '${targetPath}' does not exist. Create it?` })
     if (!shouldCreate) {
-      if (!silent) console.log(`Creation of '${targetFile}' skipped.`)
+      if (!silent) console.log(`Creation of '${targetPath}' skipped.`)
       return null
     }
     return { fullPath, content: null, created: true }
@@ -58,7 +58,7 @@ export async function prepareTargetFile(
 }
 
 export function writeUpdatedFile(
-  targetFile: string,
+  targetPath: string,
   fullPath: string,
   content: string,
   modified: boolean,
@@ -70,33 +70,33 @@ export function writeUpdatedFile(
       mkdirSync(dirname(fullPath), { recursive: true })
     }
     writeFileSync(fullPath, content, 'utf8')
-    if (!silent) console.log(`'${targetFile}' file ${created ? 'created' : 'updated'}.`)
+    if (!silent) console.log(`'${targetPath}' file ${created ? 'created' : 'updated'}.`)
   } else {
-    if (!silent) console.log(`'${targetFile}' file already up to date.`)
+    if (!silent) console.log(`'${targetPath}' file already up to date.`)
   }
 }
 
 export async function writeCreatedFile(
-  targetFile: string,
   targetPath: string,
+  fullPath: string,
   writeFn: () => void,
   opts: { force?: boolean; silent?: boolean },
 ): Promise<void> {
   const { force = false, silent = false } = opts
-  if (existsSync(targetPath)) {
-    const shouldOverwrite = force || await promptUser({ question: `File '${targetFile}' already exists. Overwrite?` })
+  if (existsSync(fullPath)) {
+    const shouldOverwrite = force || await promptUser({ question: `File '${targetPath}' already exists. Overwrite?` })
     if (!shouldOverwrite) {
       if (!silent) console.log('Aborted.')
       return
     }
   }
 
-  mkdirSync(dirname(targetPath), { recursive: true })
+  mkdirSync(dirname(fullPath), { recursive: true })
   writeFn()
 
-  if (existsSync(targetPath)) {
-    if (!silent) console.log(`New file '${targetFile}' successfully created.`)
+  if (existsSync(fullPath)) {
+    if (!silent) console.log(`New file '${targetPath}' successfully created.`)
   } else {
-    throw new Error(`Failed to create '${targetFile}'.`)
+    throw new Error(`Failed to create '${targetPath}'.`)
   }
 }

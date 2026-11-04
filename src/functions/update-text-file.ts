@@ -4,7 +4,7 @@ import { confirmAction, prepareTargetFile, writeUpdatedFile } from '../_private/
 /**
  * Updates a text file by adding new rows.
  * 
- * @param {string} opts.targetFile - The path to the text file to update (relative to CWD).
+ * @param {string} opts.targetPath - The path to the file or directory to work with (relative to CWD).
  * @param {string[]} opts.rowsToAdd - New rows to be added at the end of the file.
  * @param {boolean} [opts.allowDuplicates] - If true, rows are added even if identical lines already exist in the file (default: false).
  * @param {boolean} [opts.createMissing] - If true, the file is created when it does not exist, after confirmation unless `force` is set (default: false).
@@ -15,12 +15,12 @@ import { confirmAction, prepareTargetFile, writeUpdatedFile } from '../_private/
  * @throws Will throw an error if the path is invalid or the file does not exist (and `createMissing` is not set).
  */
 export async function updateTextFile(opts: UpdateTextFileOptions): Promise<void> {
-  const { targetFile, rowsToAdd, allowDuplicates = false, silent = false } = opts
-  if (!await confirmAction(opts, `This will update '${targetFile}' file. Continue?`, `Updating '${targetFile}' skipped.`)) {
+  const { targetPath, rowsToAdd, allowDuplicates = false, silent = false } = opts
+  if (!await confirmAction(opts, `This will update '${targetPath}' file. Continue?`, `Updating '${targetPath}' skipped.`)) {
     return
   }
 
-  const target = await prepareTargetFile(targetFile, opts)
+  const target = await prepareTargetFile(targetPath, opts)
   if (!target) {
     return
   }
@@ -35,5 +35,5 @@ export async function updateTextFile(opts: UpdateTextFileOptions): Promise<void>
     }
   }
 
-  writeUpdatedFile(targetFile, target.fullPath, lines.join('\n') + '\n', modified, target.created, silent)
+  writeUpdatedFile(targetPath, target.fullPath, lines.join('\n') + '\n', modified, target.created, silent)
 }

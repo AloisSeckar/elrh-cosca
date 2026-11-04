@@ -29,7 +29,7 @@ describe('Test removeFromJsonFile function', () => {
 
   test('should fail when path check fails', async () => {
     vi.mocked(checkPath).mockReturnValueOnce({ valid: false, error: 'Invalid path' })
-    await expect(removeFromJsonFile({ targetFile: 'a', jsonKey: 'cosca', force: true })).rejects.toThrow(/Invalid path/)
+    await expect(removeFromJsonFile({ targetPath: 'a', jsonKey: 'cosca', force: true })).rejects.toThrow(/Invalid path/)
   })
 
   test('should do nothing for nested key under non-existent or non-object parent', async () => {
@@ -38,7 +38,7 @@ describe('Test removeFromJsonFile function', () => {
     writeFileSync(file, content)
     spy.mockClear()
     for (const jsonKey of ['missing.key', 'str.key', 'arr.key']) {
-      await removeFromJsonFile({ targetFile: file, jsonKey, force: true })
+      await removeFromJsonFile({ targetPath: file, jsonKey, force: true })
     }
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/already up to date/))
@@ -46,15 +46,15 @@ describe('Test removeFromJsonFile function', () => {
   })
 
   test('should fail because of non-existent file', async () => {
-    await expect(removeFromJsonFile({ targetFile: `${wd}/uknown`, jsonKey: 'cosca', force: true })).rejects.toThrow(/No .* found/)
+    await expect(removeFromJsonFile({ targetPath: `${wd}/uknown`, jsonKey: 'cosca', force: true })).rejects.toThrow(/No .* found/)
   })
 
   test('should fail because of invalid JSON', async () => {
-    await expect(removeFromJsonFile({ targetFile: `${wd}/text-file.txt`, jsonKey: 'cosca', force: true })).rejects.toThrow(/Could not parse/)
+    await expect(removeFromJsonFile({ targetPath: `${wd}/text-file.txt`, jsonKey: 'cosca', force: true })).rejects.toThrow(/Could not parse/)
   })
 
   test('should remove top level key', async () => {
-    await removeFromJsonFile({ targetFile: `${wd}/json-file-2.json`, jsonKey: 'string-key', force: true })
+    await removeFromJsonFile({ targetPath: `${wd}/json-file-2.json`, jsonKey: 'string-key', force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
 
@@ -62,7 +62,7 @@ describe('Test removeFromJsonFile function', () => {
   })
 
   test('should handle removing non-existent key and do nothing', async () => {
-    await expect(removeFromJsonFile({ targetFile: `${wd}/json-file-2.json`, jsonKey: 'non-existent-key', force: true })).resolves.not.toThrow()
+    await expect(removeFromJsonFile({ targetPath: `${wd}/json-file-2.json`, jsonKey: 'non-existent-key', force: true })).resolves.not.toThrow()
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
 
@@ -71,7 +71,7 @@ describe('Test removeFromJsonFile function', () => {
   })
 
   test('should remove nested key', async () => {
-    await removeFromJsonFile({ targetFile: `${wd}/json-file-2.json`, jsonKey: 'object-key.nested-key', force: true })
+    await removeFromJsonFile({ targetPath: `${wd}/json-file-2.json`, jsonKey: 'object-key.nested-key', force: true })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
     
@@ -80,7 +80,7 @@ describe('Test removeFromJsonFile function', () => {
   })
 
   test('should handle removing non-existent nested key and do nothing', async () => {
-    await expect(removeFromJsonFile({ targetFile: `${wd}/json-file-2.json`, jsonKey: 'object-key.nested-key', force: true })).resolves.not.toThrow()
+    await expect(removeFromJsonFile({ targetPath: `${wd}/json-file-2.json`, jsonKey: 'object-key.nested-key', force: true })).resolves.not.toThrow()
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
 
@@ -90,7 +90,7 @@ describe('Test removeFromJsonFile function', () => {
     
   test('should do nothing when user aborts creating', async () => {
     setPromptSpy(['n'])
-    await removeFromJsonFile({ targetFile: `${wd}/json-file-2.json`, jsonKey: 'cosca' })
+    await removeFromJsonFile({ targetPath: `${wd}/json-file-2.json`, jsonKey: 'cosca' })
 
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/skipped/))
 
@@ -102,12 +102,12 @@ describe('Test removeFromJsonFile function', () => {
     spy.mockClear()
     const file = join(wd, 'remove-json-silent.json')
     writeFileSync(file, '{\n  "a": 1,\n  "b": 2\n}\n')
-    await removeFromJsonFile({ targetFile: file, jsonKey: 'a', force: true, silent: true })
+    await removeFromJsonFile({ targetPath: file, jsonKey: 'a', force: true, silent: true })
     expect(spy).not.toHaveBeenCalled()
     expect(JSON.parse(readFileSync(file, 'utf8'))).toEqual({ b: 2 })
 
     setPromptSpy(['n'])
-    await removeFromJsonFile({ targetFile: file, jsonKey: 'b', silent: true })
+    await removeFromJsonFile({ targetPath: file, jsonKey: 'b', silent: true })
     expect(spy).not.toHaveBeenCalled()
     expect(JSON.parse(readFileSync(file, 'utf8'))).toEqual({ b: 2 })
   })
@@ -116,7 +116,7 @@ describe('Test removeFromJsonFile function', () => {
     spy.mockClear()
     const file = join(wd, 'remove-json-silent-2.json')
     writeFileSync(file, '{\n  "a": 1\n}\n')
-    await removeFromJsonFile({ targetFile: file, jsonKey: 'missing', force: true, silent: false })
+    await removeFromJsonFile({ targetPath: file, jsonKey: 'missing', force: true, silent: false })
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/already up to date/))
   })
 
@@ -124,13 +124,13 @@ describe('Test removeFromJsonFile function', () => {
 
   test('should not display custom prompt', async () => {
     const uSpy = getPromptUserSpy()
-    await removeFromJsonFile({ targetFile: `a`, jsonKey: 'b' })
+    await removeFromJsonFile({ targetPath: `a`, jsonKey: 'b' })
     expect(uSpy).toHaveBeenCalledWith({ question: expect.stringMatching(/This will delete/) })
   })
 
   test('should display custom prompt', async () => {
     const uSpy = getPromptUserSpy()
-    await removeFromJsonFile({ targetFile: `a`, jsonKey: 'b', force: false, prompt: "Custom prompt" })
+    await removeFromJsonFile({ targetPath: `a`, jsonKey: 'b', force: false, prompt: "Custom prompt" })
     expect(uSpy).toHaveBeenCalledWith({ question: expect.stringMatching(/Custom prompt/) })
   })
 

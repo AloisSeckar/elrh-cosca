@@ -8,7 +8,7 @@ import {
 /**
  * Updates a YAML file by deleting a specified key. Comments and formatting of untouched parts are preserved.
  * 
- * @param {string} opts.targetFile - The path to the YAML file to update (relative to CWD).
+ * @param {string} opts.targetPath - The path to the file or directory to work with (relative to CWD).
  * @param {string} opts.yamlKey - The key in the YAML file to be deleted (may use dot notation for nested keys).
  * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
  * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
@@ -17,17 +17,17 @@ import {
  * @throws Will throw an error if the path is invalid, the file does not exist or cannot be parsed as YAML.
  */
 export async function removeFromYamlFile(opts: RemoveFromYamlFileOptions): Promise<void> {
-  const { targetFile, yamlKey, silent = false } = opts
-  if (!await confirmAction(opts, `This will delete '${yamlKey}' from '${targetFile}' file. Continue?`, `Updating '${targetFile}' skipped.`)) {
+  const { targetPath, yamlKey, silent = false } = opts
+  if (!await confirmAction(opts, `This will delete '${yamlKey}' from '${targetPath}' file. Continue?`, `Updating '${targetPath}' skipped.`)) {
     return
   }
 
-  const { fullPath, content } = readTargetFile(targetFile, 'delete its keys')
+  const { fullPath, content } = readTargetFile(targetPath, 'delete its keys')
   let doc
   try {
     doc = parseYamlDocument(content)
   } catch (err) {
-    throw new Error(`Could not parse '${targetFile}' — cannot delete its keys.\n${err}`)
+    throw new Error(`Could not parse '${targetPath}' — cannot delete its keys.\n${err}`)
   }
 
   const keys = yamlKey.split('.')
@@ -44,5 +44,5 @@ export async function removeFromYamlFile(opts: RemoveFromYamlFileOptions): Promi
   }
 
   const modified = isYamlMap(parent) && deleteMapKey(parent, targetKey)
-  writeUpdatedFile(targetFile, fullPath, modified ? stringifyYamlDocument(doc) : '', modified, false, silent)
+  writeUpdatedFile(targetPath, fullPath, modified ? stringifyYamlDocument(doc) : '', modified, false, silent)
 }

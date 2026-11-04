@@ -26,24 +26,24 @@ async function main() {
   console.log('User input:', input)
 
   console.log('\nTest createFileFromTemplate')
-  await createFileFromTemplate({ templateFile: 'vitest:README.md', targetFile: 'test/snapshots/test.file1' })
-  await createFileFromTemplate({ templateFile: 'elrh-cosca:test/fixtures/text-file.txt', targetFile: 'test/snapshots/test.file2' })
+  await createFileFromTemplate({ templateFile: 'vitest:README.md', targetPath: 'test/snapshots/test.file1' })
+  await createFileFromTemplate({ templateFile: 'elrh-cosca:test/fixtures/text-file.txt', targetPath: 'test/snapshots/test.file2' })
   
   console.log('\nTest createFileFromWebTemplate')
-  await createFileFromWebTemplate({ url: 'https://raw.githubusercontent.com/AloisSeckar/nuxt-spec/refs/heads/main/config/vitest.config.ts.template', targetFile: 'test/snapshots/test.file3' })
+  await createFileFromWebTemplate({ url: 'https://raw.githubusercontent.com/AloisSeckar/nuxt-spec/refs/heads/main/config/vitest.config.ts.template', targetPath: 'test/snapshots/test.file3' })
 
   console.log('\nTest updateConfigFile')
-  await updateConfigFile({ targetFile: 'test/fixtures/config-file-default.ts', newConfig: { compatibilityDate: '2025-08-26', extends: ['nuxt-iignis'], cosca: { exists: true, data: ['some', 'other'], raw: 'war' } } })
+  await updateConfigFile({ targetPath: 'test/fixtures/config-file-default.ts', newConfig: { compatibilityDate: '2025-08-26', extends: ['nuxt-iignis'], cosca: { exists: true, data: ['some', 'other'], raw: 'war' } } })
 
   console.log('\nTest updateJsonFile')
-  await updateJsonFile({ targetFile: 'test/fixtures/json-file.json', jsonKey: 'scripts', patch: { 'cosca' : 'cosca' } })
-  await updateJsonFile({ targetFile: 'test/fixtures/json-file.json', jsonKey: 'packageManager', patch: 'pnpm' })
+  await updateJsonFile({ targetPath: 'test/fixtures/json-file.json', jsonKey: 'scripts', patch: { 'cosca' : 'cosca' } })
+  await updateJsonFile({ targetPath: 'test/fixtures/json-file.json', jsonKey: 'packageManager', patch: 'pnpm' })
 
   console.log('\nTest removeFromJsonFile')
-  await removeFromJsonFile({ targetFile: 'test/fixtures/json-file.json', jsonKey: 'cosca' })
+  await removeFromJsonFile({ targetPath: 'test/fixtures/json-file.json', jsonKey: 'cosca' })
 
   console.log('\nTest updateTextFile')
-  await updateTextFile({ targetFile: 'test/fixtures/text-file.txt', rowsToAdd: ['# COSCA'] })
+  await updateTextFile({ targetPath: 'test/fixtures/text-file.txt', rowsToAdd: ['# COSCA'] })
 
   console.log('\nTest deletePath')
   await deletePath({ targetPath: 'test/snapshots/test.file1' })

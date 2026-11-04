@@ -21,13 +21,13 @@ import { parseQualifiedPath } from './utils/parse-qualified-path'
 import { resolvePackagePath } from './utils/resolve-package-path'
 
 export type {
+  FilePathOptions,
+  FileOperationOptions,
   HasJsonKeyOptions,
   HasTextOptions,
   HasYamlKeyOptions,
-  PathExistsOptions,
   CreateFileFromTemplateOptions,
   CreateFileFromWebTemplateOptions,
-  DeletePathOptions,
   RemoveFromJsonFileOptions,
   RemoveFromTextFileOptions,
   RemoveFromYamlFileOptions,

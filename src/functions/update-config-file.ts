@@ -11,7 +11,7 @@ import { confirmAction, prepareTargetFile, writeUpdatedFile } from '../_private/
  * - Deep-merges `newConfig` into the existing config, so `newConfig` takes precedence; arrays are merged as a unique union.
  * - Preserves comments and formatting of untouched parts of the file.
  *
- * @param {string} opts.targetFile - The path to the config file to update (relative to CWD).
+ * @param {string} opts.targetPath - The path to the file or directory to work with (relative to CWD).
  * @param {Record<string | number | symbol, any>} opts.newConfig - The config to merge in (takes precedence).
  * @param {boolean} [opts.createMissing] - If true, the file is created (with `export default {}`) when it does not exist, after confirmation unless `force` is set (default: false).
  * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
@@ -21,18 +21,18 @@ import { confirmAction, prepareTargetFile, writeUpdatedFile } from '../_private/
  * @throws Will throw an error if the path or `newConfig` is invalid, the file does not exist (and `createMissing` is not set), no suitable config export is found or it cannot be processed.
  */
 export async function updateConfigFile(opts: UpdateConfigFileOptions): Promise<void> {
-  const { targetFile, newConfig, silent = false } = opts
-  if (!await confirmAction(opts, `This will update '${targetFile}' file. Continue?`, `Updating '${targetFile}' skipped.`)) {
+  const { targetPath, newConfig, silent = false } = opts
+  if (!await confirmAction(opts, `This will update '${targetPath}' file. Continue?`, `Updating '${targetPath}' skipped.`)) {
     return
   }
 
-  const target = await prepareTargetFile(targetFile, opts)
+  const target = await prepareTargetFile(targetPath, opts)
   if (!target) {
     return
   }
 
   const raw = target.content ?? 'export default {}\n'
-  const { code, modified } = mergeConfig(raw, newConfig, targetFile)
+  const { code, modified } = mergeConfig(raw, newConfig, targetPath)
 
-  writeUpdatedFile(targetFile, target.fullPath, code, target.created || modified, target.created, silent)
+  writeUpdatedFile(targetPath, target.fullPath, code, target.created || modified, target.created, silent)
 }

@@ -35,10 +35,10 @@ interface ArrayElement {
 export function mergeConfig(
   source: string,
   newConfig: Record<string | number | symbol, any>,
-  targetFile: string,
+  targetPath: string,
 ): { code: string; modified: boolean } {
   validateConfigObject(newConfig)
-  const { start, end } = findConfigObjectSpan(source, targetFile)
+  const { start, end } = findConfigObjectSpan(source, targetPath)
   const updated = updateObjectLiteral(source, start, end, newConfig)
   if (!updated.modified) {
     return { code: source, modified: false }
@@ -95,7 +95,7 @@ function validateConfigValue(value: unknown): asserts value is DataValue {
   throw new Error(`Invalid newConfig: unsupported value type '${typeof value}'.`)
 }
 
-function findConfigObjectSpan(src: string, targetFile: string): { start: number; end: number } {
+function findConfigObjectSpan(src: string, targetPath: string): { start: number; end: number } {
   let defaultExportExpr: number | undefined
   const namedExportExprs: number[] = []
   let cjsExportExpr: number | undefined
@@ -162,13 +162,13 @@ function findConfigObjectSpan(src: string, targetFile: string): { start: number;
     ?? cjsExportExpr
 
   if (exprStart === undefined) {
-    throw new Error(`No suitable config export found in ${targetFile}`)
+    throw new Error(`No suitable config export found in ${targetPath}`)
   }
 
-  return extractObjectSpan(src, exprStart, targetFile)
+  return extractObjectSpan(src, exprStart, targetPath)
 }
 
-function extractObjectSpan(src: string, exprStart: number, targetFile: string): { start: number; end: number } {
+function extractObjectSpan(src: string, exprStart: number, targetPath: string): { start: number; end: number } {
   const end = src.length
   let i = skipTrivia(src, exprStart, end)
   if (i < end && src[i] === '{') {
@@ -198,7 +198,7 @@ function extractObjectSpan(src: string, exprStart: number, targetFile: string): 
       }
     }
   }
-  throw new Error(`Could not access config object in ${targetFile}`)
+  throw new Error(`Could not access config object in ${targetPath}`)
 }
 
 function updateObjectLiteral(

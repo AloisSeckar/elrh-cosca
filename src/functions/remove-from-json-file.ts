@@ -5,7 +5,7 @@ import { confirmAction, readTargetFile, writeUpdatedFile } from '../_private/fil
 /**
  * Updates a JSON file by deleting a specified key.
  * 
- * @param {string} opts.targetFile - The path to the JSON file to update (relative to CWD).
+ * @param {string} opts.targetPath - The path to the file or directory to work with (relative to CWD).
  * @param {string} opts.jsonKey - The key in the JSON file to be deleted (may use dot notation for nested keys).
  * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
  * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
@@ -14,24 +14,24 @@ import { confirmAction, readTargetFile, writeUpdatedFile } from '../_private/fil
  * @throws Will throw an error if the path is invalid, the file does not exist or cannot be parsed as JSON.
  */
 export async function removeFromJsonFile(opts: RemoveFromJsonFileOptions): Promise<void> {
-  const { targetFile, jsonKey, silent = false } = opts
-  if (!await confirmAction(opts, `This will delete '${jsonKey}' from '${targetFile}' file. Continue?`, `Updating '${targetFile}' skipped.`)) {
+  const { targetPath, jsonKey, silent = false } = opts
+  if (!await confirmAction(opts, `This will delete '${jsonKey}' from '${targetPath}' file. Continue?`, `Updating '${targetPath}' skipped.`)) {
     return
   }
 
-  const { fullPath, content } = readTargetFile(targetFile, 'delete its keys')
+  const { fullPath, content } = readTargetFile(targetPath, 'delete its keys')
   let json
   try {
     json = JSON.parse(content)
   } catch (err) {
-    throw new Error(`Could not parse '${targetFile}' — cannot delete its keys.\n${err}`)
+    throw new Error(`Could not parse '${targetPath}' — cannot delete its keys.\n${err}`)
   }
 
   const oldJson = JSON.stringify(json, null, 2)
   json = removeKeyIfExists(json, jsonKey)
   const newJson = JSON.stringify(json, null, 2)
 
-  writeUpdatedFile(targetFile, fullPath, newJson + '\n', oldJson !== newJson, false, silent)
+  writeUpdatedFile(targetPath, fullPath, newJson + '\n', oldJson !== newJson, false, silent)
 }
 
 // recursive function to remove possibly nested key if exists in given JSON

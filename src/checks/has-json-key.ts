@@ -5,20 +5,20 @@ import { readTargetFile } from '../_private/file-helpers.js'
 /**
  * Checks if a JSON file contains specified key.
  * 
- * @param {string} opts.targetFile - The path to the JSON file to be checked (relative to CWD).
+ * @param {string} opts.targetPath - The path to the file or directory to work with (relative to CWD).
  * @param {string} opts.jsonKey - The key in the JSON file to be checked for existence (may use dot notation for nested keys).
  * @returns {boolean} True if the key exists in target file, false otherwise.
  * @throws Will throw an error if the path is invalid, file does not exist or cannot be parsed as JSON.
  */
 export function hasJsonKey(opts: HasJsonKeyOptions): boolean {
-  const { targetFile, jsonKey } = opts
-  const { content } = readTargetFile(targetFile, 'check its keys')
+  const { targetPath, jsonKey } = opts
+  const { content } = readTargetFile(targetPath, 'check its keys')
   
   let json
   try {
     json = JSON.parse(content)
   } catch (err) {
-    throw new Error(`Could not parse '${targetFile}' — cannot check its keys.\n${err}`)
+    throw new Error(`Could not parse '${targetPath}' — cannot check its keys.\n${err}`)
   }
 
   return keyExists(json, jsonKey)

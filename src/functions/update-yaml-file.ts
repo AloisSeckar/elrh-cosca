@@ -13,7 +13,7 @@ import {
 /**
  * Updates a YAML file by setting a key with new value(s). The key can be nested and can alter between primitives to objects and arrays as needed. Comments and formatting of untouched parts are preserved.
  * 
- * @param {string} opts.targetFile - The path to the YAML file to update (relative to CWD).
+ * @param {string} opts.targetPath - The path to the file or directory to work with (relative to CWD).
  * @param {string} opts.yamlKey - The key in the YAML file to update (can be new or existing; may use dot notation for nested keys - missing or non-map intermediate levels are replaced with maps).
  * @param {DataValue} opts.patch - The value for the specified key. Objects are shallow-merged into the existing value (a non-map existing value is replaced), arrays are appended to the existing value by default (duplicates are skipped, a non-sequence existing value becomes the first item), other values (primitives, null) replace it.
  * @param {boolean} [opts.createMissing] - If true, the file is created when it does not exist, after confirmation unless `force` is set (default: false).
@@ -25,8 +25,8 @@ import {
  * @throws Will throw an error if the path or the key is invalid, the file does not exist (and `createMissing` is not set), cannot be parsed as YAML or its root is not a map.
  */
 export async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void> {
-  const { targetFile, yamlKey, patch, overwriteArrays = false, silent = false } = opts
-  if (!await confirmAction(opts, `This will update '${targetFile}' file. Continue?`, `Updating '${targetFile}' skipped.`)) {
+  const { targetPath, yamlKey, patch, overwriteArrays = false, silent = false } = opts
+  if (!await confirmAction(opts, `This will update '${targetPath}' file. Continue?`, `Updating '${targetPath}' skipped.`)) {
     return
   }
 
@@ -35,7 +35,7 @@ export async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void>
     throw new Error(`Invalid YAML key '${yamlKey}'.`)
   }
 
-  const target = await prepareTargetFile(targetFile, opts)
+  const target = await prepareTargetFile(targetPath, opts)
   if (!target) {
     return
   }
@@ -45,7 +45,7 @@ export async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void>
   try {
     doc = parseYamlDocument(yamlRaw)
   } catch (err) {
-    throw new Error(`Could not parse '${targetFile}' — cannot update its contents.\n${err}`)
+    throw new Error(`Could not parse '${targetPath}' — cannot update its contents.\n${err}`)
   }
 
   let modified = target.created
@@ -54,7 +54,7 @@ export async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void>
     doc.contents = createYamlNode({})
   }
   if (!isYamlMap(doc.contents)) {
-    throw new Error(`Root of '${targetFile}' is not a YAML map — cannot update its contents.`)
+    throw new Error(`Root of '${targetPath}' is not a YAML map — cannot update its contents.`)
   }
 
   const targetKey = keys.pop()!
@@ -86,7 +86,7 @@ export async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void>
     }
   }
 
-  writeUpdatedFile(targetFile, target.fullPath, modified ? stringifyYamlDocument(doc) : '', modified, target.created, silent)
+  writeUpdatedFile(targetPath, target.fullPath, modified ? stringifyYamlDocument(doc) : '', modified, target.created, silent)
 }
 
 function setValue(map: YamlMap, key: string, value: DataValue, overwriteArrays: boolean): boolean {
