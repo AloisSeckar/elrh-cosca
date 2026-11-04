@@ -132,13 +132,6 @@ export interface PromptUserOptions {
 	output?: NodeJS.WritableStream
 }
 
-export interface ShowErrorOptions {
-	/** The error message text to display. */
-	message: string
-	/** The number of newlines to print after the message (default: 1). */
-	linesAfter?: number
-}
-
 export interface ShowMessageOptions {
 	/** The message text to display. */
 	message: string

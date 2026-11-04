@@ -1,4 +1,4 @@
-import type { ShowErrorOptions } from '../types/functions.js'
+import type { ShowMessageOptions } from '../types/functions.js'
 
 /**
  * Prints error message into stderr with specified number of newlines after it.
@@ -6,7 +6,7 @@ import type { ShowErrorOptions } from '../types/functions.js'
  * @param {string} opts.message - The error message text to display.
  * @param {number} [opts.linesAfter] - The number of newlines to print after the message (default: 1).
  */
-export function showError(opts: ShowErrorOptions): void {
+export function showError(opts: ShowMessageOptions): void {
   const { message, linesAfter = 1 } = opts
   process.stderr.write(message)
   for (let i = 0; i < linesAfter; i++) {

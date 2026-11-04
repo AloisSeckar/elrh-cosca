@@ -36,7 +36,6 @@ export type {
   UpdateTextFileOptions,
   UpdateYamlFileOptions,
   PromptUserOptions,
-  ShowErrorOptions,
   ShowMessageOptions,
   GetEnvValueOptions,
   ParseQualifiedPathOptions,
