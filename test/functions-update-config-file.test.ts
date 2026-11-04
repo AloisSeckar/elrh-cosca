@@ -65,16 +65,15 @@ describe('Test updateConfigFile function', () => {
   })
 
   test('should fail when module has no suitable export', async () => {
-    // magicast always exposes `exports` as an object, so the module must be faked
-    vi.doMock('magicast', async (importOriginal) => ({
-      ...(await importOriginal<typeof import('magicast')>()),
-      loadFile: async () => ({ exports: () => {} }),
-    }))
-    try {
-      await expect(updateConfigFile({ targetFile: `${wd}/config-file-default.ts`, newConfig: { testKey1: 0 }, force: true })).rejects.toThrow(/No suitable config export found/)
-    } finally {
-      vi.doUnmock('magicast')
-    }
+    const file = join(wd, 'config-no-export.ts')
+    writeFileSync(file, 'const internal = { testKey1: 1 }\n')
+    await expect(updateConfigFile({ targetFile: file, newConfig: { testKey1: 0 }, force: true })).rejects.toThrow(/No suitable config export found/)
+  })
+
+  test('should fail when module has multiple named exports and no default export', async () => {
+    const file = join(wd, 'config-multi-named.ts')
+    writeFileSync(file, 'export const a = { x: 1 }\nexport const b = { y: 2 }\n')
+    await expect(updateConfigFile({ targetFile: file, newConfig: { testKey1: 0 }, force: true })).rejects.toThrow(/No suitable config export found/)
   })
 
   test('should fail because of non-existent file', async () => {
@@ -109,8 +108,68 @@ describe('Test updateConfigFile function', () => {
     await expect(readNormalizedFile(wd, 'new-config/confirmed.ts')).toMatchFileSnapshot('snapshots/created-config-file.ts')
   })
 
-  test('should fail because of CJS format', async () => {
-    await expect(updateConfigFile({ targetFile: `${wd}/config-file.cjs`, newConfig: { testKey1: 0 }, force: true })).rejects.toThrow(/currently not possible to handle CommonJS/)
+  test('should update config wrapped in defineConfig (function call export)', async () => {
+    const file = join(wd, 'config-define.ts')
+    writeFileSync(file, [
+      "import { defineConfig } from 'vite'",
+      '',
+      'export default defineConfig({',
+      '  // preserved comment',
+      "  stringKey: 'value',",
+      '  nested: {',
+      '    enabled: true,',
+      '  },',
+      '})',
+      '',
+    ].join('\n'))
+
+    await updateConfigFile({
+      targetFile: file,
+      newConfig: { testKey1: 'added', nested: { extra: 42 } },
+      force: true,
+    })
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
+
+    const updated = readFileSync(file, 'utf8')
+    expect(updated).toContain('// preserved comment')
+    expect(updated).toContain("testKey1: 'added',")
+    expect(updated).toContain('enabled: true,')
+    expect(updated).toContain('extra: 42,')
+
+    await updateConfigFile({
+      targetFile: file,
+      newConfig: { testKey1: 'added', nested: { extra: 42 } },
+      force: true,
+    })
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
+  })
+
+  test('should update CommonJS module.exports config', async () => {
+    await updateConfigFile({
+      targetFile: `${wd}/config-file.cjs`,
+      newConfig: { testKey1: 0, nested: { a: 'x' } },
+      force: true,
+    })
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
+
+    const updated = readNormalizedFile(wd, 'config-file.cjs')
+    expect(updated).toBe([
+      'module.exports = {',
+      "    key: 'value',",
+      '    testKey1: 0,',
+      '    nested: {',
+      "      a: 'x',",
+      '    },',
+      '}',
+      '',
+    ].join('\n'))
+
+    await updateConfigFile({
+      targetFile: `${wd}/config-file.cjs`,
+      newConfig: { testKey1: 0, nested: { a: 'x' } },
+      force: true,
+    })
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
   })
 
   test('should add the new key and values (default export)', async () => {

@@ -18,20 +18,19 @@ All functions with arguments take a single required `opts` object with one or mo
 
 ### Bundle size and lazy loading
 
-The library has no runtime dependencies. Third-party parsers are bundled into the published package, but split into separate chunks that are only loaded on demand:
+The library has no runtime dependencies. The third-party YAML parser is bundled into the published package, but split into a separate chunk that is only loaded on demand:
 
 | Chunk | Approx. size | Loaded by |
 | --- | --- | --- |
-| `dist/elrh-cosca.mjs` (main entry) | ~19 kB | always |
-| `dist/chunks/magicast-*.mjs` ([magicast](https://github.com/unjs/magicast) incl. `@babel/parser`) | ~590 kB | [`updateConfigFile`](#updateconfigfile) |
+| `dist/elrh-cosca.mjs` (main entry) | ~31 kB | always |
 | `dist/chunks/yaml-*.mjs` ([yaml](https://github.com/eemeli/yaml)) | ~140 kB | [`updateYamlFile`](#updateyamlfile), [`removeFromYamlFile`](#removefromyamlfile), [`hasYamlKey`](#hasyamlkey) |
 
 What this means in practice:
 
 - **Installed package size** is (sadly) not reduced - all chunks are always downloaded with the package.
-- **Nothing extra to install** - all chunks are part of the `elrh-cosca` package, so the parsers are always available and never clash with other versions in your dependency tree.
-- **Running with Node** (e.g. a CLI script) - only the main entry is loaded on startup. A parser chunk is loaded via dynamic `import()` the first time a function needing it is called, and it is cached by Node afterwards.
-- **Bundling into your own code** - the package is marked as `"sideEffects": false`, so unused functions can be tree-shaken. If you don't use any of the functions listed above, bundlers like Vite drop the related chunks entirely. Other bundlers may still emit them as separate files, but they are never loaded.
+- **Nothing extra to install** - all chunks are part of the `elrh-cosca` package, so the parser is always available and never clashes with other versions in your dependency tree.
+- **Running with Node** (e.g. a CLI script) - only the main entry is loaded on startup. The YAML parser chunk is loaded via dynamic `import()` the first time a function needing it is called, and it is cached by Node afterwards.
+- **Bundling into your own code** - the package is marked as `"sideEffects": false`, so unused functions can be tree-shaken. If you don't use any of the YAML functions listed above, bundlers like Vite drop the related chunk entirely. Other bundlers may still emit it as a separate file, but it is never loaded.
 
 ### List of file-manipulation functions
 
@@ -94,27 +93,20 @@ async function updateConfigFile(opts: UpdateConfigFileOptions): Promise<void>
 
 Takes a path to a configuration file and updates it with the provided `newConfig` object.
 
-Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file currently must use ESM format with either a `default` export or **exactly one** named export. The exported value must be a configuration object or a function call with a configuration object as its first argument (e.g. `defineConfig({...})`). CommonJS `module.exports` is not supported.
+Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file may use ESM format with either a `default` export (`export default { ... }`) or **exactly one** named variable export (`export const x = { ... }`, `let`, or `var`), or CommonJS `module.exports = { ... }`. In all cases, the exported value must be either a configuration object literal or a function call with a configuration object literal as its first argument (e.g. `export default defineConfig({ ... })`).
 
 If `targetFile` does not exist, the function throws an error by default. Setting `opts.createMissing` to `true` will instead create the file (including missing directories) as `export default {}` with `newConfig` merged in. The user is asked to confirm the creation unless `opts.force` is `true`.
 
-The merge is performed using [unjs/magicast](https://github.com/unjs/magicast). It should:
+The merge is performed using a built-in linear-time static scanner and serializer (without executing the file). It guarantees to:
 
-- preserve comments
+- preserve comments and formatting of untouched parts
 - work recursively to allow deep-merge
 - extend the existing object with new keys from `newConfig`
 - overwrite keys with the same name with values from `newConfig`
 - create a unique union in case of arrays
+- reject prototype-pollution keys (`__proto__`, `constructor`, `prototype`), symbol keys, and non-data values (functions, `undefined`, non-finite numbers, non-plain objects), and serialize all `newConfig` keys and values strictly as escaped data literals
 
 Please [report](https://github.com/AloisSeckar/elrh-cosca/issues) any logical flaws and issues of the process.
-
-**Warning**: The function will fail if the extracted object is proxied (e.g. when created using `defu`). In such case, the error would be:
-
-```text
-TypeError: 'set' on proxy: trap returned falsish for property '<YOUR_PROPERTY>'
-```
-
-If possible, you need to alter your logic, e.g. by creating a new object via the spread operator.
 
 By default the function asks for confirmation before attempting to alter the `targetFile`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
 
@@ -408,7 +400,6 @@ Resolves a package's root directory *from the target app* (CWD). Returns CWD its
 ## Tech stack
 
 - Developed with [TypeScript](https://www.typescriptlang.org/) in mind
-- Using [magicast](https://github.com/unjs/magicast) for parsing files
 - Using [yaml](https://github.com/eemeli/yaml) for parsing YAML files
 - Built with [Vite](https://vitejs.dev/)
 - Tested with [Vitest](https://vitest.dev/)

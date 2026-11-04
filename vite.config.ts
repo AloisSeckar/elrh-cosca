@@ -14,7 +14,6 @@ export default defineConfig({
     },
     rollupOptions: {
       external: [
-          'fs', // due to `magicast` package
           'node:fs',
           'node:https',
           'node:module',
@@ -32,9 +31,6 @@ export default defineConfig({
         manualChunks(id) {
           if (id.includes('/node_modules/yaml/')) {
             return 'yaml'
-          }
-          if (/\/node_modules\/(magicast|@babel|source-map-js)\//.test(id)) {
-            return 'magicast'
           }
         },
       }

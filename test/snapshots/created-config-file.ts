@@ -1,7 +1,6 @@
 export default {
-  testKey1: "value",
-
+  testKey1: 'value',
   testKey2: {
-    nestedKey: true
-  }
-};
+    nestedKey: true,
+  },
+}
