@@ -3,6 +3,10 @@ import { resolve } from 'node:path'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { promptUser } from '../terminal/prompt-user.js'
 import { checkPath } from '../_private/check-path.js'
+import {
+  deleteMapKey, getMapNode, isYamlMap,
+  parseYamlDocument, stringifyYamlDocument,
+} from '../_private/yaml.js'
 
 /**
  * Updates a YAML file by deleting a specified key. Comments and formatting of untouched parts are preserved.
@@ -29,32 +33,28 @@ export async function removeFromYamlFile(opts: RemoveFromYamlFileOptions): Promi
       throw new Error(`No '${targetFile}' found — cannot delete its keys.`)
     }
 
-    // lazy-loaded so the code is only parsed when needed
-    const { isMap, isScalar, parseDocument } = await import('yaml')
-    const doc = parseDocument(readFileSync(yamlFilePath, 'utf8'))
-    if (doc.errors.length > 0) {
-      throw new Error(`Could not parse '${targetFile}' — cannot delete its keys.\n${doc.errors[0]}`)
+    let doc
+    try {
+      doc = parseYamlDocument(readFileSync(yamlFilePath, 'utf8'))
+    } catch (err) {
+      throw new Error(`Could not parse '${targetFile}' — cannot delete its keys.\n${err}`)
     }
 
     const keys = yamlKey.split('.')
     const targetKey = keys.pop()!
-    let parent: unknown = doc.contents
+    let parent: ReturnType<typeof getMapNode> | null = doc.contents
     for (const key of keys) {
-      parent = isMap(parent) ? parent.get(key, true) : undefined
+      parent = isYamlMap(parent) ? getMapNode(parent, key) : undefined
     }
 
-    const firstKey = isMap(parent) ? parent.items[0]?.key : undefined
-    if (parent === doc.contents && isScalar(firstKey) && firstKey.value === targetKey && firstKey.commentBefore) {
+    const firstPair = isYamlMap(parent) ? parent.items[0] : undefined
+    if (parent === doc.contents && firstPair?.key === targetKey && firstPair.commentBefore) {
       // comment above the first root key is usually a file header, so it must survive the key removal
-      doc.commentBefore = [doc.commentBefore, firstKey.commentBefore].filter(Boolean).join('\n')
+      doc.commentBefore = firstPair.commentBefore
     }
 
-    if (isMap(parent) && parent.delete(targetKey)) {
-      if (parent.items.length === 0) {
-        // would be otherwise rendered as a dangling comment above `{}`
-        parent.commentBefore = undefined
-      }
-      writeFileSync(yamlFilePath, doc.toString(), 'utf8')
+    if (isYamlMap(parent) && deleteMapKey(parent, targetKey)) {
+      writeFileSync(yamlFilePath, stringifyYamlDocument(doc), 'utf8')
       if (!silent) console.log(`'${targetFile}' file updated.`)
     } else {
       if (!silent) console.log(`'${targetFile}' file already up to date.`)

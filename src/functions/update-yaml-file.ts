@@ -3,9 +3,13 @@ import type { DataValue } from '../types/data.js'
 import { dirname, resolve } from 'node:path'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { isDeepStrictEqual } from 'node:util'
-import type { Document, YAMLMap, YAMLSeq } from 'yaml'
 import { promptUser } from '../terminal/prompt-user.js'
 import { checkPath } from '../_private/check-path.js'
+import type { YamlDocument, YamlMap, YamlSeq } from '../_private/yaml.js'
+import {
+  createYamlNode, getMapNode, isYamlMap, isYamlScalar, isYamlSeq,
+  parseYamlDocument, setMapNode, stringifyYamlDocument, yamlNodeToJson,
+} from '../_private/yaml.js'
 
 // guards against prototype pollution via crafted key segments
 const FORBIDDEN_KEYS = ['__proto__', 'constructor', 'prototype']
@@ -51,50 +55,49 @@ export async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void>
       }
     }
 
-    // lazy-loaded so the code is only parsed when needed
-    const yaml = await import('yaml')
-    const { isMap, parseDocument } = yaml
     const yamlRaw = created ? '' : readFileSync(yamlFilePath, 'utf8')
-    const doc: Document = parseDocument(yamlRaw)
-    if (doc.errors.length > 0) {
-      throw new Error(`Could not parse '${targetFile}' — cannot update its contents.\n${doc.errors[0]}`)
+    let doc: YamlDocument
+    try {
+      doc = parseYamlDocument(yamlRaw)
+    } catch (err) {
+      throw new Error(`Could not parse '${targetFile}' — cannot update its contents.\n${err}`)
     }
 
     let modified = created
 
     if (doc.contents === null) {
-      doc.contents = doc.createNode({})
+      doc.contents = createYamlNode({})
     }
-    if (!isMap(doc.contents)) {
+    if (!isYamlMap(doc.contents)) {
       throw new Error(`Root of '${targetFile}' is not a YAML map — cannot update its contents.`)
     }
 
     const targetKey = keys.pop()!
-    let parent: YAMLMap = doc.contents
+    let parent: YamlMap = doc.contents
     for (const key of keys) {
-      const nested: unknown = parent.get(key, true)
-      if (isMap(nested)) {
+      const nested = getMapNode(parent, key)
+      if (isYamlMap(nested)) {
         parent = nested
       } else {
-        const map = doc.createNode({}) as YAMLMap
-        parent.set(key, map)
+        const map = createYamlNode({}) as YamlMap
+        setMapNode(parent, key, map)
         parent = map
         modified = true
       }
     }
 
     if (patch === null || typeof patch !== 'object' || Array.isArray(patch)) {
-      modified = setValue(yaml, doc, parent, targetKey, patch, overwriteArrays) || modified
+      modified = setValue(parent, targetKey, patch, overwriteArrays) || modified
     } else {
-      let target: unknown = parent.get(targetKey, true)
-      if (!isMap(target)) {
+      let target = getMapNode(parent, targetKey)
+      if (!isYamlMap(target)) {
         // non-map values cannot be merged into, so they are replaced
-        target = doc.createNode({})
-        parent.set(targetKey, target)
+        target = createYamlNode({}) as YamlMap
+        setMapNode(parent, targetKey, target)
         modified = true
       }
       for (const [key, value] of Object.entries(patch)) {
-        modified = setValue(yaml, doc, target as YAMLMap, key, value, overwriteArrays) || modified
+        modified = setValue(target, key, value, overwriteArrays) || modified
       }
     }
 
@@ -102,7 +105,7 @@ export async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void>
       if (created) {
         mkdirSync(dirname(yamlFilePath), { recursive: true })
       }
-      writeFileSync(yamlFilePath, doc.toString(), 'utf8')
+      writeFileSync(yamlFilePath, stringifyYamlDocument(doc), 'utf8')
       if (!silent) console.log(`'${targetFile}' file ${created ? 'created' : 'updated'}.`)
     } else {
       if (!silent) console.log(`'${targetFile}' file already up to date.`)
@@ -112,10 +115,10 @@ export async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void>
   }
 }
 
-function setValue({ isNode, isScalar, isSeq }: typeof import('yaml'), doc: Document, map: YAMLMap, key: string, value: DataValue, overwriteArrays: boolean): boolean {
-  const current = map.get(key, true)
-  if (!overwriteArrays && Array.isArray(value) && isNode(current) && !(isScalar(current) && current.value === null)) {
-    const items: unknown[] = isSeq(current) ? current.toJSON() : [current.toJSON()]
+function setValue(map: YamlMap, key: string, value: DataValue, overwriteArrays: boolean): boolean {
+  const current = getMapNode(map, key)
+  if (!overwriteArrays && Array.isArray(value) && current !== undefined && !(isYamlScalar(current) && current.value === null)) {
+    const items: unknown[] = isYamlSeq(current) ? (yamlNodeToJson(current) as unknown[]) : [yamlNodeToJson(current)]
     const added: DataValue[] = []
     for (const item of value) {
       if (!items.some(existing => isDeepStrictEqual(existing, item))) {
@@ -126,28 +129,28 @@ function setValue({ isNode, isScalar, isSeq }: typeof import('yaml'), doc: Docum
     if (added.length === 0) {
       return false
     }
-    let seq: YAMLSeq
-    if (isSeq(current)) {
+    let seq: YamlSeq
+    if (isYamlSeq(current)) {
       seq = current
     } else {
       // existing node is moved into the new sequence to keep its comments
-      seq = doc.createNode([]) as YAMLSeq
-      seq.add(current)
-      map.set(key, seq)
+      seq = { kind: 'seq', items: [current] }
+      setMapNode(map, key, seq)
     }
     for (const item of added) {
-      seq.add(doc.createNode(item))
+      seq.items.push(createYamlNode(item))
     }
     return true
   }
-  if (map.has(key) && isDeepStrictEqual(isNode(current) ? current.toJSON() : current, value)) {
+  if (current !== undefined && isDeepStrictEqual(yamlNodeToJson(current), value)) {
     return false
   }
-  if (isScalar(current) && (value === null || typeof value !== 'object')) {
+  if (isYamlScalar(current) && (value === null || typeof value !== 'object')) {
     // keeps comments attached to the existing scalar
     current.value = value
+    current.raw = undefined
   } else {
-    map.set(key, doc.createNode(value))
+    setMapNode(map, key, createYamlNode(value))
   }
   return true
 }

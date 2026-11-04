@@ -16,21 +16,9 @@ Run `npm install elrh-cosca` to include it in your project.
 
 All functions with arguments take a single required `opts` object with one or more properties. Each options type is exported from `elrh-cosca` and defined in [src/types/functions.ts](src/types/functions.ts).
 
-### Bundle size and lazy loading
+### Bundle size
 
-The library has no runtime dependencies. The third-party YAML parser is bundled into the published package, but split into a separate chunk that is only loaded on demand:
-
-| Chunk | Approx. size | Loaded by |
-| --- | --- | --- |
-| `dist/elrh-cosca.mjs` (main entry) | ~31 kB | always |
-| `dist/chunks/yaml-*.mjs` ([yaml](https://github.com/eemeli/yaml)) | ~140 kB | [`updateYamlFile`](#updateyamlfile), [`removeFromYamlFile`](#removefromyamlfile), [`hasYamlKey`](#hasyamlkey) |
-
-What this means in practice:
-
-- **Installed package size** is (sadly) not reduced - all chunks are always downloaded with the package.
-- **Nothing extra to install** - all chunks are part of the `elrh-cosca` package, so the parser is always available and never clashes with other versions in your dependency tree.
-- **Running with Node** (e.g. a CLI script) - only the main entry is loaded on startup. The YAML parser chunk is loaded via dynamic `import()` the first time a function needing it is called, and it is cached by Node afterwards.
-- **Bundling into your own code** - the package is marked as `"sideEffects": false`, so unused functions can be tree-shaken. If you don't use any of the YAML functions listed above, bundlers like Vite drop the related chunk entirely. Other bundlers may still emit it as a separate file, but it is never loaded.
+The library has no runtime dependencies and no bundled third-party parsers. Everything is emitted into a single entry file (`dist/elrh-cosca.mjs`, ~45 kB) and the package is marked as `"sideEffects": false`, so unused functions can be tree-shaken when bundled into your own code.
 
 ### List of file-manipulation functions
 
@@ -155,7 +143,26 @@ async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void>
 
 Takes a path to a YAML file and injects `patch` under the `yamlKey` key. The `patch` is of type `DataValue` (see [`updateJsonFile`](#updatejsonfile)).
 
-Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must be a valid single-document YAML file with a map at its root (an empty file is accepted). It is parsed using [eemeli/yaml](https://github.com/eemeli/yaml) package.
+Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must be a valid single-document YAML file with a map at its root (an empty file is accepted).
+
+The file is processed using a built-in YAML parser and serializer that preserves comments and formatting of untouched parts. It supports common configuration YAML constructs:
+
+- block mappings and block sequences (including indentless sequences and compact maps in sequences)
+- single-line flow mappings (`{ ... }`) and flow sequences (`[ ... ]`)
+- plain, single-quoted (`'...'`), and double-quoted (`"..."`) scalars (`string`, `number`, `boolean`, `null` / `~`)
+- explicit mapping keys (`? key`)
+- full-line and inline `#` comments
+
+Advanced YAML features outside this subset are currently not supported and will cause parsing to fail with an error:
+
+- document markers (`---`, `...`) and multi-document streams
+- anchors and aliases (`&anchor`, `*alias`)
+- tags (`!tag`, `!!type`)
+- block scalar styles (`|`, `>`) and multi-line scalars or multi-line flow collections
+- complex collection keys (e.g. `[a, b]: 1`)
+- tab characters in indentation
+
+Please [report](https://github.com/AloisSeckar/elrh-cosca/issues) any logical flaws and issues of the process. Open new feature request if your usecase requires support of advanced YAML features.
 
 The given `yamlKey` might point to a nested key using dot notation, e.g. `a.b.c`. Missing intermediate levels are created as empty maps, and existing intermediate levels that are not maps (scalars and sequences) are replaced with maps. Empty key segments (e.g. `a..b`) and the segments `__proto__`, `constructor` and `prototype` are rejected with an error. If `yamlKey` does not exist, a new key is added. If `patch` is an object, its keys are shallow-merged into the existing value. If the existing value is not a map, it is replaced. If `patch` is an array and the existing value is a sequence, the items of `patch` are appended to it (duplicates are skipped). If the existing non-null value is not a sequence, it is turned into a sequence with the existing value as its first item, followed by the new items. Comments of the existing value are preserved in both cases. This also applies to arrays among the keys of an object `patch`. Setting `opts.overwriteArrays` to `true` results in full array replacement instead. Other values (primitives, arrays replacing a missing or `null` value and `null`) replace the existing value. The function tracks if any real change was made (values are compared deeply) and notifies the user if not.
 
@@ -229,7 +236,7 @@ async function removeFromYamlFile(opts: RemoveFromYamlFileOptions): Promise<void
 
 Takes a path to a YAML file and removes the specified `yamlKey`.
 
-Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist and be a valid single-document YAML file. It is parsed using [eemeli/yaml](https://github.com/eemeli/yaml) package, which preserves comments and formatting of the untouched parts of the file.
+Path to `targetFile` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist and be a valid single-document YAML file. It is parsed using the built-in YAML parser (see [`updateYamlFile`](#updateyamlfile) for supported syntax and limitations), which preserves comments and formatting of the untouched parts of the file.
 
 The given `yamlKey` might point to a nested key using dot notation, e.g. `a.b.c`. If the key is not present (including when the file is empty or its root is not a map), the file is left untouched and the user is notified.
 
@@ -288,14 +295,12 @@ interface HasYamlKeyOptions {
   targetFile: string
   yamlKey: string
 }
-async function hasYamlKey(opts: HasYamlKeyOptions): Promise<boolean>
+function hasYamlKey(opts: HasYamlKeyOptions): boolean
 ```
 
-Checks whether the given `yamlKey` exists in the YAML file located at `targetFile`. Path is resolved relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist and be a valid single-document YAML file. It is parsed using [eemeli/yaml](https://github.com/eemeli/yaml) package.
+Checks whether the given `yamlKey` exists in the YAML file located at `targetFile`. Path is resolved relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist and be a valid single-document YAML file. It is parsed using the built-in YAML parser (see [`updateYamlFile`](#updateyamlfile) for supported syntax and limitations).
 
-The given `yamlKey` might point to a nested key using dot notation, e.g. `a.b.c`. If the key is present, the function resolves to `true`, `false` otherwise (including when the file is empty or its root is not a map).
-
-Unlike other checks, this function runs asynchronously, because the YAML parser is loaded lazily on demand.
+The given `yamlKey` might point to a nested key using dot notation, e.g. `a.b.c`. If the key is present, the function returns `true`, `false` otherwise (including when the file is empty or its root is not a map).
 
 #### `hasText`
 
@@ -400,7 +405,6 @@ Resolves a package's root directory *from the target app* (CWD). Returns CWD its
 ## Tech stack
 
 - Developed with [TypeScript](https://www.typescriptlang.org/) in mind
-- Using [yaml](https://github.com/eemeli/yaml) for parsing YAML files
 - Built with [Vite](https://vitejs.dev/)
 - Tested with [Vitest](https://vitest.dev/)
 
