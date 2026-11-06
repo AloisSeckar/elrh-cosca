@@ -22,6 +22,11 @@ describe('Test showError terminal helper', () => {
     expect(spy.mock.calls.map((c: any[]) => c[0])).toEqual(['Error!', '\n'])
   })
 
+  test('should accept a plain string', () => {
+    showError('Error!')
+    expect(spy.mock.calls.map((c: any[]) => c[0])).toEqual(['Error!', '\n'])
+  })
+
   test('should write message + TWO newlines', () => {
     showError({ message: 'Error!', linesAfter: 1 })
     expect(spy.mock.calls.map((c: any[]) => c[0])).toEqual(['Error!', '\n', '\n'])

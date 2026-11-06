@@ -11,8 +11,13 @@ describe('Test promptUser terminal helper', () => {
     expect(promptUser).toBeDefined()
   })
 
+  test('should accept a plain question string', async () => {
+    setPromptSpy(['y'])
+    expect(await promptUser('Continue?')).toBe(true)
+  })
+
   test('should accept one options object with a required question', () => {
-    expectTypeOf(promptUser).parameters.toEqualTypeOf<[opts: PromptUserOptions]>()
+    expectTypeOf(promptUser).parameters.toEqualTypeOf<[opts: string | PromptUserOptions]>()
     expectTypeOf<{}>().not.toExtend<PromptUserOptions>()
     expectTypeOf<{ question: string }>().toExtend<PromptUserOptions>()
   })

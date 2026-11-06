@@ -320,12 +320,12 @@ interface PromptUserOptions {
   input?: NodeJS.ReadableStream
   output?: NodeJS.WritableStream
 }
-async function promptUser(opts: PromptUserOptions): Promise<boolean>
+async function promptUser(opts: string | PromptUserOptions): Promise<boolean>
 ```
 
 Prints out a `question` (with ` (y/N): ` appended) to the console and waits for the input. Returns `true` when the user answers `y` or `yes` (case-insensitive) and `false` otherwise.
 
-By default it uses `process.stdin` and `process.stdout` streams. To use custom NodeJS streams, pass `input` and `output` directly in `opts`, e.g. `promptUser({ question: 'Continue?', input, output })`.
+By default it uses `process.stdin` and `process.stdout` streams. To use custom NodeJS streams, pass `input` and `output` directly in `opts`, e.g. `promptUser({ question: 'Continue?', input, output })`. When no extra options are needed, a plain string can be passed instead: `promptUser('Continue?')`.
 
 #### `showMessage`
 
@@ -335,18 +335,18 @@ interface ShowMessageOptions {
   linesBefore?: number
   linesAfter?: number
 }
-function showMessage(opts: ShowMessageOptions): void
+function showMessage(opts: string | ShowMessageOptions): void
 ```
 
-Prints out a `message` to `process.stdout` followed by a newline, optionally preceded by `linesBefore` newlines and followed by `linesAfter` extra newlines (both default to 0). This function is synchronous.
+Prints out a `message` to `process.stdout` followed by a newline, optionally preceded by `linesBefore` newlines and followed by `linesAfter` extra newlines (both default to 0). A plain string can be passed instead of the object, e.g. `showMessage('Done')`.
 
 #### `showError`
 
 ```ts
-function showError(opts: ShowMessageOptions): void
+function showError(opts: string | ShowMessageOptions): void
 ```
 
-Prints out a `message` to `process.stderr` followed by a newline, optionally preceded by `linesBefore` newlines and followed by `linesAfter` extra newlines (both default to 0). This function is synchronous.
+Prints out a `message` to `process.stderr` followed by a newline, optionally preceded by `linesBefore` newlines and followed by `linesAfter` extra newlines (both default to 0). A plain string can be passed instead of the object, e.g. `showError('Failed')`.
 
 ### List of other utils
 
