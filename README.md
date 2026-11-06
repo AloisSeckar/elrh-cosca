@@ -330,10 +330,12 @@ By default it uses `process.stdin` and `process.stdout` streams. To use custom N
 #### `showMessage`
 
 ```ts
-interface ShowMessageOptions {
+interface ShowTextOptions {
   message: string
   linesBefore?: number
   linesAfter?: number
+}
+interface ShowMessageOptions extends ShowTextOptions {
   color?: InspectColor
 }
 function showMessage(opts: string | ShowMessageOptions): void
@@ -346,12 +348,23 @@ The message is printed out in `color` (default: no color) via the `styleText` fu
 #### `showError`
 
 ```ts
-function showError(opts: string | ShowMessageOptions): void
+function showError(opts: string | ShowTextOptions): void
 ```
 
 Prints out a `message` to `process.stderr` followed by a newline, optionally preceded by `linesBefore` newlines and followed by `linesAfter` extra newlines (both default to 0). A plain string can be passed instead of the object, e.g. `showError('Failed')`.
 
 The message is printed out in red via the `styleText` function from the `node:util` module.
+
+#### `showInfo`, `showSuccess`, `showWarning`, `showDebug`
+
+```ts
+function showInfo(opts: string | ShowTextOptions): void
+function showSuccess(opts: string | ShowTextOptions): void
+function showWarning(opts: string | ShowTextOptions): void
+function showDebug(opts: string | ShowTextOptions): void
+```
+
+Shortcuts for `showMessage` with a fixed `color`: `showInfo` prints in white, `showSuccess` in green, `showWarning` in yellow and `showDebug` in gray.
 
 ### List of other utils
 

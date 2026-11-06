@@ -14,8 +14,12 @@ import { updateJsonFile } from './functions/update-json-file'
 import { updateTextFile } from './functions/update-text-file'
 import { updateYamlFile } from './functions/update-yaml-file'
 import { promptUser } from './terminal/prompt-user'
+import { showDebug } from './terminal/show-debug'
 import { showError } from './terminal/show-error'
+import { showInfo } from './terminal/show-info'
 import { showMessage } from './terminal/show-message'
+import { showSuccess } from './terminal/show-success'
+import { showWarning } from './terminal/show-warning'
 import { getEnvValue } from './utils/get-env-value'
 import { parseQualifiedPath } from './utils/parse-qualified-path'
 import { resolvePackagePath } from './utils/resolve-package-path'
@@ -36,6 +40,7 @@ export type {
   UpdateTextFileOptions,
   UpdateYamlFileOptions,
   PromptUserOptions,
+  ShowTextOptions,
   ShowMessageOptions,
   GetEnvValueOptions,
   ParseQualifiedPathOptions,
@@ -62,8 +67,12 @@ export {
   updateYamlFile,
   // terminal helpers
   promptUser,
+  showDebug,
   showError,
+  showInfo,
   showMessage,
+  showSuccess,
+  showWarning,
   // other utils
   getEnvValue,
   parseQualifiedPath,

@@ -104,13 +104,16 @@ export interface PromptUserOptions {
 	output?: NodeJS.WritableStream
 }
 
-export interface ShowMessageOptions {
+export interface ShowTextOptions {
 	/** The message text to display. */
 	message: string
 	/** The number of newlines to print before the message (default: 0). */
 	linesBefore?: number
 	/** The number of extra newlines to print after the message's own newline (default: 0). */
 	linesAfter?: number
+}
+
+export interface ShowMessageOptions extends ShowTextOptions {
 	/** The color/style of the message, as accepted by `styleText` from `node:util` (default: no color). */
 	color?: InspectColor
 }
