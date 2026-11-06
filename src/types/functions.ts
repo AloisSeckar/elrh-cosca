@@ -1,3 +1,4 @@
+import type { InspectColor } from 'node:util'
 import type { DataValue } from './data.js'
 
 export interface FilePathOptions {
@@ -110,6 +111,8 @@ export interface ShowMessageOptions {
 	linesBefore?: number
 	/** The number of extra newlines to print after the message's own newline (default: 0). */
 	linesAfter?: number
+	/** The color/style of the message, as accepted by `styleText` from `node:util` (default: no color). */
+	color?: InspectColor
 }
 
 export interface GetEnvValueOptions {

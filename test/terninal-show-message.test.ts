@@ -37,6 +37,18 @@ describe('Test showMessage terminal helper', () => {
     expect(spy.mock.calls.map((c: any[]) => c[0])).toEqual(['\n', '\n', 'Hello!', '\n'])
   })
 
+  test('should style the message when color is set', () => {
+    const previous = process.env.FORCE_COLOR
+    process.env.FORCE_COLOR = '1'
+    try {
+      showMessage({ message: 'Hello!', color: 'red' })
+    } finally {
+      if (previous === undefined) delete process.env.FORCE_COLOR
+      else process.env.FORCE_COLOR = previous
+    }
+    expect(spy.mock.calls.map((c: any[]) => c[0])).toEqual(['\u001b[31mHello!\u001b[39m', '\n'])
+  })
+
   test.each([0, -1])('should write no leading newlines when linesBefore is %i', (linesBefore) => {
     showMessage({ message: 'Hello!', linesBefore })
     expect(spy.mock.calls.map((c: any[]) => c[0])).toEqual(['Hello!', '\n'])

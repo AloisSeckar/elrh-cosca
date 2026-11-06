@@ -1,3 +1,4 @@
+import { styleText } from 'node:util'
 import type { ShowMessageOptions } from '../types/functions.js'
 
 /**
@@ -13,7 +14,7 @@ export function showError(opts: string | ShowMessageOptions): void {
   for (let i = 0; i < linesBefore; i++) {
     process.stderr.write('\n')
   }
-  process.stderr.write(message)
+  process.stderr.write(styleText('red', message, { stream: process.stderr }))
   process.stderr.write('\n')
   for (let i = 0; i < linesAfter; i++) {
     process.stderr.write('\n')
