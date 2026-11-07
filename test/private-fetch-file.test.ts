@@ -8,13 +8,16 @@ type FakeResponse = {
   headers?: Record<string, string>
   chunks?: (string | Buffer)[]
   error?: Error
+  hang?: boolean
 }
 
 // replaces `https.get` so no real network request is made
 function mockHttps(responses: (FakeResponse | Error)[]) {
   let call = 0
   return vi.spyOn(https, 'get').mockImplementation(((_url: string, callback: (res: unknown) => void) => {
-    const req = new EventEmitter()
+    const req = Object.assign(new EventEmitter(), {
+      destroy: vi.fn((err?: Error) => { if (err) req.emit('error', err) }),
+    })
     const next = responses[call++]
     if (next instanceof Error) {
       queueMicrotask(() => req.emit('error', next))
@@ -25,13 +28,17 @@ function mockHttps(responses: (FakeResponse | Error)[]) {
       headers: next.headers ?? {},
       resume: vi.fn(),
     })
-    callback(res)
-    if (next.error) {
-      res.emit('error', next.error)
-    } else {
-      next.chunks?.forEach(chunk => res.emit('data', Buffer.from(chunk)))
-      res.emit('end')
-    }
+    // real responses arrive asynchronously, after `https.get` has returned the request
+    queueMicrotask(() => {
+      if (next.hang) return
+      callback(res)
+      if (next.error) {
+        res.emit('error', next.error)
+      } else {
+        next.chunks?.forEach(chunk => res.emit('data', Buffer.from(chunk)))
+        res.emit('end')
+      }
+    })
     return req
   }) as never)
 }
@@ -96,6 +103,35 @@ describe('Test fetchFile function', () => {
   test('should fail on response error', async () => {
     mockHttps([{ statusCode: 200, error: new Error('connection reset') }])
     await expect(fetchFile('https://example.com/file.txt')).rejects.toThrow(/connection reset/)
+  })
+
+  test('should fail when content-length exceeds the limit', async () => {
+    mockHttps([{ statusCode: 200, headers: { 'content-length': String(10 * 1024 * 1024 + 1) }, chunks: ['x'] }])
+    await expect(fetchFile('https://example.com/big.bin')).rejects.toThrow(/larger than/)
+  })
+
+  test('should fail when streamed body exceeds the limit', async () => {
+    const chunk = Buffer.alloc(6 * 1024 * 1024)
+    mockHttps([{ statusCode: 200, chunks: [chunk, chunk] }])
+    await expect(fetchFile('https://example.com/big.bin')).rejects.toThrow(/larger than/)
+  })
+
+  test('should accept body at the limit', async () => {
+    const body = Buffer.alloc(10 * 1024 * 1024)
+    mockHttps([{ statusCode: 200, headers: { 'content-length': String(body.length) }, chunks: [body] }])
+    await expect(fetchFile('https://example.com/big.bin')).resolves.toHaveLength(body.length)
+  })
+
+  test('should fail when the server does not respond in time', async () => {
+    vi.useFakeTimers()
+    try {
+      mockHttps([{ hang: true }])
+      const result = expect(fetchFile('https://example.com/slow.bin')).rejects.toThrow(/timed out/)
+      await vi.advanceTimersByTimeAsync(30_000)
+      await result
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
 })

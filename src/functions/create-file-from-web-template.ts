@@ -6,7 +6,7 @@ import { confirmAction, resolveCheckedPath, writeCreatedFile } from '../_private
 /**
  * Creates a new file as a copy of a template file downloaded from the web.
  * 
- * @param {string} opts.url - The URL of the template file (must be accessible via `node:https.get`; content is copied byte-for-byte; HTTPS redirects are followed).
+ * @param {string} opts.url - The URL of the template file (must be accessible via `node:https.get`; content is copied byte-for-byte; HTTPS redirects are followed (up to 5 times); responses over 10 MiB and requests taking over 30 s are aborted).
  * @param {string} opts.targetPath - The path to the file or directory to work with (relative to CWD).
  * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
  * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).

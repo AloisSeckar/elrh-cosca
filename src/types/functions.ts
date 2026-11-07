@@ -38,7 +38,7 @@ export interface CreateFileFromTemplateOptions extends FileOperationOptions {
 }
 
 export interface CreateFileFromWebTemplateOptions extends FileOperationOptions {
-	/** The URL of the template file (must be accessible via `node:https.get`; content is copied byte-for-byte; HTTPS redirects are followed). */
+	/** The URL of the template file (must be accessible via `node:https.get`; content is copied byte-for-byte; HTTPS redirects are followed (up to 5 times); responses over 10 MiB and requests taking over 30 s are aborted). */
 	url: string
 }
 
