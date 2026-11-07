@@ -2,6 +2,8 @@ import type { ResolvePackagePathOptions } from '../types/functions.js'
 import { accessSync, constants, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
+const PACKAGE_NAME_REGEX = /^(?:@[A-Za-z0-9~-][A-Za-z0-9._~-]*\/)?[A-Za-z0-9~-][A-Za-z0-9._~-]*$/
+
 /**
  * Resolves a package's root directory *from the target app* (CWD).
  * Returns CWD itself if its `package.json` has the same name, otherwise looks into `node_modules` in CWD.
@@ -9,10 +11,13 @@ import { join } from 'node:path'
  * 
  * @param {string} opts.packageName - The name of the package to resolve.
  * @returns {string} The absolute path to the package's root directory.
- * @throws Will throw an error if the package cannot be found or accessed.
+ * @throws Will throw an error if the package name is invalid or the package cannot be found or accessed.
  */
 export function resolvePackagePath(opts: ResolvePackagePathOptions): string {
   const { packageName } = opts
+  if (!PACKAGE_NAME_REGEX.test(packageName)) {
+    throw new Error(`Invalid package name "${packageName}".`)
+  }
   const appDir = process.cwd()
 
   // 1. check if it is not called from itself during development

@@ -57,6 +57,19 @@ describe('Test createFileFromTemplate function', () => {
     expect(existsSync(`${wd}/local-file-copy.txt`)).toBe(false)
   })
 
+  test('should fail when template path escapes the package', async () => {
+    await expect(createFileFromTemplate({ templateFile: `elrh-cosca:../../outside.txt`, targetPath: `${wd}/escape-copy.txt`, force: true })).rejects.toThrow(/must be inside the package/)
+    await expect(createFileFromTemplate({ templateFile: `elrh-cosca:test/../../outside.txt`, targetPath: `${wd}/escape-copy.txt`, force: true })).rejects.toThrow(/must be inside the package/)
+
+    expect(existsSync(`${wd}/escape-copy.txt`)).toBe(false)
+  })
+
+  test('should fail when package name is a traversal', async () => {
+    await expect(createFileFromTemplate({ templateFile: `..:package.json`, targetPath: `${wd}/escape-copy.txt`, force: true })).rejects.toThrow(/Invalid package name/)
+
+    expect(existsSync(`${wd}/escape-copy.txt`)).toBe(false)
+  })
+
   test('should fail because of uknown path', async () => {
     await expect(createFileFromTemplate({ templateFile: `elrh-cosca:path`, targetPath: `${wd}/local-file-copy.txt`, force: true })).rejects.toThrow(/Template file not found at/)
     

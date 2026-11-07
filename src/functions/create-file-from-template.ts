@@ -1,5 +1,5 @@
 import type { CreateFileFromTemplateOptions } from '../types/functions.js'
-import { resolve } from 'node:path'
+import { isAbsolute, relative, resolve } from 'node:path'
 import { existsSync, copyFileSync } from 'node:fs'
 import { parseQualifiedPath } from '../utils/parse-qualified-path'
 import { resolvePackagePath } from '../utils/resolve-package-path'
@@ -14,7 +14,7 @@ import { confirmAction, resolveCheckedPath, writeCreatedFile } from '../_private
  * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
  * @param {boolean} [opts.silent] - If true, suppresses all console log output (default: false).
  * @returns {Promise<void>} A promise that resolves when the operation is finished or skipped.
- * @throws Will throw an error if the path is invalid, the template path cannot be parsed, the package or the template file cannot be found or the target file failed to be created.
+ * @throws Will throw an error if the path is invalid, the template path cannot be parsed or points outside of the package, the package or the template file cannot be found or the target file failed to be created.
  */
 export async function createFileFromTemplate(opts: CreateFileFromTemplateOptions): Promise<void> {
   const { templateFile, targetPath } = opts
@@ -26,6 +26,11 @@ export async function createFileFromTemplate(opts: CreateFileFromTemplateOptions
   const packagePath = resolvePackagePath({ packageName: pkg })
   const templatePath = resolve(packagePath, file)
   const fullPath = resolveCheckedPath(targetPath)
+
+  const templateRelPath = relative(packagePath, templatePath)
+  if (templateRelPath === '' || templateRelPath.startsWith('..') || isAbsolute(templateRelPath)) {
+    throw new Error(`Template file must be inside the package: '${templateFile}'`)
+  }
 
   if (!existsSync(templatePath)) {
     throw new Error(`Template file not found at ${templatePath}`)

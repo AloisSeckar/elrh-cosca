@@ -46,7 +46,7 @@ async function createFileFromTemplate(opts: CreateFileFromTemplateOptions): Prom
 
 Takes the file given by `templateFile` from an installed package and creates a fresh copy of it in the target project.
 
-Path to `templateFile` must be prefixed with the package name to allow proper resolution, e.g. `your-package:path/to/template` (the path is relative to the package root). The package name can be scoped (e.g. `@scope/package`). The package is resolved using [`resolvePackagePath`](#resolvepackagepath).
+Path to `templateFile` must be prefixed with the package name to allow proper resolution, e.g. `your-package:path/to/template` (the path is relative to the package root and must not point outside of it). The package name can be scoped (e.g. `@scope/package`). The package is resolved using [`resolvePackagePath`](#resolvepackagepath).
 
 Path to `targetPath` is relative to `process.cwd()`, which allows consumers to run `npx your-script` in their project roots during development. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. If the target directory does not exist, it will be created automatically.
 
@@ -400,7 +400,7 @@ interface ResolvePackagePathOptions {
 function resolvePackagePath(opts: ResolvePackagePathOptions): string
 ```
 
-Resolves a package's root directory *from the target app* (CWD). Returns CWD itself if its `package.json` has the same name (i.e. the package is being developed), otherwise looks for the package inside *node_modules* in CWD. The package name can be scoped (e.g. `@scope/package`). Throws an error if the package cannot be found.
+Resolves a package's root directory *from the target app* (CWD). Returns CWD itself if its `package.json` has the same name (i.e. the package is being developed), otherwise looks for the package inside *node_modules* in CWD. The package name can be scoped (e.g. `@scope/package`) and must be a valid npm package name (path segments like `..` are rejected). Throws an error if the package name is invalid or the package cannot be found.
 
 ## Tech stack
 

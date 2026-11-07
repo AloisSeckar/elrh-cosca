@@ -31,6 +31,10 @@ describe('Test resolvePackagePath util function', () => {
     expect(path).toMatch(/node_modules[\\/]@types[\\/]node$/)
   })
 
+  test.each(['..', '../..', '../x', 'a/b', '@scope', '@scope/a/b', '', 'a\\b', '.hidden'])('should reject invalid package name %j', (packageName) => {
+    expect(() => resolvePackagePath({ packageName })).toThrow(/Invalid package name/)
+  })
+
   test('should throw for non-existent package', () => {
     const spy = getConsoleSpy('error')
     expect(() => resolvePackagePath({ packageName: 'non-existent-package' })).toThrow(/Cannot find package "non-existent-package"/)
