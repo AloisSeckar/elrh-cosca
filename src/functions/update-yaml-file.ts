@@ -34,6 +34,9 @@ export async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void>
   if (keys.some(key => key === '' || PROTOTYPE_POLLUTION_KEYS.has(key))) {
     throw new Error(`Invalid YAML key '${yamlKey}'.`)
   }
+  if (patch !== null && typeof patch === 'object' && !Array.isArray(patch) && Object.keys(patch).some(key => PROTOTYPE_POLLUTION_KEYS.has(key))) {
+    throw new Error(`Invalid YAML key in patch of '${yamlKey}'.`)
+  }
 
   const target = await prepareTargetFile(targetPath, opts)
   if (!target) {

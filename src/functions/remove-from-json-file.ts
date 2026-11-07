@@ -37,17 +37,22 @@ export async function removeFromJsonFile(opts: RemoveFromJsonFileOptions): Promi
 // recursive function to remove possibly nested key if exists in given JSON
 // the key may use dot notation to indicate nesting, e.g. "a.b.c"
 function removeKeyIfExists(json: DataObject, jsonKey: string): DataObject {
+    // nothing to remove from null, primitive or array root
+    if (json === null || typeof json !== 'object' || Array.isArray(json)) {
+        return json
+    }
+
     const keys = jsonKey.split('.')
 
     if (keys.length === 1) {
         // try delete the bottom-most key if exists
-        if (json.hasOwnProperty(jsonKey)) {
+        if (Object.prototype.hasOwnProperty.call(json, jsonKey)) {
             delete json[jsonKey]
         }
     } else {
         // dive +1 deeper if nested object exists under first part of the composite key
         // must be an object, not a null, primitive or an array
-        if (json.hasOwnProperty(keys[0]) ) {
+        if (Object.prototype.hasOwnProperty.call(json, keys[0])) {
             const nestedValue = json[keys[0]]
             if (nestedValue !== null && typeof nestedValue === 'object' && !Array.isArray(nestedValue)) {
                 json[keys[0]] = removeKeyIfExists(nestedValue as DataObject, keys.slice(1).join('.'))

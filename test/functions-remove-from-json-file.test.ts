@@ -45,6 +45,20 @@ describe('Test removeFromJsonFile function', () => {
     expect(readFileSync(file, 'utf8')).toBe(content)
   })
 
+  test('should handle keys shadowing Object.prototype methods and non-object roots', async () => {
+    const file = join(wd, 'remove-json-shadow.json')
+    writeFileSync(file, JSON.stringify({ hasOwnProperty: 'x', a: { hasOwnProperty: 1, b: 2 } }))
+    await removeFromJsonFile({ targetPath: file, jsonKey: 'a.b', force: true })
+    await removeFromJsonFile({ targetPath: file, jsonKey: 'hasOwnProperty', force: true })
+    expect(JSON.parse(readFileSync(file, 'utf8'))).toEqual({ a: { hasOwnProperty: 1 } })
+
+    for (const content of ['null', '[1]', '"x"']) {
+      writeFileSync(file, content)
+      await expect(removeFromJsonFile({ targetPath: file, jsonKey: 'a.b', force: true })).resolves.not.toThrow()
+      expect(readFileSync(file, 'utf8')).toBe(content)
+    }
+  })
+
   test('should fail because of non-existent file', async () => {
     await expect(removeFromJsonFile({ targetPath: `${wd}/uknown`, jsonKey: 'cosca', force: true })).rejects.toThrow(/No .* found/)
   })

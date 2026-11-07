@@ -277,6 +277,12 @@ describe('Test updateYamlFile function', () => {
     expect(({} as any).polluted).toBeUndefined()
   })
 
+  test.each(['__proto__', 'constructor', 'prototype'])('should reject prototype key \'%s\' in patch', async (key: string) => {
+    const patch = JSON.parse(`{ "${key}": { "polluted": true } }`)
+    await expect(updateYamlFile({ targetPath: `${wd}/yaml-file.yaml`, yamlKey: 'a', patch, force: true })).rejects.toThrow(/Invalid YAML key in patch/)
+    expect(({} as any).polluted).toBeUndefined()
+  })
+
   test('should do nothing when user aborts updating', async () => {
     setPromptSpy(['n'])
     await updateYamlFile({ targetPath: `${wd}/yaml-file.yaml`, yamlKey: 'cosca', patch: { testKey6: 0 } })

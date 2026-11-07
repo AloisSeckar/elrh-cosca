@@ -17,7 +17,7 @@ import {
  * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
  * @param {boolean} [opts.silent] - If true, suppresses all console log output (default: false).
  * @returns {Promise<void>} A promise that resolves when the operation is finished or skipped.
- * @throws Will throw an error if the path or the key is invalid, the file does not exist (and `createMissing` is not set) or cannot be parsed as JSON.
+ * @throws Will throw an error if the path or the key is invalid, the file does not exist (and `createMissing` is not set), cannot be parsed as JSON or its root is not an object.
  */
 export async function updateJsonFile(opts: UpdateJsonFileOptions): Promise<void> {
   const { targetPath, jsonKey, patch, overwriteArrays = false, silent = false } = opts
@@ -28,6 +28,9 @@ export async function updateJsonFile(opts: UpdateJsonFileOptions): Promise<void>
   const keys = jsonKey.split('.')
   if (keys.some(key => key === '' || PROTOTYPE_POLLUTION_KEYS.has(key))) {
     throw new Error(`Invalid JSON key '${jsonKey}'.`)
+  }
+  if (isJsonObject(patch) && Object.keys(patch as object).some(key => PROTOTYPE_POLLUTION_KEYS.has(key))) {
+    throw new Error(`Invalid JSON key in patch of '${jsonKey}'.`)
   }
 
   const target = await prepareTargetFile(targetPath, opts)
@@ -41,6 +44,10 @@ export async function updateJsonFile(opts: UpdateJsonFileOptions): Promise<void>
     json = JSON.parse(jsonRaw)
   } catch (err) {
     throw new Error(`Could not parse '${targetPath}' — cannot update its contents.\n${err}`)
+  }
+
+  if (!isJsonObject(json)) {
+    throw new Error(`Root of '${targetPath}' is not a JSON object — cannot update its contents.`)
   }
 
   let modified = target.created

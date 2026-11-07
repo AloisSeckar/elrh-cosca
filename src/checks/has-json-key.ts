@@ -27,15 +27,20 @@ export function hasJsonKey(opts: HasJsonKeyOptions): boolean {
 // recursive function to check possibly nested key if exists in given JSON
 // the key may use dot notation to indicate nesting, e.g. "a.b.c"
 function keyExists(json: DataObject, jsonKey: string): boolean {
+    // null, primitive or array root has no keys
+    if (json === null || typeof json !== 'object' || Array.isArray(json)) {
+        return false
+    }
+
     const keys = jsonKey.split('.')
 
     if (keys.length === 1) {
         // check the bottom-most key if exists
-        return json.hasOwnProperty(jsonKey)
+        return Object.prototype.hasOwnProperty.call(json, jsonKey)
     } else {
         // dive +1 deeper if nested object exists under first part of the composite key
         // must be an object, not a null, primitive or an array
-        if (json.hasOwnProperty(keys[0]) ) {
+        if (Object.prototype.hasOwnProperty.call(json, keys[0])) {
             const nestedValue = json[keys[0]]
             if (nestedValue !== null && typeof nestedValue === 'object' && !Array.isArray(nestedValue)) {
                 return keyExists(nestedValue as DataObject, keys.slice(1).join('.'))

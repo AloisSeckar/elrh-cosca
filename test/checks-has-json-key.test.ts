@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { writeFileSync } from 'node:fs'
 import { hasJsonKey } from '../src/main'
 import { checkPath } from '../src/_private/check-path'
 
@@ -53,6 +54,19 @@ describe('Test hasJsonKey checker', () => {
 
   test('should not find nested key under non-existent parent key', async () => {
     expect(hasJsonKey({ targetPath: `${wd}/json-file.json`, jsonKey: 'non-existent-key.nested-key' })).toBe(false)
+  })
+
+  test('should handle keys shadowing Object.prototype methods and non-object roots', () => {
+    const file = `${wd}/has-json-shadow.json`
+    writeFileSync(file, JSON.stringify({ hasOwnProperty: 'x', a: { hasOwnProperty: 1 } }))
+    expect(hasJsonKey({ targetPath: file, jsonKey: 'hasOwnProperty' })).toBe(true)
+    expect(hasJsonKey({ targetPath: file, jsonKey: 'a.hasOwnProperty' })).toBe(true)
+    expect(hasJsonKey({ targetPath: file, jsonKey: 'toString' })).toBe(false)
+
+    for (const content of ['null', '[1]', '"x"']) {
+      writeFileSync(file, content)
+      expect(hasJsonKey({ targetPath: file, jsonKey: 'a' })).toBe(false)
+    }
   })
 
   test('should not find nested key under non-object value', async () => {

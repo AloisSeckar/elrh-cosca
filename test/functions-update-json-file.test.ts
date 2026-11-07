@@ -271,6 +271,18 @@ describe('Test updateJsonFile function', () => {
     expect(({} as any).polluted).toBeUndefined()
   })
 
+  test.each(['__proto__', 'constructor', 'prototype'])('should reject prototype key \'%s\' in patch', async (key: string) => {
+    const patch = JSON.parse(`{ "${key}": { "polluted": true } }`)
+    await expect(updateJsonFile({ targetPath: `${wd}/json-file.json`, jsonKey: 'a', patch, force: true })).rejects.toThrow(/Invalid JSON key in patch/)
+    expect(({} as any).polluted).toBeUndefined()
+  })
+
+  test.each(['null', '[]', '1'])('should fail when file root is not an object (%s)', async (content: string) => {
+    const file = `${wd}/update-json-bad-root.json`
+    writeFileSync(file, content)
+    await expect(updateJsonFile({ targetPath: file, jsonKey: 'a', patch: 1, force: true })).rejects.toThrow(/is not a JSON object/)
+  })
+
   test('should do nothing when user aborts creating', async () => {
     setPromptSpy(['n'])
     await updateJsonFile({ targetPath: `${wd}/json-file.json`, jsonKey: 'cosca', patch: { testKey6: 0 } })
