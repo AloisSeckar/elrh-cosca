@@ -2,6 +2,7 @@ import https from 'node:https'
 import { EventEmitter } from 'node:events'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { fetchFile } from '../src/_private/fetch-file'
+import { getStdoutSpy } from './cosca-test-utils'
 
 type FakeResponse = {
   statusCode?: number
@@ -47,6 +48,7 @@ describe('Test fetchFile function', () => {
 
   afterEach(() => {
     vi.restoreAllMocks()
+    vi.unstubAllEnvs()
   })
 
   test('should return the response body', async () => {
@@ -75,9 +77,10 @@ describe('Test fetchFile function', () => {
     expect(spy).toHaveBeenCalledTimes(6)
   })
 
-  test('should fail when no redirects are left', async () => {
+  test('should fail when no redirects are allowed', async () => {
+    vi.stubEnv('COSCA_FETCH_REDIRECTS', '0')
     mockHttps([{ statusCode: 301, headers: { location: '/next' } }])
-    await expect(fetchFile('https://example.com/file.txt', 0)).rejects.toThrow(/too many redirects/)
+    await expect(fetchFile('https://example.com/file.txt')).rejects.toThrow(/too many redirects \(0 allowed\)/)
   })
 
   test('should fail on invalid redirect location', async () => {
@@ -132,6 +135,64 @@ describe('Test fetchFile function', () => {
     } finally {
       vi.useRealTimers()
     }
+  })
+
+  test('should respect COSCA_FETCH_REDIRECTS', async () => {
+    vi.stubEnv('COSCA_FETCH_REDIRECTS', '1')
+    const spy = mockHttps(Array.from({ length: 5 }, () => ({ statusCode: 302, headers: { location: '/loop' } })))
+    await expect(fetchFile('https://example.com/file.txt')).rejects.toThrow(/too many redirects \(1 allowed\)/)
+    expect(spy).toHaveBeenCalledTimes(2)
+  })
+
+  test('should respect COSCA_FETCH_SIZE', async () => {
+    vi.stubEnv('COSCA_FETCH_SIZE', '4')
+    mockHttps([{ statusCode: 200, chunks: ['12345'] }])
+    await expect(fetchFile('https://example.com/file.txt')).rejects.toThrow(/larger than 4 bytes/)
+  })
+
+  test('should respect COSCA_FETCH_TIMEOUT', async () => {
+    vi.stubEnv('COSCA_FETCH_TIMEOUT', '1000')
+    vi.useFakeTimers()
+    try {
+      mockHttps([{ hang: true }])
+      const result = expect(fetchFile('https://example.com/slow.bin')).rejects.toThrow(/timed out after 1s/)
+      await vi.advanceTimersByTimeAsync(1000)
+      await result
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  test('should use defaults for empty env values', async () => {
+    vi.stubEnv('COSCA_FETCH_SIZE', '')
+    mockHttps([{ statusCode: 200, chunks: ['ok'] }])
+    await expect(fetchFile('https://example.com/file.txt').then(String)).resolves.toBe('ok')
+  })
+
+  test.each([
+    ['COSCA_FETCH_REDIRECTS', '-1'],
+    ['COSCA_FETCH_REDIRECTS', 'abc'],
+    ['COSCA_FETCH_SIZE', '0'],
+    ['COSCA_FETCH_TIMEOUT', '1.5'],
+  ])('should warn and use default for invalid %s value %s', async (name, value) => {
+    vi.stubEnv(name, value)
+    const stdout = getStdoutSpy()
+    mockHttps([{ statusCode: 200, chunks: ['ok'] }])
+    await expect(fetchFile('https://example.com/file.txt').then(String)).resolves.toBe('ok')
+    const output = stdout.mock.calls.map(c => String(c[0])).join('')
+    expect(output).toContain(`Ignoring invalid ${name} value '${value}'`)
+  })
+
+  test('should warn only once when following redirects', async () => {
+    vi.stubEnv('COSCA_FETCH_SIZE', 'abc')
+    const stdout = getStdoutSpy()
+    mockHttps([
+      { statusCode: 302, headers: { location: '/next' } },
+      { statusCode: 200, chunks: ['done'] },
+    ])
+    await expect(fetchFile('https://example.com/file.txt').then(String)).resolves.toBe('done')
+    const output = stdout.mock.calls.map(c => String(c[0])).join('')
+    expect(output.match(/Ignoring invalid/g)).toHaveLength(1)
   })
 
 })
