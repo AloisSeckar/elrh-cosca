@@ -2,6 +2,33 @@
 
 Overview of the newest features in COSCA.
 
+## 0.5.0
+
+`2026-11-07`
+
+- **BREAKING:** declare minimal Node.js version `22.13` due to `styleText`
+- **BREAKING:** replace `magicast` with custom parser
+- **BREAKING:** replace `yaml` with custom parser
+- **BREAKING:** replace `targetFile` option with `targetPath`
+- **BREAKING:** drop duplicate `ShowErrorOptions` type
+- **BREAKING:** refactor several other function type definitions
+- **BREAKING:** adjust newline behavior of `showMessage` and `showError`
+- feat: allow `linesBefore` option in `showMessage`/`showError`/`promtUser` (#25)
+- feat: allow string-only parameter in `showMessage`/`showError`/`promtUser` (#26)
+- feat: allow font colors in text output functions (#27)
+- feat: new `showInfo`, `showSuccess`, `showWarning` and `showDebug` functions (#28)
+- feat: new config for maximum filesize, download request timeout and number of allowed redirects (#32)
+- feat(security): fixed JSON and YAML handling (#31)
+- feat(security): reject attempts to delete CWD (#31)
+- feat(security): reject too large files and too long requests (#31)
+- feat(security): reject symlinks outside CWD (#31)
+- feat(security): reject path traversal in resolvePackagePath (#31)
+- test: update internal manual test
+- test: less verbose verification step in text output functions
+- test: faster execution with `fsModuleCache`
+- build: split `elrh-cosca.mjs` into per-module files
+- build: update `rolldown` output options
+
 ## 0.4.4
 
 `2026-11-01`
