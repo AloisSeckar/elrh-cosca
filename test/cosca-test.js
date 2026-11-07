@@ -3,14 +3,24 @@
 // manual test script for COSCA functions
 
 import {
-  createFileFromTemplate, createFileFromWebTemplate, promptUser, showError, showMessage,
-  updateConfigFile, getEnvValue, updateJsonFile, updateTextFile, deletePath, removeFromJsonFile
+  createFileFromTemplate, createFileFromWebTemplate, promptUser, 
+  showError, showMessage, showWarning, showSuccess, showDebug,
+  updateConfigFile, getEnvValue, updateJsonFile, updateTextFile, 
+  deletePath, removeFromJsonFile
 } from '../dist/elrh-cosca.mjs'
 
 async function main() {
   console.log('Test showMessage')
   showMessage({ message: 'Hello!' })
-  console.log('Test showMessage')
+  console.log('Test showMessage (color)')
+  showMessage({ message: 'Hello!', color: 'blue' })
+  console.log('Test showDebug')
+  showDebug({ message: 'Debug...' })
+  console.log('Test showSuccess')
+  showSuccess({ message: 'OK!' })
+  console.log('Test showWarning')
+  showWarning({ message: 'WARN!' })
+  console.log('Test showError')
   showError({ message: 'ERROR!' })
 
   console.log('Test getEnvValue')

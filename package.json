@@ -9,9 +9,6 @@
   "files": [
     "dist"
   ],
-  "bin": {
-    "cosca": "test/cosca-test.js"
-  },
   "exports": {
     ".": {
       "types": "./dist/types/index.d.ts",
@@ -26,7 +23,8 @@
     "build": "pnpm install && vitest run && tsc && vite build",
     "preview": "vite preview",
     "prepublishOnly": "pnpm build",
-    "test": "vitest run --coverage"
+    "test": "vitest run --coverage",
+    "test-cosca": "node test/cosca-test.js"
   },
   "devDependencies": {
     "@types/node": "^26.6.0",
