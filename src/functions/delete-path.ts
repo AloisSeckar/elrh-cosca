@@ -1,5 +1,6 @@
 import type { FileOperationOptions } from '../types/functions.js'
 import { existsSync, rmSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { confirmAction, resolveCheckedPath } from '../_private/file-helpers.js'
 
 /**
@@ -10,7 +11,7 @@ import { confirmAction, resolveCheckedPath } from '../_private/file-helpers.js'
  * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
  * @param {boolean} [opts.silent] - If true, suppresses all console log output (default: false).
  * @returns {Promise<void>} A promise that resolves when the operation is finished or skipped.
- * @throws Will throw an error if the path is invalid or the path failed to be deleted.
+ * @throws Will throw an error if the path is invalid, points to CWD itself or failed to be deleted.
  */
 export async function deletePath(opts: FileOperationOptions): Promise<void> {
   const { targetPath, silent = false } = opts
@@ -19,6 +20,9 @@ export async function deletePath(opts: FileOperationOptions): Promise<void> {
   }
 
   const fullPath = resolveCheckedPath(targetPath)
+  if (fullPath === resolve(process.cwd())) {
+    throw new Error(`Deleting the working directory is not allowed: '${targetPath}'`)
+  }
 
   if (existsSync(fullPath)) {
     rmSync(fullPath, { recursive: true, force: true })

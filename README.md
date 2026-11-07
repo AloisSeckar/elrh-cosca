@@ -248,7 +248,7 @@ By default the function asks for confirmation before attempting to alter the `ta
 async function deletePath(opts: FileOperationOptions): Promise<void>
 ```
 
-Deletes the given `targetPath` (a file or a directory, recursively) from FS. Path is resolved relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed.
+Deletes the given `targetPath` (a file or a directory, recursively) from FS. Path is resolved relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The working directory itself cannot be deleted.
 
 If the `targetPath` does not exist, nothing is deleted and the user is notified.
 

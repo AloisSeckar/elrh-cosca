@@ -66,6 +66,18 @@ describe('Test deletePath function', () => {
     await expect(deletePath({ targetPath: 'a', force: true })).rejects.toThrow(/Invalid path/)
   })
 
+  test('should refuse to delete the working directory', async () => {
+    const cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue(wd)
+    try {
+      for (const targetPath of ['.', './', 'del/..']) {
+        await expect(deletePath({ targetPath, force: true })).rejects.toThrow(/working directory is not allowed/)
+      }
+      expect(existsSync(wd)).toBe(true)
+    } finally {
+      cwdSpy.mockRestore()
+    }
+  })
+
   test('should fail when the path is not removed', async () => {
     vi.mocked(rmSync).mockImplementationOnce(() => {})
     await expect(deletePath({ targetPath: join(wd, 'text-file.txt'), force: true })).rejects.toThrow(/Failed to delete/)
