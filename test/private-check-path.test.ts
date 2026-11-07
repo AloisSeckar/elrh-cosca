@@ -1,6 +1,8 @@
 import { describe, expect, test, vi } from "vitest"
 import { checkPath } from "../src/_private/check-path"
 import { join, resolve, sep } from "path"
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync } from "node:fs"
+import { tmpdir } from "node:os"
 
 describe('Test checkPath function', () => {
   test('simple file is a valid path', async () => {
@@ -76,5 +78,52 @@ describe('Test checkPath function', () => {
       cwdSpy.mockRestore()
     }
   })
-  
+
+  describe('Verify symlinks resolution', () => {
+    function withLinks(run: (cwd: string) => void) {
+      const base = mkdtempSync(join(tmpdir(), 'cosca-link-'))
+      const cwd = join(base, 'project')
+      const outside = join(base, 'outside')
+      mkdirSync(cwd)
+      mkdirSync(join(outside, 'sub'), { recursive: true })
+      mkdirSync(join(cwd, 'real'))
+      // junction needs no elevated rights on Windows and is ignored elsewhere
+      symlinkSync(outside, join(cwd, 'link'), 'junction')
+      symlinkSync(join(cwd, 'real'), join(cwd, 'inner-link'), 'junction')
+      symlinkSync(join(base, 'missing'), join(cwd, 'dangling'), 'junction')
+      const cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue(cwd)
+      try {
+        run(cwd)
+      } finally {
+        cwdSpy.mockRestore()
+        rmSync(base, { recursive: true, force: true })
+      }
+    }
+
+    test('path through a symlink leading outside of CWD is invalid', () => {
+      withLinks(() => {
+        for (const path of ['link', 'link/sub', 'link/new/file.txt']) {
+          const check = checkPath(path)
+          expect(check.valid).toBe(false)
+          expect(check.error).toContain('Path resolves outside of CWD via symlink')
+        }
+      })
+    })
+
+    test('dangling symlink is an invalid path', () => {
+      withLinks(() => {
+        expect(checkPath('dangling').valid).toBe(false)
+        expect(checkPath('dangling/file.txt').valid).toBe(false)
+      })
+    })
+
+    test('symlink staying inside of CWD and non-existent paths are valid', () => {
+      withLinks(() => {
+        expect(checkPath('inner-link/file.txt').valid).toBe(true)
+        expect(checkPath('real').valid).toBe(true)
+        expect(checkPath('not/yet/created.txt').valid).toBe(true)
+      })
+    })
+  })
+
 }) 

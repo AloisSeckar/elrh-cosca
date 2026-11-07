@@ -16,6 +16,10 @@ Run `npm install elrh-cosca` to include it in your project.
 
 All functions with arguments take a single required `opts` object with one or more properties. Each options type is exported from `elrh-cosca` and defined in [src/types/functions.ts](src/types/functions.ts).
 
+### Path safety
+
+Every `targetPath` is validated before use. Absolute paths and traversal outside of `process.cwd()` (including symlinks and junctions) are rejected.
+
 ### Bundle size
 
 The library has no runtime dependencies and no bundled third-party parsers. Everything is emitted into a single entry file (`dist/elrh-cosca.mjs`, ~45 kB) and the package is marked as `"sideEffects": false`, so unused functions can be tree-shaken when bundled into your own code.
