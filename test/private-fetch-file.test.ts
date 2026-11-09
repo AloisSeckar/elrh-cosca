@@ -10,14 +10,26 @@ type FakeResponse = {
   chunks?: (string | Buffer)[]
   error?: Error
   hang?: boolean
+  noHeaders?: boolean
+}
+
+type MockOptions = {
+  // `silent`: destroy never emits `error`; `missing`: no destroy method; `throwing`: destroy throws
+  destroy?: 'silent' | 'missing' | 'throwing'
 }
 
 // replaces `https.get` so no real network request is made
-function mockHttps(responses: (FakeResponse | Error)[]) {
+function mockHttps(responses: (FakeResponse | Error)[], options: MockOptions = {}) {
   let call = 0
   return vi.spyOn(https, 'get').mockImplementation(((_url: string, callback: (res: unknown) => void) => {
+    const destroyMock = {
+      silent: () => vi.fn(),
+      throwing: () => vi.fn(() => { throw new Error('destroy failed') }),
+      missing: () => undefined,
+      default: () => vi.fn((err?: Error) => { if (err) req.emit('error', err) }),
+    }
     const req = Object.assign(new EventEmitter(), {
-      destroy: vi.fn((err?: Error) => { if (err) req.emit('error', err) }),
+      destroy: destroyMock[options.destroy ?? 'default'](),
     })
     const next = responses[call++]
     if (next instanceof Error) {
@@ -26,7 +38,7 @@ function mockHttps(responses: (FakeResponse | Error)[]) {
     }
     const res = Object.assign(new EventEmitter(), {
       statusCode: next.statusCode,
-      headers: next.headers ?? {},
+      headers: next.noHeaders ? undefined : next.headers ?? {},
       resume: vi.fn(),
     })
     // real responses arrive asynchronously, after `https.get` has returned the request
@@ -135,6 +147,41 @@ describe('Test fetchFile function', () => {
     } finally {
       vi.useRealTimers()
     }
+  })
+
+  test('should reject and clear the timer when the response handler throws', async () => {
+    vi.useFakeTimers()
+    try {
+      mockHttps([{ statusCode: 200, noHeaders: true }])
+      await expect(fetchFile('https://example.com/file.txt')).rejects.toThrow(/content-length/)
+      expect(vi.getTimerCount()).toBe(0)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  test.each(['missing', 'throwing'] as const)('should time out when destroy is %s', async (destroy) => {
+    vi.useFakeTimers()
+    try {
+      mockHttps([{ hang: true }], { destroy })
+      const result = expect(fetchFile('https://example.com/slow.bin')).rejects.toThrow(/timed out after 30s/)
+      await vi.advanceTimersByTimeAsync(30_000)
+      await result
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  test('should reject on content-length over the limit without an error event', async () => {
+    mockHttps([{ statusCode: 200, headers: { 'content-length': '11' }, chunks: ['x'] }], { destroy: 'silent' })
+    vi.stubEnv('COSCA_FETCH_SIZE', '10')
+    await expect(fetchFile('https://example.com/big.bin')).rejects.toThrow(/larger than 10 bytes/)
+  })
+
+  test('should reject on streamed body over the limit without an error event', async () => {
+    mockHttps([{ statusCode: 200, chunks: ['12345'] }], { destroy: 'silent' })
+    vi.stubEnv('COSCA_FETCH_SIZE', '4')
+    await expect(fetchFile('https://example.com/big.bin')).rejects.toThrow(/larger than 4 bytes/)
   })
 
   test('should respect COSCA_FETCH_REDIRECTS', async () => {

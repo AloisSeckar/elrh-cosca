@@ -1,3 +1,4 @@
+import type { IncomingMessage } from 'node:http'
 import https from 'node:https'
 import { showWarning } from '../terminal/show-warning'
 
@@ -37,28 +38,54 @@ async function doFetch(url: string, config: FetchConfig): Promise<Buffer> {
   const { maxRedirects, maxSize, timeoutMs, redirectsLeft } = config
 
   return new Promise((resolve, reject) => {
-    // timeout
-    const timer = setTimeout(() => req.destroy(new Error(`Failed to fetch file: timed out after ${timeoutMs / 1000}s`)), timeoutMs)
+    // settle at most once; later calls (e.g. the `error` event caused by `req.destroy`) are ignored
+    let settled = false
     const done = (fn: () => void) => {
+      if (settled) return
+      settled = true
       clearTimeout(timer)
       fn()
     }
+    const fail = (err: Error) => done(() => reject(err))
+    // the promise is already rejected, so a failing destroy must not escape
+    const abort = (err?: Error) => {
+      try {
+        req.destroy(err)
+      } catch { /* ignore */ }
+    }
+
+    // timeout
+    const timer = setTimeout(() => {
+      const err = new Error(`Failed to fetch file: timed out after ${timeoutMs / 1000}s`)
+      fail(err)
+      abort(err)
+    }, timeoutMs)
 
     const req = https.get(url, (res) => {
+      try {
+        handleResponse(res)
+      } catch (err) {
+        fail(err as Error)
+        abort()
+      }
+    })
+    req.on('error', fail)
+
+    function handleResponse(res: IncomingMessage) {
       const status = res.statusCode ?? 0
 
       // redirect
       if (status >= 300 && status < 400 && res.headers.location) {
         res.resume()
         if (redirectsLeft <= 0) {
-          done(() => reject(new Error(`Failed to fetch file: too many redirects (${maxRedirects} allowed)`)))
+          fail(new Error(`Failed to fetch file: too many redirects (${maxRedirects} allowed)`))
           return
         }
         let nextUrl: string
         try {
           nextUrl = new URL(res.headers.location, url).toString()
         } catch (err) {
-          done(() => reject(err))
+          fail(err as Error)
           return
         }
         done(() => doFetch(nextUrl, { ...config, redirectsLeft: redirectsLeft - 1 }).then(resolve, reject))
@@ -68,14 +95,15 @@ async function doFetch(url: string, config: FetchConfig): Promise<Buffer> {
       // error
       if (status < 200 || status >= 300) {
         res.resume()
-        done(() => reject(new Error(`Failed to fetch file: ${status}`)))
+        fail(new Error(`Failed to fetch file: ${status}`))
         return
       }
 
       // filesize limit
       const tooLarge = new Error(`Failed to fetch file: larger than ${maxSize} bytes`)
       if (Number(res.headers['content-length']) > maxSize) {
-        req.destroy(tooLarge)
+        fail(tooLarge)
+        abort()
         return
       }
 
@@ -85,14 +113,14 @@ async function doFetch(url: string, config: FetchConfig): Promise<Buffer> {
       res.on('data', (chunk: Buffer) => {
         received += chunk.length
         if (received > maxSize) {
-          req.destroy(tooLarge)
+          fail(tooLarge)
+          abort()
           return
         }
         chunks.push(chunk)
       })
       res.on('end', () => done(() => resolve(Buffer.concat(chunks))))
-      res.on('error', err => done(() => reject(err)))
-    })
-    req.on('error', err => done(() => reject(err)))
+      res.on('error', fail)
+    }
   })
 }
