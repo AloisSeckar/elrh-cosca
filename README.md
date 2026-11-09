@@ -8,7 +8,7 @@ The **"COSCA"** abbreviation stands for **CO**de **SCA**ffolding, which points o
 
 ## How to use
 
-**NOTE:** The library is **ESM only** and it is advised to use it with at least **Node 22**.
+**NOTE:** The library is **ESM only** and it requires at least **Node 22.13** (when using [terminal helpers](#list-of-terminal-helpers) that rely on `styleText`).
 
 Run `npm install elrh-cosca` to include it in your project.
 
