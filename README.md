@@ -26,7 +26,7 @@ The library has no runtime dependencies and no bundled third-party parsers. Ever
 
 ### List of file-manipulation functions
 
-All file-manipulation options extend the following shared shape. `targetPath` is relative to `process.cwd()`. `force` defaults to `false`. An omitted or empty `prompt` uses the function's built-in initial confirmation question. `silent` defaults to `false`; when `true`, the function suppresses all of its `console.log` output.
+All file-manipulation options extend the following shared shape. `targetPath` is relative to `process.cwd()`. `force` defaults to `false`. An omitted or empty `prompt` uses the function's built-in initial confirmation question. `silent` defaults to `false`; when `true`, the function suppresses all of its logging output.
 
 ```ts
 interface FilePathOptions {

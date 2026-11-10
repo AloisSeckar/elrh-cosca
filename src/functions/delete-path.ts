@@ -2,6 +2,7 @@ import type { FileOperationOptions } from '../types/functions.js'
 import { existsSync, rmSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { confirmAction, resolveCheckedPath } from '../_private/file-helpers.js'
+import { showDebug, showMessage } from '../main.js'
 
 /**
  * Deletes a file or a directory (recursively) from FS.
@@ -28,11 +29,11 @@ export async function deletePath(opts: FileOperationOptions): Promise<void> {
     rmSync(fullPath, { recursive: true, force: true })
 
     if (!existsSync(fullPath)) {
-      if (!silent) console.log(`'${targetPath}' deleted from project.`)
+      if (!silent) showMessage({ message: `'${targetPath}' deleted from project.`, color: 'blue' })
     } else {
       throw new Error(`Failed to delete '${targetPath}'.`)
     }
   } else {
-    if (!silent) console.log(`'${targetPath}' does not exist — nothing to delete.`)
+    if (!silent) showDebug(`'${targetPath}' does not exist — nothing to delete.`)
   }
 }

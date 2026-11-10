@@ -1,6 +1,7 @@
 import type { ResolvePackagePathOptions } from '../types/functions.js'
 import { accessSync, constants, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { showError } from '../terminal/show-error.js'
 
 const PACKAGE_NAME_REGEX = /^(?:@[A-Za-z0-9~-][A-Za-z0-9._~-]*\/)?[A-Za-z0-9~-][A-Za-z0-9._~-]*$/
 
@@ -29,7 +30,7 @@ export function resolvePackagePath(opts: ResolvePackagePathOptions): string {
       return appDir
     }
   } catch (err) {
-    console.error(err)
+    showError(String(err))
   }
 
   // 2. resolve within installed node_modules
@@ -39,7 +40,7 @@ export function resolvePackagePath(opts: ResolvePackagePathOptions): string {
     accessSync(nmPkgJson, constants.R_OK)
     return nmRoot
   } catch (err) {
-    console.error(err)
+    showError(String(err))
   }
     
   throw new Error(`Cannot find package "${packageName}" from ${process.cwd()}. Make sure it's installed or linked in this project.`)

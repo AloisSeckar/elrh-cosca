@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { deletePath } from '../src/main'
 import { checkPath } from '../src/_private/check-path'
-import { getConsoleSpy, getPromptUserSpy, setPromptSpy } from './cosca-test-utils'
+import { getStdoutSpy, getPromptUserSpy, setPromptSpy } from './cosca-test-utils'
 import { existsSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -26,7 +26,7 @@ describe('Test deletePath function', () => {
 
   beforeEach(() => {
     wd = process.env.WORKSPACE_DIR!
-    spy = getConsoleSpy('log')
+    spy = getStdoutSpy()
   })
 
   test('should be defined', () => {

@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { updateJsonFile } from '../src/main'
 import type { UpdateJsonFileOptions } from '../src/main'
 import { checkPath } from '../src/_private/check-path'
-import { getConsoleSpy, getPromptUserSpy, readNormalizedFile, setPromptSpy } from './cosca-test-utils'
+import { getStdoutSpy, getPromptUserSpy, readNormalizedFile, setPromptSpy } from './cosca-test-utils'
 
 // `checkPath` function must be mocked as it disallows paths outside of CWD
 // which is not possible because tests run in temporary folder
@@ -21,7 +21,7 @@ describe('Test updateJsonFile function', () => {
 
   beforeEach(() => {
     wd = process.env.WORKSPACE_DIR!
-    spy = getConsoleSpy('log')
+    spy = getStdoutSpy()
   })
 
   test('should be defined', () => {

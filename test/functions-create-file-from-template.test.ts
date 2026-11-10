@@ -2,7 +2,7 @@ import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { createFileFromTemplate } from '../src/main'
 import { checkPath } from '../src/_private/check-path'
-import { getConsoleSpy, setPromptSpy, readNormalizedFile, getPromptUserSpy } from './cosca-test-utils'
+import { getStdoutSpy, setPromptSpy, readNormalizedFile, getPromptUserSpy } from './cosca-test-utils'
 
 // `checkPath` function must be mocked as it disallows paths outside of CWD
 // which is not possible because tests run in temporary folder
@@ -25,7 +25,7 @@ describe('Test createFileFromTemplate function', () => {
 
   beforeEach(() => {
     wd = process.env.WORKSPACE_DIR!
-    spy = getConsoleSpy('log')
+    spy = getStdoutSpy()
   })
 
   test('should be defined', () => {

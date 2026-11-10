@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { promptUser } from '../terminal/prompt-user.js'
 import { checkPath } from './check-path.js'
+import { showDebug, showMessage } from '../main.js'
 
 // guards against prototype pollution via crafted property names / key segments
 export const PROTOTYPE_POLLUTION_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
@@ -31,7 +32,7 @@ export async function confirmAction(
   const { force = false, prompt = '', silent = false } = opts
   const confirmed = force || await promptUser({ question: prompt || defaultQuestion })
   if (!confirmed && !silent) {
-    console.log(skipMessage)
+    showDebug(skipMessage)
   }
   return confirmed
 }
@@ -49,7 +50,7 @@ export async function prepareTargetFile(
     }
     const shouldCreate = force || await promptUser({ question: `File '${targetPath}' does not exist. Create it?` })
     if (!shouldCreate) {
-      if (!silent) console.log(`Creation of '${targetPath}' skipped.`)
+      if (!silent) showDebug(`Creation of '${targetPath}' skipped.`)
       return null
     }
     return { fullPath, content: null, created: true }
@@ -70,9 +71,9 @@ export function writeUpdatedFile(
       mkdirSync(dirname(fullPath), { recursive: true })
     }
     writeFileSync(fullPath, content, 'utf8')
-    if (!silent) console.log(`'${targetPath}' file ${created ? 'created' : 'updated'}.`)
+    if (!silent) showMessage({ message: `'${targetPath}' file ${created ? 'created' : 'updated'}.`, color: 'blue' })
   } else {
-    if (!silent) console.log(`'${targetPath}' file already up to date.`)
+    if (!silent) showDebug(`'${targetPath}' file already up to date.`)
   }
 }
 
@@ -86,7 +87,7 @@ export async function writeCreatedFile(
   if (existsSync(fullPath)) {
     const shouldOverwrite = force || await promptUser({ question: `File '${targetPath}' already exists. Overwrite?` })
     if (!shouldOverwrite) {
-      if (!silent) console.log('Aborted.')
+      if (!silent) showDebug('Aborted.')
       return
     }
   }
@@ -95,7 +96,7 @@ export async function writeCreatedFile(
   writeFn()
 
   if (existsSync(fullPath)) {
-    if (!silent) console.log(`New file '${targetPath}' successfully created.`)
+    if (!silent) showMessage({ message: `New file '${targetPath}' successfully created.`, color: 'blue' })
   } else {
     throw new Error(`Failed to create '${targetPath}'.`)
   }

@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, test, vi } from 'vitest'
 import { resolvePackagePath } from '../src/main'
-import { getConsoleSpy } from './cosca-test-utils'
+import { getStderrSpy } from './cosca-test-utils'
 
 describe('Test resolvePackagePath util function', () => {
 
@@ -36,19 +36,21 @@ describe('Test resolvePackagePath util function', () => {
   })
 
   test('should throw for non-existent package', () => {
-    const spy = getConsoleSpy('error')
+    const spy = getStderrSpy()
     expect(() => resolvePackagePath({ packageName: 'non-existent-package' })).toThrow(/Cannot find package "non-existent-package"/)
-    expect(spy).toHaveBeenCalledTimes(1)
+    // one error message (+ its newline)
+    expect(spy).toHaveBeenCalledTimes(2)
     spy.mockRestore()
   })
 
   test('should throw when CWD has no package.json nor node_modules', () => {
     const directory = mkdtempSync(join(tmpdir(), 'cosca-pkg-'))
     const cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue(directory)
-    const spy = getConsoleSpy('error')
+    const spy = getStderrSpy()
     try {
       expect(() => resolvePackagePath({ packageName: 'vitest' })).toThrow(/Cannot find package "vitest"/)
-      expect(spy).toHaveBeenCalledTimes(2)
+      // two error messages (+ newlines)
+      expect(spy).toHaveBeenCalledTimes(4)
     } finally {
       spy.mockRestore()
       cwdSpy.mockRestore()

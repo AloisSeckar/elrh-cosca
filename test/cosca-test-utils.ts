@@ -18,15 +18,6 @@ export function readNormalizedFile(dir: string, file: string): string {
 }
 
 /**
- * Mocks console logging methods in order to spy on the passed arguments.
- * @param logLevel which console log method should be mocked
- * @returns mocked console log method
- */
-export function getConsoleSpy(logLevel: 'log' | 'debug' |'info' | 'warn' | 'error') {
-  return vi.spyOn(console, logLevel).mockImplementation(() => {})
-}
-
-/**
  * Mocks user input(s) for the `readline.question` method.
  * @param input array of 1+ expected values from the user
  * @returns mocked terminal input
