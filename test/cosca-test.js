@@ -40,7 +40,7 @@ async function main() {
   await createFileFromTemplate({ templateFile: 'elrh-cosca:test/fixtures/text-file.txt', targetPath: 'test/snapshots/test.file2' })
   
   console.log('\nTest createFileFromWebTemplate')
-  await createFileFromWebTemplate({ url: 'https://raw.githubusercontent.com/AloisSeckar/nuxt-spec/refs/heads/main/config/vitest.config.ts.template', targetPath: 'test/snapshots/test.file3' })
+  await createFileFromWebTemplate({ url: 'https://raw.githubusercontent.com/AloisSeckar/nuxt-spec/refs/heads/main/config/templates/vitest.config.ts.template', targetPath: 'test/snapshots/test.file3' })
 
   console.log('\nTest updateConfigFile')
   await updateConfigFile({ targetPath: 'test/fixtures/config-file-default.ts', newConfig: { compatibilityDate: '2025-08-26', extends: ['nuxt-iignis'], cosca: { exists: true, data: ['some', 'other'], raw: 'war' } } })
