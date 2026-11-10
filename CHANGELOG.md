@@ -2,6 +2,14 @@
 
 Overview of the newest features in COSCA.
 
+## 0.5.1
+
+`2026-11-10`
+
+- feat: use new terminal functions internally (#34)
+- fix: ensure that `fetchFile` internal promise always resolves
+- docs: clarify min Node version (`22.13`)
+
 ## 0.5.0
 
 `2026-11-07`
