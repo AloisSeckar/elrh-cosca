@@ -23,6 +23,10 @@ async function main() {
   console.log('Test showError')
   showError({ message: 'ERROR!' })
 
+  console.log('\nTest lines before and after')
+  showMessage({ message: 'Hello!', linesBefore: 1, linesAfter: 1 })
+  await promptUser({ question: 'Is it today?', linesBefore: 1, linesAfter: 1 })
+
   console.log('Test getEnvValue')
   const a = getEnvValue({ key: 'A' })
   const b = getEnvValue({ key: 'B' })

@@ -327,7 +327,11 @@ Tries to detect the package manager (or runtime) used in the current environment
 #### `promptUser`
 
 ```ts
-interface PromptUserOptions {
+interface TerminalOutputOptions {
+  linesBefore?: number
+  linesAfter?: number
+}
+interface PromptUserOptions extends TerminalOutputOptions {
   question: string
   input?: NodeJS.ReadableStream
   output?: NodeJS.WritableStream
@@ -337,15 +341,13 @@ async function promptUser(opts: string | PromptUserOptions): Promise<boolean>
 
 Prints out a `question` (with ` (y/N): ` appended) to the console and waits for the input. Returns `true` when the user answers `y` or `yes` (case-insensitive) and `false` otherwise.
 
-By default it uses `process.stdin` and `process.stdout` streams. To use custom NodeJS streams, pass `input` and `output` directly in `opts`, e.g. `promptUser({ question: 'Continue?', input, output })`. When no extra options are needed, a plain string can be passed instead: `promptUser('Continue?')`.
+By default it uses `process.stdin` and `process.stdout` streams. To use custom NodeJS streams, pass `input` and `output` directly in `opts`, e.g. `promptUser({ question: 'Continue?', input, output })`. The optional `linesBefore` prints that many newlines before the question and `linesAfter` prints that many extra newlines after the answer is submitted (both default to `0`). When no extra options are needed, a plain string can be passed instead: `promptUser('Continue?')`.
 
 #### `showMessage`
 
 ```ts
-interface ShowTextOptions {
+interface ShowTextOptions extends TerminalOutputOptions {
   message: string
-  linesBefore?: number
-  linesAfter?: number
 }
 interface ShowMessageOptions extends ShowTextOptions {
   color?: InspectColor

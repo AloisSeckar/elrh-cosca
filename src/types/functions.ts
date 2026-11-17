@@ -95,7 +95,14 @@ export interface UpdateTextFileOptions extends FileOperationOptions {
 	createMissing?: boolean
 }
 
-export interface PromptUserOptions {
+export interface TerminalOutputOptions {
+	/** The number of newlines to print before the output (default: 0). */
+	linesBefore?: number
+	/** The number of extra newlines to print after the output (default: 0). */
+	linesAfter?: number
+}
+
+export interface PromptUserOptions extends TerminalOutputOptions {
 	/** The question to ask the user. */
 	question: string
 	/** Custom input stream (default: process.stdin). */
@@ -104,13 +111,9 @@ export interface PromptUserOptions {
 	output?: NodeJS.WritableStream
 }
 
-export interface ShowTextOptions {
+export interface ShowTextOptions extends TerminalOutputOptions {
 	/** The message text to display. */
 	message: string
-	/** The number of newlines to print before the message (default: 0). */
-	linesBefore?: number
-	/** The number of extra newlines to print after the message's own newline (default: 0). */
-	linesAfter?: number
 }
 
 export interface ShowMessageOptions extends ShowTextOptions {

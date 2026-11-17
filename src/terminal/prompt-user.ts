@@ -8,18 +8,24 @@ import readline from 'node:readline'
  * @param {string} opts.question - The question to ask the user.
  * @param {NodeJS.ReadableStream} [opts.input] - Custom input stream (default: process.stdin).
  * @param {NodeJS.WritableStream} [opts.output] - Custom output stream (default: process.stdout).
+ * @param {number} [opts.linesBefore] - The number of newlines to print before the output (default: 0).
+ * @param {number} [opts.linesAfter] - The number of extra newlines to print after the output (default: 0).
  * @returns {Promise<boolean>} True if the user answered yes (`y` or `yes`, case-insensitive), false otherwise.
  */
 export async function promptUser(opts: string | PromptUserOptions): Promise<boolean> {
-  const { question, input, output }: PromptUserOptions = typeof opts === 'string' ? { question: opts } : opts
+  const { question, input, output, linesBefore = 0, linesAfter = 0 }: PromptUserOptions = typeof opts === 'string' ? { question: opts } : opts
+  const out = output || process.stdout
   const rl = readline.createInterface({
     input: input || process.stdin,
-    output: output || process.stdout,
+    output: out,
   })
+
+  if (linesBefore > 0) out.write('\n'.repeat(linesBefore))
 
   return new Promise((resolve) => {
     rl.question(question + ' (y/N): ', (answer) => {
       rl.close()
+      if (linesAfter > 0) out.write('\n'.repeat(linesAfter))
       const normalizedAnswer = answer.trim().toLowerCase()
       resolve(/^y(es)?$/.test(normalizedAnswer))
     })

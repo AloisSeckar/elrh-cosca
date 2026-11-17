@@ -20,6 +20,8 @@ describe('Test promptUser terminal helper', () => {
     expectTypeOf(promptUser).parameters.toEqualTypeOf<[opts: string | PromptUserOptions]>()
     expectTypeOf<{}>().not.toExtend<PromptUserOptions>()
     expectTypeOf<{ question: string }>().toExtend<PromptUserOptions>()
+    expectTypeOf<{ message: string }>().not.toExtend<PromptUserOptions>()
+    expectTypeOf<{ question: string, linesBefore: number, linesAfter: number }>().toExtend<PromptUserOptions>()
   })
 
   test('should use default input and output streams', async () => {
@@ -74,6 +76,21 @@ describe('Test promptUser terminal helper', () => {
     expect(await promptUser({ question: 'Is it today?' })).toBe(false)
     setPromptSpy(['Yess'])
     expect(await promptUser({ question: 'Is it today?' })).toBe(false)
+  })
+
+  test('should print linesBefore and linesAfter to output', async () => {
+    const input = new PassThrough()
+    const output = new PassThrough()
+    const writeSpy = vi.spyOn(output, 'write')
+    try {
+      setPromptSpy(['y'])
+      expect(await promptUser({ question: 'Continue?', input, output, linesBefore: 2, linesAfter: 3 })).toBe(true)
+      expect(writeSpy).toHaveBeenCalledWith('\n\n')
+      expect(writeSpy).toHaveBeenCalledWith('\n\n\n')
+    } finally {
+      input.destroy()
+      output.destroy()
+    }
   })
 
   test('should close the interface upon SIGINT', () => {
