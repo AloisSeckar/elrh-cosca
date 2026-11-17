@@ -23,4 +23,9 @@ describe('Test showDebug terminal helper', () => {
     showDebug({ message: 'Hello!', linesBefore: 1, linesAfter: 2 })
     expect(showMessage).toHaveBeenCalledWith({ message: 'Hello!', linesBefore: 1, linesAfter: 2, color: 'gray' })
   })
+
+  test('should prefer custom color over the default one', () => {
+    showDebug({ message: 'Hello!', color: 'magenta' })
+    expect(showMessage).toHaveBeenCalledWith({ message: 'Hello!', color: 'magenta' })
+  })
 })

@@ -9,7 +9,7 @@ import type { ShowMessageOptions } from '../types/functions.js'
  * @param {number} [opts.linesBefore] - The number of newlines to print before the output (default: 0).
  * @param {number} [opts.linesAfter] - The number of extra newlines to print after the output (default: 0).
  * @param {NodeJS.WritableStream} [opts.output] - Custom output stream (default: process.stdout; process.stderr for `showError`).
- * @param {InspectColor} [opts.color] - The color/style of the message, as accepted by `styleText` from `node:util` (default: no color).
+ * @param {InspectColor} [opts.color] - The color/style of the text, as accepted by `styleText` from `node:util` (default: no color).
  */
 export function showMessage(opts: string | ShowMessageOptions): void {
   const { message, linesBefore = 0, linesAfter = 0, output = process.stdout, color }: ShowMessageOptions = typeof opts === 'string' ? { message: opts } : opts

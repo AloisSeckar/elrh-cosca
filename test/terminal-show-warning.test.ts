@@ -23,4 +23,9 @@ describe('Test showWarning terminal helper', () => {
     showWarning({ message: 'Hello!', linesBefore: 1, linesAfter: 2 })
     expect(showMessage).toHaveBeenCalledWith({ message: 'Hello!', linesBefore: 1, linesAfter: 2, color: 'yellow' })
   })
+
+  test('should prefer custom color over the default one', () => {
+    showWarning({ message: 'Hello!', color: 'magenta' })
+    expect(showMessage).toHaveBeenCalledWith({ message: 'Hello!', color: 'magenta' })
+  })
 })

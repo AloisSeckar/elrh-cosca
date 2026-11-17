@@ -48,6 +48,30 @@ describe('Test showError terminal helper', () => {
     expect(spy.mock.calls.map((c: any[]) => c[0])).toEqual(['Error!', '\n'])
   })
 
+  test('should style the message in red by default', () => {
+    const previous = process.env.FORCE_COLOR
+    process.env.FORCE_COLOR = '1'
+    try {
+      showError('Error!')
+    } finally {
+      if (previous === undefined) delete process.env.FORCE_COLOR
+      else process.env.FORCE_COLOR = previous
+    }
+    expect(spy.mock.calls.map((c: any[]) => c[0])).toEqual(['\u001b[31mError!\u001b[39m', '\n'])
+  })
+
+  test('should prefer custom color over the default one', () => {
+    const previous = process.env.FORCE_COLOR
+    process.env.FORCE_COLOR = '1'
+    try {
+      showError({ message: 'Error!', color: 'yellow' })
+    } finally {
+      if (previous === undefined) delete process.env.FORCE_COLOR
+      else process.env.FORCE_COLOR = previous
+    }
+    expect(spy.mock.calls.map((c: any[]) => c[0])).toEqual(['\u001b[33mError!\u001b[39m', '\n'])
+  })
+
   test('should write to a custom output stream instead of stderr', () => {
     const output = new PassThrough()
     try {

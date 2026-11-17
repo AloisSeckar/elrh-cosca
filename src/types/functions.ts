@@ -100,10 +100,12 @@ export interface TerminalOutputOptions {
 	linesBefore?: number
 	/** The number of extra newlines to print after the output (default: 0). */
 	linesAfter?: number
-	/** Custom input stream (default: process.stdin;). */
+	/** Custom input stream (default: process.stdin). */
 	input?: NodeJS.ReadableStream
 	/** Custom output stream (default: process.stdout; process.stderr for `showError`). */
 	output?: NodeJS.WritableStream
+	/** The color/style of the text, as accepted by `styleText` from `node:util` (default: no color; `showError` defaults to red, `showInfo` to white, `showSuccess` to green, `showWarning` to yellow and `showDebug` to gray). */
+	color?: InspectColor
 }
 
 export interface PromptUserOptions extends TerminalOutputOptions {
@@ -111,14 +113,9 @@ export interface PromptUserOptions extends TerminalOutputOptions {
 	question: string
 }
 
-export interface ShowTextOptions extends TerminalOutputOptions {
+export interface ShowMessageOptions extends TerminalOutputOptions {
 	/** The message text to display. */
 	message: string
-}
-
-export interface ShowMessageOptions extends ShowTextOptions {
-	/** The color/style of the message, as accepted by `styleText` from `node:util` (default: no color). */
-	color?: InspectColor
 }
 
 export interface GetEnvValueOptions {

@@ -4,7 +4,7 @@
 
 import {
   createFileFromTemplate, createFileFromWebTemplate, promptUser, 
-  showError, showMessage, showWarning, showSuccess, showDebug,
+  showInfo, showError, showMessage, showWarning, showSuccess, showDebug,
   updateConfigFile, getEnvValue, updateJsonFile, updateTextFile, 
   deletePath, removeFromJsonFile
 } from '../dist/elrh-cosca.mjs'
@@ -12,20 +12,26 @@ import {
 async function main() {
   console.log('Test showMessage')
   showMessage({ message: 'Hello!' })
-  console.log('Test showMessage (color)')
-  showMessage({ message: 'Hello!', color: 'blue' })
+  showMessage({ message: 'Hello!', color: 'cyan' })
+  console.log('Test showInfo')
+  showInfo({ message: 'Info...' })
+  showInfo({ message: 'Info...', color: 'cyan' })
   console.log('Test showDebug')
   showDebug({ message: 'Debug...' })
+  showDebug({ message: 'Debug...', color: 'cyan' })
   console.log('Test showSuccess')
   showSuccess({ message: 'OK!' })
+  showSuccess({ message: 'OK!', color: 'cyan' })
   console.log('Test showWarning')
   showWarning({ message: 'WARN!' })
+  showWarning({ message: 'WARN!', color: 'cyan' })
   console.log('Test showError')
   showError({ message: 'ERROR!' })
+  showError({ message: 'ERROR!', color: 'cyan' })
 
   console.log('\nTest lines before and after')
   showMessage({ message: 'Hello!', linesBefore: 1, linesAfter: 1 })
-  await promptUser({ question: 'Is it today?', linesBefore: 1, linesAfter: 1 })
+  await promptUser({ question: 'Is it today?', linesBefore: 1, linesAfter: 1, color: 'cyan' })
 
   console.log('Test getEnvValue')
   const a = getEnvValue({ key: 'A' })

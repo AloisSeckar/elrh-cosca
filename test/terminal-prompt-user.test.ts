@@ -93,6 +93,30 @@ describe('Test promptUser terminal helper', () => {
     }
   })
 
+  test('should print the question in the given color', async () => {
+    const previous = process.env.FORCE_COLOR
+    process.env.FORCE_COLOR = '1'
+    const questionSpy = vi.spyOn(readline.Interface.prototype, 'question').mockImplementation(((_: string, cb: (answer: string) => void) => cb('y')) as any)
+    try {
+      expect(await promptUser({ question: 'Continue?', color: 'red' })).toBe(true)
+      expect(questionSpy).toHaveBeenCalledWith('\u001b[31mContinue? (y/N): \u001b[39m', expect.any(Function))
+    } finally {
+      questionSpy.mockRestore()
+      if (previous === undefined) delete process.env.FORCE_COLOR
+      else process.env.FORCE_COLOR = previous
+    }
+  })
+
+  test('should print the question without styling when no color is given', async () => {
+    const questionSpy = vi.spyOn(readline.Interface.prototype, 'question').mockImplementation(((_: string, cb: (answer: string) => void) => cb('y')) as any)
+    try {
+      expect(await promptUser('Continue?')).toBe(true)
+      expect(questionSpy).toHaveBeenCalledWith('Continue? (y/N): ', expect.any(Function))
+    } finally {
+      questionSpy.mockRestore()
+    }
+  })
+
   test('should close the interface upon SIGINT', () => {
     const input = new PassThrough()
     const output = new PassThrough()

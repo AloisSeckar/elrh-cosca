@@ -23,4 +23,9 @@ describe('Test showSuccess terminal helper', () => {
     showSuccess({ message: 'Hello!', linesBefore: 1, linesAfter: 2 })
     expect(showMessage).toHaveBeenCalledWith({ message: 'Hello!', linesBefore: 1, linesAfter: 2, color: 'green' })
   })
+
+  test('should prefer custom color over the default one', () => {
+    showSuccess({ message: 'Hello!', color: 'magenta' })
+    expect(showMessage).toHaveBeenCalledWith({ message: 'Hello!', color: 'magenta' })
+  })
 })

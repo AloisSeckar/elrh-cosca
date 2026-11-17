@@ -41,7 +41,6 @@ export type {
   UpdateYamlFileOptions,
   PromptUserOptions,
   TerminalOutputOptions,
-  ShowTextOptions,
   ShowMessageOptions,
   GetEnvValueOptions,
   ParseQualifiedPathOptions,

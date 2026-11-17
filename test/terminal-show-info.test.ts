@@ -23,4 +23,9 @@ describe('Test showInfo terminal helper', () => {
     showInfo({ message: 'Hello!', linesBefore: 1, linesAfter: 2 })
     expect(showMessage).toHaveBeenCalledWith({ message: 'Hello!', linesBefore: 1, linesAfter: 2, color: 'white' })
   })
+
+  test('should prefer custom color over the default one', () => {
+    showInfo({ message: 'Hello!', color: 'magenta' })
+    expect(showMessage).toHaveBeenCalledWith({ message: 'Hello!', color: 'magenta' })
+  })
 })

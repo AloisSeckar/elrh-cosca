@@ -332,6 +332,7 @@ interface TerminalOutputOptions {
   linesAfter?: number
   input?: NodeJS.ReadableStream
   output?: NodeJS.WritableStream
+  color?: InspectColor
 }
 interface PromptUserOptions extends TerminalOutputOptions {
   question: string
@@ -343,14 +344,13 @@ Prints out a `question` (with ` (y/N): ` appended) to the console and waits for 
 
 By default it uses `process.stdin` and `process.stdout` streams. To use custom NodeJS streams, pass `input` and `output` directly in `opts`, e.g. `promptUser({ question: 'Continue?', input, output })`. The optional `linesBefore` prints that many newlines before the question and `linesAfter` prints that many extra newlines after the answer is submitted (both default to `0`). When no extra options are needed, a plain string can be passed instead: `promptUser('Continue?')`.
 
+When `color` is set, the question is printed in that color via the `styleText` function from the `node:util` module (default: no color).
+
 #### `showMessage`
 
 ```ts
-interface ShowTextOptions extends TerminalOutputOptions {
+interface ShowMessageOptions extends TerminalOutputOptions {
   message: string
-}
-interface ShowMessageOptions extends ShowTextOptions {
-  color?: InspectColor
 }
 function showMessage(opts: string | ShowMessageOptions): void
 ```
@@ -362,23 +362,23 @@ The message is printed out in `color` (default: no color) via the `styleText` fu
 #### `showError`
 
 ```ts
-function showError(opts: string | ShowTextOptions): void
+function showError(opts: string | ShowMessageOptions): void
 ```
 
 Prints out a `message` to `process.stderr` (or the custom `output` stream) followed by a newline, optionally preceded by `linesBefore` newlines and followed by `linesAfter` extra newlines (both default to 0). A plain string can be passed instead of the object, e.g. `showError('Failed')`.
 
-The message is printed out in red via the `styleText` function from the `node:util` module.
+By default, the message is printed out in red via the `styleText` function from the `node:util` module. Custom `color` can be provided as override.
 
 #### `showInfo`, `showSuccess`, `showWarning`, `showDebug`
 
 ```ts
-function showInfo(opts: string | ShowTextOptions): void
-function showSuccess(opts: string | ShowTextOptions): void
-function showWarning(opts: string | ShowTextOptions): void
-function showDebug(opts: string | ShowTextOptions): void
+function showInfo(opts: string | ShowMessageOptions): void
+function showSuccess(opts: string | ShowMessageOptions): void
+function showWarning(opts: string | ShowMessageOptions): void
+function showDebug(opts: string | ShowMessageOptions): void
 ```
 
-Shortcuts for `showMessage` with a fixed `color`: `showInfo` prints in white, `showSuccess` in green, `showWarning` in yellow and `showDebug` in gray.
+Shortcuts for `showMessage` with a default `color`: `showInfo` prints in white, `showSuccess` in green, `showWarning` in yellow and `showDebug` in gray. Custom `color` can still be provided as override.
 
 All terminal helpers share the `TerminalOutputOptions` fields; `input` is only used by `promptUser` and ignored by the `show*` helpers.
 
