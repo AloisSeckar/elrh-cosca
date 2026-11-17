@@ -100,15 +100,15 @@ export interface TerminalOutputOptions {
 	linesBefore?: number
 	/** The number of extra newlines to print after the output (default: 0). */
 	linesAfter?: number
+	/** Custom input stream (default: process.stdin;). */
+	input?: NodeJS.ReadableStream
+	/** Custom output stream (default: process.stdout; process.stderr for `showError`). */
+	output?: NodeJS.WritableStream
 }
 
 export interface PromptUserOptions extends TerminalOutputOptions {
 	/** The question to ask the user. */
 	question: string
-	/** Custom input stream (default: process.stdin). */
-	input?: NodeJS.ReadableStream
-	/** Custom output stream (default: process.stdout). */
-	output?: NodeJS.WritableStream
 }
 
 export interface ShowTextOptions extends TerminalOutputOptions {

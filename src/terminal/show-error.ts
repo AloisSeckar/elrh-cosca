@@ -8,15 +8,16 @@ import type { ShowTextOptions } from '../types/functions.js'
  * @param {string} opts.message - The error message text to display.
  * @param {number} [opts.linesBefore] - The number of newlines to print before the output (default: 0).
  * @param {number} [opts.linesAfter] - The number of extra newlines to print after the output (default: 0).
+ * @param {NodeJS.WritableStream} [opts.output] - Custom output stream (default: process.stdout; process.stderr for `showError`).
  */
 export function showError(opts: string | ShowTextOptions): void {
-  const { message, linesBefore = 0, linesAfter = 0 }: ShowTextOptions = typeof opts === 'string' ? { message: opts } : opts
+  const { message, linesBefore = 0, linesAfter = 0, output = process.stderr }: ShowTextOptions = typeof opts === 'string' ? { message: opts } : opts
   for (let i = 0; i < linesBefore; i++) {
-    process.stderr.write('\n')
+    output.write('\n')
   }
-  process.stderr.write(styleText('red', message, { stream: process.stderr }))
-  process.stderr.write('\n')
+  output.write(styleText('red', message, { stream: output as NodeJS.WriteStream }))
+  output.write('\n')
   for (let i = 0; i < linesAfter; i++) {
-    process.stderr.write('\n')
+    output.write('\n')
   }
 }

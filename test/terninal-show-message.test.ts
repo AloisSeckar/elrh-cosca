@@ -1,3 +1,4 @@
+import { PassThrough } from 'node:stream'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { showMessage } from '../src/main'
 import { getStdoutSpy } from './cosca-test-utils'
@@ -57,5 +58,16 @@ describe('Test showMessage terminal helper', () => {
   test.each([0, -1])('should write message + ONE newline when linesAfter is %i', (linesAfter) => {
     showMessage({ message: 'Hello!', linesAfter })
     expect(spy.mock.calls.map((c: any[]) => c[0])).toEqual(['Hello!', '\n'])
+  })
+
+  test('should write to a custom output stream instead of stdout', () => {
+    const output = new PassThrough()
+    try {
+      showMessage({ message: 'Hello!', linesBefore: 1, linesAfter: 1, output })
+      expect(output.read().toString()).toBe('\nHello!\n\n')
+      expect(spy).not.toHaveBeenCalled()
+    } finally {
+      output.destroy()
+    }
   })
 })

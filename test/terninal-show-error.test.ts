@@ -1,3 +1,4 @@
+import { PassThrough } from 'node:stream'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { showError } from '../src/main'
 import { getStderrSpy } from './cosca-test-utils'
@@ -45,5 +46,16 @@ describe('Test showError terminal helper', () => {
   test.each([0, -1])('should write message + ONE newline when linesAfter is %i', (linesAfter) => {
     showError({ message: 'Error!', linesAfter })
     expect(spy.mock.calls.map((c: any[]) => c[0])).toEqual(['Error!', '\n'])
+  })
+
+  test('should write to a custom output stream instead of stderr', () => {
+    const output = new PassThrough()
+    try {
+      showError({ message: 'Error!', linesBefore: 1, linesAfter: 1, output })
+      expect(output.read().toString()).toBe('\nError!\n\n')
+      expect(spy).not.toHaveBeenCalled()
+    } finally {
+      output.destroy()
+    }
   })
 })

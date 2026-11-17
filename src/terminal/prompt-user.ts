@@ -6,10 +6,10 @@ import readline from 'node:readline'
  * 
  * @param {string | PromptUserOptions} opts - The question as a plain string, or an options object.
  * @param {string} opts.question - The question to ask the user.
- * @param {NodeJS.ReadableStream} [opts.input] - Custom input stream (default: process.stdin).
- * @param {NodeJS.WritableStream} [opts.output] - Custom output stream (default: process.stdout).
  * @param {number} [opts.linesBefore] - The number of newlines to print before the output (default: 0).
  * @param {number} [opts.linesAfter] - The number of extra newlines to print after the output (default: 0).
+ * @param {NodeJS.ReadableStream} [opts.input] - Custom input stream (default: process.stdin).
+ * @param {NodeJS.WritableStream} [opts.output] - Custom output stream (default: process.stdout).
  * @returns {Promise<boolean>} True if the user answered yes (`y` or `yes`, case-insensitive), false otherwise.
  */
 export async function promptUser(opts: string | PromptUserOptions): Promise<boolean> {

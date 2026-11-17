@@ -330,11 +330,11 @@ Tries to detect the package manager (or runtime) used in the current environment
 interface TerminalOutputOptions {
   linesBefore?: number
   linesAfter?: number
+  input?: NodeJS.ReadableStream
+  output?: NodeJS.WritableStream
 }
 interface PromptUserOptions extends TerminalOutputOptions {
   question: string
-  input?: NodeJS.ReadableStream
-  output?: NodeJS.WritableStream
 }
 async function promptUser(opts: string | PromptUserOptions): Promise<boolean>
 ```
@@ -355,7 +355,7 @@ interface ShowMessageOptions extends ShowTextOptions {
 function showMessage(opts: string | ShowMessageOptions): void
 ```
 
-Prints out a `message` to `process.stdout` followed by a newline, optionally preceded by `linesBefore` newlines and followed by `linesAfter` extra newlines (both default to 0). A plain string can be passed instead of the object, e.g. `showMessage('Done')`.
+Prints out a `message` to `process.stdout` (or the custom `output` stream) followed by a newline, optionally preceded by `linesBefore` newlines and followed by `linesAfter` extra newlines (both default to 0). A plain string can be passed instead of the object, e.g. `showMessage('Done')`.
 
 The message is printed out in `color` (default: no color) via the `styleText` function from the `node:util` module.
 
@@ -365,7 +365,7 @@ The message is printed out in `color` (default: no color) via the `styleText` fu
 function showError(opts: string | ShowTextOptions): void
 ```
 
-Prints out a `message` to `process.stderr` followed by a newline, optionally preceded by `linesBefore` newlines and followed by `linesAfter` extra newlines (both default to 0). A plain string can be passed instead of the object, e.g. `showError('Failed')`.
+Prints out a `message` to `process.stderr` (or the custom `output` stream) followed by a newline, optionally preceded by `linesBefore` newlines and followed by `linesAfter` extra newlines (both default to 0). A plain string can be passed instead of the object, e.g. `showError('Failed')`.
 
 The message is printed out in red via the `styleText` function from the `node:util` module.
 
@@ -379,6 +379,8 @@ function showDebug(opts: string | ShowTextOptions): void
 ```
 
 Shortcuts for `showMessage` with a fixed `color`: `showInfo` prints in white, `showSuccess` in green, `showWarning` in yellow and `showDebug` in gray.
+
+All terminal helpers share the `TerminalOutputOptions` fields; `input` is only used by `promptUser` and ignored by the `show*` helpers.
 
 ### List of other utils
 
