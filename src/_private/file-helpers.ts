@@ -2,8 +2,9 @@ import type { FileOperationOptions } from '../types/functions.js'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { promptUser } from '../terminal/prompt-user.js'
+import { showDebug } from '../terminal/show-debug.js'
+import { showMessage } from '../terminal/show-message.js'
 import { checkPath } from './check-path.js'
-import { showDebug, showMessage } from '../main.js'
 
 // guards against prototype pollution via crafted property names / key segments
 export const PROTOTYPE_POLLUTION_KEYS = new Set(['__proto__', 'constructor', 'prototype'])

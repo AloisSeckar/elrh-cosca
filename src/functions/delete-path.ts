@@ -2,7 +2,8 @@ import type { FileOperationOptions } from '../types/functions.js'
 import { existsSync, rmSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { confirmAction, resolveCheckedPath } from '../_private/file-helpers.js'
-import { showDebug, showMessage } from '../main.js'
+import { showDebug } from '../terminal/show-debug.js'
+import { showMessage } from '../terminal/show-message.js'
 
 /**
  * Deletes a file or a directory (recursively) from FS.
