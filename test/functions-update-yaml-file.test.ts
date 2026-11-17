@@ -28,6 +28,14 @@ describe('Test updateYamlFile function', () => {
     expect(updateYamlFile).toBeDefined()
   })
 
+  test('should set key with escaped dot as a whole', async () => {
+    const file = join(wd, 'update-yaml-escaped.yaml')
+    writeFileSync(file, 'a.b: 1\n')
+    await updateYamlFile({ targetPath: file, yamlKey: 'a\\.b', patch: 2, force: true })
+    await updateYamlFile({ targetPath: file, yamlKey: 'c.d\\.e', patch: 3, force: true })
+    expect(readNormalizedFile(wd, 'update-yaml-escaped.yaml')).toBe('a.b: 2\nc:\n  d.e: 3\n')
+  })
+
   test('should fail when path check fails', async () => {
     vi.mocked(checkPath).mockReturnValueOnce({ valid: false, error: 'Invalid path' })
     await expect(updateYamlFile({ targetPath: 'a', yamlKey: 'cosca', patch: 1, force: true })).rejects.toThrow(/Invalid path/)

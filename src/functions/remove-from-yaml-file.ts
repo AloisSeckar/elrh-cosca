@@ -1,5 +1,6 @@
 import type { RemoveFromYamlFileOptions } from '../types/functions.js'
 import { confirmAction, readTargetFile, writeUpdatedFile } from '../_private/file-helpers.js'
+import { parseKey } from '../_private/parse-key.js'
 import {
   deleteMapKey, getMapNode, isYamlMap,
   parseYamlDocument, stringifyYamlDocument,
@@ -9,7 +10,7 @@ import {
  * Updates a YAML file by deleting a specified key. Comments and formatting of untouched parts are preserved.
  * 
  * @param {string} opts.targetPath - The path to the file or directory to work with (relative to CWD).
- * @param {string} opts.yamlKey - The key in the YAML file to be deleted (may use dot notation for nested keys).
+ * @param {string} opts.yamlKey - The key in the YAML file to be deleted (may use dot notation for nested keys; escape a literal dot as `\.` and a literal backslash as `\\`).
  * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
  * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
  * @param {boolean} [opts.silent] - If true, suppresses all console log output (default: false).
@@ -30,7 +31,7 @@ export async function removeFromYamlFile(opts: RemoveFromYamlFileOptions): Promi
     throw new Error(`Could not parse '${targetPath}' — cannot delete its keys.\n${err}`)
   }
 
-  const keys = yamlKey.split('.')
+  const keys = parseKey(yamlKey)
   const targetKey = keys.pop()!
   let parent: ReturnType<typeof getMapNode> | null = doc.contents
   for (const key of keys) {

@@ -22,6 +22,15 @@ describe('Test hasJsonKey checker', () => {
   test('should be defined', () => {
     expect(hasJsonKey).toBeDefined()
   })
+
+  test('should treat escaped dot as a part of the key', () => {
+    const file = `${wd}/has-json-escaped.json`
+    writeFileSync(file, JSON.stringify({ 'a.b': 1, c: { 'd.e': 2 } }))
+    expect(hasJsonKey({ targetPath: file, jsonKey: 'a\\.b' })).toBe(true)
+    expect(hasJsonKey({ targetPath: file, jsonKey: 'c.d\\.e' })).toBe(true)
+    expect(hasJsonKey({ targetPath: file, jsonKey: 'a.b' })).toBe(false)
+    expect(hasJsonKey({ targetPath: file, jsonKey: 'c.d.e' })).toBe(false)
+  })
   
   test('should fail because of non-existent file', async () => {
     expect(() => hasJsonKey({ targetPath: `${wd}/unknown`, jsonKey: 'string-key' })).toThrow(/cannot check its keys/)

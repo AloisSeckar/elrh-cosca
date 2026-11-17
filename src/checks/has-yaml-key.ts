@@ -1,12 +1,13 @@
 import type { HasYamlKeyOptions } from '../types/functions.js'
 import { readTargetFile } from '../_private/file-helpers.js'
+import { parseKey } from '../_private/parse-key.js'
 import { getMapNode, hasMapKey, isYamlMap, parseYamlDocument } from '../_private/yaml.js'
 
 /**
  * Checks if a YAML file contains specified key.
  * 
  * @param {string} opts.targetPath - The path to the file or directory to work with (relative to CWD).
- * @param {string} opts.yamlKey - The key in the YAML file to be checked for existence (may use dot notation for nested keys).
+ * @param {string} opts.yamlKey - The key in the YAML file to be checked for existence (may use dot notation for nested keys; escape a literal dot as `\.` and a literal backslash as `\\`).
  * @returns {boolean} True if the key exists in target file, false otherwise.
  * @throws Will throw an error if the path is invalid, file does not exist or cannot be parsed as YAML.
  */
@@ -21,7 +22,7 @@ export function hasYamlKey(opts: HasYamlKeyOptions): boolean {
     throw new Error(`Could not parse '${targetPath}' — cannot check its keys.\n${err}`)
   }
 
-  const keys = yamlKey.split('.')
+  const keys = parseKey(yamlKey)
   const targetKey = keys.pop()!
   let parent: ReturnType<typeof getMapNode> | null = doc.contents
   for (const key of keys) {

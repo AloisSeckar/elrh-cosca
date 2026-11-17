@@ -16,12 +16,12 @@ export interface FileOperationOptions extends FilePathOptions {
 }
 
 export interface HasJsonKeyOptions extends FilePathOptions {
-	/** The key in the JSON file to be checked for existence (may use dot notation for nested keys). */
+	/** The key in the JSON file to be checked for existence (may use dot notation for nested keys; escape a literal dot as `\.` and a literal backslash as `\\`). */
 	jsonKey: string
 }
 
 export interface HasYamlKeyOptions extends FilePathOptions {
-	/** The key in the YAML file to be checked for existence (may use dot notation for nested keys). */
+	/** The key in the YAML file to be checked for existence (may use dot notation for nested keys; escape a literal dot as `\.` and a literal backslash as `\\`). */
 	yamlKey: string
 }
 
@@ -43,7 +43,7 @@ export interface CreateFileFromWebTemplateOptions extends FileOperationOptions {
 }
 
 export interface RemoveFromJsonFileOptions extends FileOperationOptions {
-	/** The key in the JSON file to be deleted (may use dot notation for nested keys). */
+	/** The key in the JSON file to be deleted (may use dot notation for nested keys; escape a literal dot as `\.` and a literal backslash as `\\`). */
 	jsonKey: string
 }
 
@@ -53,7 +53,7 @@ export interface RemoveFromTextFileOptions extends FileOperationOptions {
 }
 
 export interface RemoveFromYamlFileOptions extends FileOperationOptions {
-	/** The key in the YAML file to be deleted (may use dot notation for nested keys). */
+	/** The key in the YAML file to be deleted (may use dot notation for nested keys; escape a literal dot as `\.` and a literal backslash as `\\`). */
 	yamlKey: string
 }
 
@@ -65,7 +65,7 @@ export interface UpdateConfigFileOptions extends FileOperationOptions {
 }
 
 export interface UpdateJsonFileOptions extends FileOperationOptions {
-	/** The key in the JSON file to update (can be new or existing; may use dot notation for nested keys - missing or non-object intermediate levels are replaced with objects). */
+	/** The key in the JSON file to update (can be new or existing; may use dot notation for nested keys, escape a literal dot as `\.` and a literal backslash as `\\` - missing or non-object intermediate levels are replaced with objects). */
 	jsonKey: string
 	/** The value for the specified key. Objects are shallow-merged into the existing value (a non-object existing value is replaced), arrays are appended to the existing value by default (duplicates are skipped, a non-array existing value becomes the first item), other values (primitives, null) replace it. */
 	patch: DataValue
@@ -76,7 +76,7 @@ export interface UpdateJsonFileOptions extends FileOperationOptions {
 }
 
 export interface UpdateYamlFileOptions extends FileOperationOptions {
-	/** The key in the YAML file to update (can be new or existing; may use dot notation for nested keys - missing or non-map intermediate levels are replaced with maps). */
+	/** The key in the YAML file to update (can be new or existing; may use dot notation for nested keys, escape a literal dot as `\.` and a literal backslash as `\\` - missing or non-map intermediate levels are replaced with maps). */
 	yamlKey: string
 	/** The value for the specified key. Objects are shallow-merged into the existing value (a non-map existing value is replaced), arrays are appended to the existing value by default (duplicates are skipped, a non-sequence existing value becomes the first item), other values (primitives, null) replace it. */
 	patch: DataValue

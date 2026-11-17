@@ -4,6 +4,7 @@ import { isDeepStrictEqual } from 'node:util'
 import {
   confirmAction, prepareTargetFile, PROTOTYPE_POLLUTION_KEYS, writeUpdatedFile,
 } from '../_private/file-helpers.js'
+import { parseKey } from '../_private/parse-key.js'
 import type { YamlDocument, YamlMap, YamlSeq } from '../_private/yaml.js'
 import {
   createYamlNode, getMapNode, isYamlMap, isYamlScalar, isYamlSeq,
@@ -14,7 +15,7 @@ import {
  * Updates a YAML file by setting a key with new value(s). The key can be nested and can alter between primitives to objects and arrays as needed. Comments and formatting of untouched parts are preserved.
  * 
  * @param {string} opts.targetPath - The path to the file or directory to work with (relative to CWD).
- * @param {string} opts.yamlKey - The key in the YAML file to update (can be new or existing; may use dot notation for nested keys - missing or non-map intermediate levels are replaced with maps).
+ * @param {string} opts.yamlKey - The key in the YAML file to update (can be new or existing; may use dot notation for nested keys, escape a literal dot as `\.` and a literal backslash as `\\` - missing or non-map intermediate levels are replaced with maps).
  * @param {DataValue} opts.patch - The value for the specified key. Objects are shallow-merged into the existing value (a non-map existing value is replaced), arrays are appended to the existing value by default (duplicates are skipped, a non-sequence existing value becomes the first item), other values (primitives, null) replace it.
  * @param {boolean} [opts.createMissing] - If true, the file is created when it does not exist, after confirmation unless `force` is set (default: false).
  * @param {boolean} [opts.overwriteArrays] - If true, an array patch replaces the existing value instead of appending (default: false).
@@ -30,7 +31,7 @@ export async function updateYamlFile(opts: UpdateYamlFileOptions): Promise<void>
     return
   }
 
-  const keys = yamlKey.split('.')
+  const keys = parseKey(yamlKey)
   if (keys.some(key => key === '' || PROTOTYPE_POLLUTION_KEYS.has(key))) {
     throw new Error(`Invalid YAML key '${yamlKey}'.`)
   }

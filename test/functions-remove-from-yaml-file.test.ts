@@ -27,6 +27,14 @@ describe('Test removeFromYamlFile function', () => {
     expect(removeFromYamlFile).toBeDefined()
   })
 
+  test('should remove key with escaped dot as a whole', async () => {
+    const file = join(wd, 'remove-yaml-escaped.yaml')
+    writeFileSync(file, 'a.b: 1\na:\n  b: 2\nc:\n  d.e: 3\n  f: 4\n')
+    await removeFromYamlFile({ targetPath: file, yamlKey: 'a\\.b', force: true })
+    await removeFromYamlFile({ targetPath: file, yamlKey: 'c.d\\.e', force: true })
+    expect(readFileSync(file, 'utf8')).toBe('a:\n  b: 2\nc:\n  f: 4\n')
+  })
+
   test('should fail when path check fails', async () => {
     vi.mocked(checkPath).mockReturnValueOnce({ valid: false, error: 'Invalid path' })
     await expect(removeFromYamlFile({ targetPath: 'a', yamlKey: 'cosca', force: true })).rejects.toThrow(/Invalid path/)

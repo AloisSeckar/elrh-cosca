@@ -24,6 +24,15 @@ describe('Test hasYamlKey checker', () => {
     expect(hasYamlKey).toBeDefined()
   })
 
+  test('should treat escaped dot as a part of the key', () => {
+    const file = join(wd, 'has-yaml-escaped.yaml')
+    writeFileSync(file, 'a.b: 1\nc:\n  d.e: 2\n')
+    expect(hasYamlKey({ targetPath: file, yamlKey: 'a\\.b' })).toBe(true)
+    expect(hasYamlKey({ targetPath: file, yamlKey: 'c.d\\.e' })).toBe(true)
+    expect(hasYamlKey({ targetPath: file, yamlKey: 'a.b' })).toBe(false)
+    expect(hasYamlKey({ targetPath: file, yamlKey: 'c.d.e' })).toBe(false)
+  })
+
   test('should fail because of non-existent file', () => {
     expect(() => hasYamlKey({ targetPath: `${wd}/unknown`, yamlKey: 'string-key' })).toThrow(/cannot check its keys/)
   })

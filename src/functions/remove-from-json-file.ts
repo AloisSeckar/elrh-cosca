@@ -1,12 +1,13 @@
 import type { RemoveFromJsonFileOptions } from '../types/functions.js'
 import type { DataObject } from '../types/data.js'
 import { confirmAction, readTargetFile, writeUpdatedFile } from '../_private/file-helpers.js'
+import { parseKey } from '../_private/parse-key.js'
 
 /**
  * Updates a JSON file by deleting a specified key.
  * 
  * @param {string} opts.targetPath - The path to the file or directory to work with (relative to CWD).
- * @param {string} opts.jsonKey - The key in the JSON file to be deleted (may use dot notation for nested keys).
+ * @param {string} opts.jsonKey - The key in the JSON file to be deleted (may use dot notation for nested keys; escape a literal dot as `\.` and a literal backslash as `\\`).
  * @param {boolean} [opts.force] - If true, skips all confirmation prompts (default: false).
  * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
  * @param {boolean} [opts.silent] - If true, suppresses all console log output (default: false).
@@ -28,26 +29,24 @@ export async function removeFromJsonFile(opts: RemoveFromJsonFileOptions): Promi
   }
 
   const oldJson = JSON.stringify(json, null, 2)
-  json = removeKeyIfExists(json, jsonKey)
+  json = removeKeyIfExists(json, parseKey(jsonKey))
   const newJson = JSON.stringify(json, null, 2)
 
   writeUpdatedFile(targetPath, fullPath, newJson + '\n', oldJson !== newJson, false, silent)
 }
 
 // recursive function to remove possibly nested key if exists in given JSON
-// the key may use dot notation to indicate nesting, e.g. "a.b.c"
-function removeKeyIfExists(json: DataObject, jsonKey: string): DataObject {
+// the key is given as already split path segments, e.g. ["a", "b", "c"]
+function removeKeyIfExists(json: DataObject, keys: string[]): DataObject {
     // nothing to remove from null, primitive or array root
     if (json === null || typeof json !== 'object' || Array.isArray(json)) {
         return json
     }
 
-    const keys = jsonKey.split('.')
-
     if (keys.length === 1) {
         // try delete the bottom-most key if exists
-        if (Object.prototype.hasOwnProperty.call(json, jsonKey)) {
-            delete json[jsonKey]
+        if (Object.prototype.hasOwnProperty.call(json, keys[0])) {
+            delete json[keys[0]]
         }
     } else {
         // dive +1 deeper if nested object exists under first part of the composite key
@@ -55,7 +54,7 @@ function removeKeyIfExists(json: DataObject, jsonKey: string): DataObject {
         if (Object.prototype.hasOwnProperty.call(json, keys[0])) {
             const nestedValue = json[keys[0]]
             if (nestedValue !== null && typeof nestedValue === 'object' && !Array.isArray(nestedValue)) {
-                json[keys[0]] = removeKeyIfExists(nestedValue as DataObject, keys.slice(1).join('.'))
+                json[keys[0]] = removeKeyIfExists(nestedValue as DataObject, keys.slice(1))
             }
         }
     }

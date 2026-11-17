@@ -28,6 +28,14 @@ describe('Test updateJsonFile function', () => {
     expect(updateJsonFile).toBeDefined()
   })
 
+  test('should set key with escaped dot as a whole', async () => {
+    const file = join(wd, 'update-json-escaped.json')
+    writeFileSync(file, '{\n  "a.b": 1\n}\n')
+    await updateJsonFile({ targetPath: file, jsonKey: 'a\\.b', patch: 2, force: true })
+    await updateJsonFile({ targetPath: file, jsonKey: 'c.d\\.e', patch: 3, force: true })
+    expect(JSON.parse(readNormalizedFile(wd, 'update-json-escaped.json'))).toEqual({ 'a.b': 2, c: { 'd.e': 3 } })
+  })
+
   test('should fail when path check fails', async () => {
     vi.mocked(checkPath).mockReturnValueOnce({ valid: false, error: 'Invalid path' })
     await expect(updateJsonFile({ targetPath: 'a', jsonKey: 'cosca', patch: 1, force: true })).rejects.toThrow(/Invalid path/)

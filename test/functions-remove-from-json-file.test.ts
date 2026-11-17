@@ -27,6 +27,14 @@ describe('Test removeFromJsonFile function', () => {
     expect(removeFromJsonFile).toBeDefined()
   })
 
+  test('should remove key with escaped dot as a whole', async () => {
+    const file = join(wd, 'remove-json-escaped.json')
+    writeFileSync(file, JSON.stringify({ 'a.b': 1, a: { b: 2 }, c: { 'd.e': 3, f: 4 } }))
+    await removeFromJsonFile({ targetPath: file, jsonKey: 'a\\.b', force: true })
+    await removeFromJsonFile({ targetPath: file, jsonKey: 'c.d\\.e', force: true })
+    expect(JSON.parse(readFileSync(file, 'utf8'))).toEqual({ a: { b: 2 }, c: { f: 4 } })
+  })
+
   test('should fail when path check fails', async () => {
     vi.mocked(checkPath).mockReturnValueOnce({ valid: false, error: 'Invalid path' })
     await expect(removeFromJsonFile({ targetPath: 'a', jsonKey: 'cosca', force: true })).rejects.toThrow(/Invalid path/)

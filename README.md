@@ -133,11 +133,27 @@ type DataValue = DataPrimitive | DataObject | DataArray
 
 Path to `targetPath` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must be a valid JSON file with an object at its root. It is parsed using plain `JSON.parse`.
 
-The given `jsonKey` might point to a nested key using dot notation, e.g. `a.b.c`. Missing intermediate levels are created as empty objects, and existing intermediate levels that are not objects (primitives, arrays and `null`) are replaced with objects. Empty key segments (e.g. `a..b`) and the segments `__proto__`, `constructor` and `prototype` are rejected with an error (the same applies to the top-level keys of an object `patch`). If `jsonKey` does not exist, a new key is added. If `patch` is an object, its keys are shallow-merged into the existing value. If the existing value is not an object, it is replaced. If `patch` is an array and the existing value is also an array, the items of `patch` are appended to it (duplicates are skipped). If the existing non-null value is not an array, it is turned into an array with the existing value as its first item, followed by the new items. This also applies to arrays among the keys of an object `patch`. Setting `opts.overwriteArrays` to `true` results in full array replacement instead. Other values (primitives, arrays replacing a missing or `null` value and `null`) replace the existing value. The function tracks if any real change was made (values are compared deeply) and notifies the user if not.
+The given `jsonKey` might point to a nested key using dot notation, e.g. `a.b.c` (see [key escaping](#key-escaping) for keys containing literal dots). Missing intermediate levels are created as empty objects, and existing intermediate levels that are not objects (primitives, arrays and `null`) are replaced with objects. Empty key segments (e.g. `a..b`) and the segments `__proto__`, `constructor` and `prototype` are rejected with an error (the same applies to the top-level keys of an object `patch`). If `jsonKey` does not exist, a new key is added. If `patch` is an object, its keys are shallow-merged into the existing value. If the existing value is not an object, it is replaced. If `patch` is an array and the existing value is also an array, the items of `patch` are appended to it (duplicates are skipped). If the existing non-null value is not an array, it is turned into an array with the existing value as its first item, followed by the new items. This also applies to arrays among the keys of an object `patch`. Setting `opts.overwriteArrays` to `true` results in full array replacement instead. Other values (primitives, arrays replacing a missing or `null` value and `null`) replace the existing value. The function tracks if any real change was made (values are compared deeply) and notifies the user if not.
 
 If `targetPath` does not exist, the function throws an error by default. Setting `opts.createMissing` to `true` will instead create the file (including missing directories) as an empty JSON object with `patch` applied. The user is asked to confirm the creation unless `opts.force` is `true`.
 
 By default the function asks for confirmation before attempting to alter the `targetPath`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
+
+##### Key escaping
+
+The same rules apply to `jsonKey` and `yamlKey` of all update, remove and check functions.
+
+A dot in a key is a nesting separator by default. To address a flat keys that contain a literal dot (e.g. in VS Code settings), escape each such dot with a backslash. Because of  JavaScript, backslashes must be doubled in string literals. So the syntax to preserve flat keys with a dot is e.g. `'flat\\.key'`.
+
+A backslash escapes only a following dot or another backslash, so a literal backslash must be written as `\\` when it precedes a dot or another backslash. Any other backslash (including a trailing one) is kept as is.
+
+| Actual key name | Key to pass |
+| --- | --- |
+| `a.b` | `a\.b` |
+| `a\b` | `a\b` |
+| `a\\b` | `a\\\\b` |
+| `a\` as a parent of `b` | `a\\.b` |
+| `a\.b` | `a\\\.b` |
 
 #### `updateYamlFile`
 
@@ -174,7 +190,7 @@ Advanced YAML features outside this subset are currently not supported and will 
 
 Please [report](https://github.com/AloisSeckar/elrh-cosca/issues) any logical flaws and issues of the process. Open new feature request if your usecase requires support of advanced YAML features.
 
-The given `yamlKey` might point to a nested key using dot notation, e.g. `a.b.c`. Missing intermediate levels are created as empty maps, and existing intermediate levels that are not maps (scalars and sequences) are replaced with maps. Empty key segments (e.g. `a..b`) and the segments `__proto__`, `constructor` and `prototype` are rejected with an error (the same applies to the top-level keys of an object `patch`). If `yamlKey` does not exist, a new key is added. If `patch` is an object, its keys are shallow-merged into the existing value. If the existing value is not a map, it is replaced. If `patch` is an array and the existing value is a sequence, the items of `patch` are appended to it (duplicates are skipped). If the existing non-null value is not a sequence, it is turned into a sequence with the existing value as its first item, followed by the new items. Comments of the existing value are preserved in both cases. This also applies to arrays among the keys of an object `patch`. Setting `opts.overwriteArrays` to `true` results in full array replacement instead. Other values (primitives, arrays replacing a missing or `null` value and `null`) replace the existing value. The function tracks if any real change was made (values are compared deeply) and notifies the user if not.
+The given `yamlKey` might point to a nested key using dot notation, e.g. `a.b.c`. Literal dots in key names can be escaped with a backslash (see [key escaping](#key-escaping). Missing intermediate levels are created as empty maps, and existing intermediate levels that are not maps (scalars and sequences) are replaced with maps. Empty key segments (e.g. `a..b`) and the segments `__proto__`, `constructor` and `prototype` are rejected with an error (the same applies to the top-level keys of an object `patch`). If `yamlKey` does not exist, a new key is added. If `patch` is an object, its keys are shallow-merged into the existing value. If the existing value is not a map, it is replaced. If `patch` is an array and the existing value is a sequence, the items of `patch` are appended to it (duplicates are skipped). If the existing non-null value is not a sequence, it is turned into a sequence with the existing value as its first item, followed by the new items. Comments of the existing value are preserved in both cases. This also applies to arrays among the keys of an object `patch`. Setting `opts.overwriteArrays` to `true` results in full array replacement instead. Other values (primitives, arrays replacing a missing or `null` value and `null`) replace the existing value. The function tracks if any real change was made (values are compared deeply) and notifies the user if not.
 
 If `targetPath` does not exist, the function throws an error by default. Setting `opts.createMissing` to `true` will instead create the file (including missing directories) as an empty YAML map with `patch` applied. The user is asked to confirm the creation unless `opts.force` is `true`.
 
@@ -212,7 +228,7 @@ Takes a path to a JSON file and removes the specified `jsonKey`.
 
 Path to `targetPath` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist and be a valid JSON file. It is parsed using plain `JSON.parse`.
 
-The given `jsonKey` might point to a nested key using dot notation, e.g. `a.b.c`. If the key is not present, the file is left untouched and the user is notified.
+The given `jsonKey` might point to a nested key using dot notation, e.g. `a.b.c`. Literal dots in key names can be escaped with a backslash (see [key escaping](#key-escaping)). If the key is not present, the file is left untouched and the user is notified.
 
 By default the function asks for confirmation before attempting to alter the `targetPath`. Setting `opts.force` to `true` will suppress manual confirmation prompts. Passing `opts.prompt` allows tailoring your own initial question to the user.
 
@@ -244,7 +260,7 @@ Takes a path to a YAML file and removes the specified `yamlKey`.
 
 Path to `targetPath` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist and be a valid single-document YAML file. It is parsed using the built-in YAML parser (see [`updateYamlFile`](#updateyamlfile) for supported syntax and limitations), which preserves comments and formatting of the untouched parts of the file.
 
-The given `yamlKey` might point to a nested key using dot notation, e.g. `a.b.c`. If the key is not present (including when the file is empty or its root is not a map), the file is left untouched and the user is notified.
+The given `yamlKey` might point to a nested key using dot notation, e.g. `a.b.c`. Literal dots in key names can be escaped with a backslash (see [key escaping](#key-escaping)). If the key is not present (including when the file is empty or its root is not a map), the file is left untouched and the user is notified.
 
 Comments attached to the removed key are removed as well, with two exceptions. A comment directly above the first root-level key is treated as a file header and kept at the top of the file. A comment left above a nested map that became empty is dropped.
 
@@ -285,7 +301,7 @@ function hasJsonKey(opts: HasJsonKeyOptions): boolean
 
 Checks whether the given `jsonKey` exists in the JSON file located at `targetPath`. Path is resolved relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist and be a valid JSON file.
 
-The given `jsonKey` might point to a nested key using dot notation, e.g. `a.b.c`. If the key is present, the function returns `true`, `false` otherwise.
+The given `jsonKey` might point to a nested key using dot notation, e.g. `a.b.c`. Literal dots in key names can be escaped with a backslash (see [key escaping](#key-escaping)). If the key is present, the function returns `true`, `false` otherwise.
 
 #### `hasYamlKey`
 
@@ -298,7 +314,7 @@ function hasYamlKey(opts: HasYamlKeyOptions): boolean
 
 Checks whether the given `yamlKey` exists in the YAML file located at `targetPath`. Path is resolved relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist and be a valid single-document YAML file. It is parsed using the built-in YAML parser (see [`updateYamlFile`](#updateyamlfile) for supported syntax and limitations).
 
-The given `yamlKey` might point to a nested key using dot notation, e.g. `a.b.c`. If the key is present, the function returns `true`, `false` otherwise (including when the file is empty or its root is not a map).
+The given `yamlKey` might point to a nested key using dot notation, e.g. `a.b.c`. Literal dots in key names can be escaped with a backslash (see [key escaping](#key-escaping)). If the key is present, the function returns `true`, `false` otherwise (including when the file is empty or its root is not a map).
 
 #### `hasText`
 
