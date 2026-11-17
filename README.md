@@ -22,7 +22,7 @@ Every `targetPath` is validated before use. Absolute paths and traversal outside
 
 ### Bundle size
 
-The library has no runtime dependencies and no bundled third-party parsers. Everything is emitted into a single entry file (`dist/elrh-cosca.mjs`, ~45 kB) and the package is marked as `"sideEffects": false`, so unused functions can be tree-shaken when bundled into your own code.
+The library has no runtime dependencies and no bundled third-party parsers. The build keeps one output file per source module (`dist/elrh-cosca.mjs` is the entry file that re-exports them) and the package is marked as `"sideEffects": false`, so unused functions can be tree-shaken when bundled into your own code.
 
 ### List of file-manipulation functions
 
