@@ -2,7 +2,7 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 import { showMessage } from '../src/terminal/show-message'
 import { showDebug } from '../src/main'
 
-vi.mock('../src/terminal/show-message', () => ({ showMessage: vi.fn() }))
+vi.mock('../src/terminal/show-message', async () => (await import('./cosca-test-mocks')).mockShowMessage())
 
 describe('Test showDebug terminal helper', () => {
 

@@ -5,19 +5,9 @@ import { getStdoutSpy, getPromptUserSpy, setPromptSpy } from './cosca-test-utils
 import { existsSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-// wraps the real `rmSync` so a single call can be stubbed
-vi.mock('node:fs', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('node:fs')>()
-  return { ...actual, rmSync: vi.fn(actual.rmSync) }
-})
-
-// `checkPath` function must be mocked as it disallows paths outside of CWD
-// which is not possible because tests run in temporary folder
-vi.mock('../src/_private/check-path', () => ({
-  checkPath: vi.fn((_path: string) => {
-    return { valid: true }
-  })
-}))
+// required to avoid CWD containment in tests
+vi.mock('../src/_private/check-path', async () => (await import('./cosca-test-mocks')).mockCheckPath())
+vi.mock('node:fs', async () => (await import('./cosca-test-mocks')).mockNodeFs('rmSync'))
 
 describe('Test deletePath function', () => {
 

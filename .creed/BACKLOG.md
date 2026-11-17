@@ -15,4 +15,3 @@ This file holds pending tasks only, as a numbered list. Resolved items are delet
 5. Root `.env` holds dummy values for `test/cosca-test.js` and is tracked in git. Consider moving it into `test/fixtures`, so it does not collide with the `.env` rules in `SECURITY.md`.
 6. `.gitignore` entries `./vite` and `./cache` match nothing, because git does not support the `./` prefix in patterns.
 7. Wrong JSDoc of `readNormalizedFile` in `test/cosca-test-utils.ts`: it says the function returns an array of lines, but it returns a single string.
-8. `checkPath` mock is identically spawned in 14 test files and might be worth to be hoisted into helper function.

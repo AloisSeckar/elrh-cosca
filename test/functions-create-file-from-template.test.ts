@@ -4,19 +4,9 @@ import { createFileFromTemplate } from '../src/main'
 import { checkPath } from '../src/_private/check-path'
 import { getStdoutSpy, setPromptSpy, readNormalizedFile, getPromptUserSpy } from './cosca-test-utils'
 
-// `checkPath` function must be mocked as it disallows paths outside of CWD
-// which is not possible because tests run in temporary folder
-vi.mock('../src/_private/check-path', () => ({
-  checkPath: vi.fn((_path: string) => {
-    return { valid: true }
-  })
-}))
-
-// wraps the real `copyFileSync` so a single call can be stubbed
-vi.mock('node:fs', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('node:fs')>()
-  return { ...actual, copyFileSync: vi.fn(actual.copyFileSync) }
-})
+// required to avoid CWD containment in tests
+vi.mock('../src/_private/check-path', async () => (await import('./cosca-test-mocks')).mockCheckPath())
+vi.mock('node:fs', async () => (await import('./cosca-test-mocks')).mockNodeFs('copyFileSync'))
 
 describe('Test createFileFromTemplate function', () => {
 

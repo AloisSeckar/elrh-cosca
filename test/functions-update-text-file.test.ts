@@ -5,13 +5,8 @@ import { updateTextFile } from '../src/main'
 import { checkPath } from '../src/_private/check-path'
 import { getStdoutSpy, getPromptUserSpy, readNormalizedFile, setPromptSpy } from './cosca-test-utils'
 
-// `checkPath` function must be mocked as it disallows paths outside of CWD
-// which is not possible because tests run in temporary folder
-vi.mock('../src/_private/check-path', () => ({
-  checkPath: vi.fn((_path: string) => {
-    return { valid: true }
-  })
-}))
+// required to avoid CWD containment in tests
+vi.mock('../src/_private/check-path', async () => (await import('./cosca-test-mocks')).mockCheckPath())
 
 describe('Test updateTextFile function', () => {
 
