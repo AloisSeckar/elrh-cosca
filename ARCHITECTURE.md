@@ -37,7 +37,7 @@ Public functions are split into four groups by purpose (`functions`, `checks`, `
 
 The file `index.html` with `public/vite.svg` is a simple static landing page of the project, served by `pnpm dev` (Vite dev server). It is not part of the library build or the published package.
 
-The build keeps one output file per source module in `dist`. The entry file is `dist/elrh-cosca.mjs` and type declarations go to `dist/types`. The `files` field in `package.json` lists only `dist` and `CHANGELOG.md` for publishing.
+The build keeps one output file per source module in `dist`. The entry file is `dist/elrh-cosca.mjs` and type declarations of `src` files go to `dist/types`. The `files` field in `package.json` lists only `dist` and `CHANGELOG.md` for publishing.
 
 ## Key Directories
 

@@ -43,6 +43,6 @@ export default defineConfig({
     },
   },
   plugins: [
-    dts({ outDirs: 'dist/types', insertTypesEntry: true }),
+    dts({ outDirs: 'dist/types', include: ['src'], insertTypesEntry: true }),
   ],
 })
