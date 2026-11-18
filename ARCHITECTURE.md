@@ -35,6 +35,8 @@ Public functions are split into four groups by purpose (`functions`, `checks`, `
 - File-manipulation functions share helpers from `src/_private/file-helpers.ts`. All of them first confirm the action with the user (`confirmAction`). Update and remove functions then read or prepare the target file, change the content and write it back (`readTargetFile`, `prepareTargetFile`, `writeUpdatedFile`). Create functions write the new file via `writeCreatedFile`. `deletePath` removes the path directly.
 - The library uses no third-party parsers. YAML files are handled by `src/_private/yaml.ts`, JS/TS config files by `src/_private/merge-config.ts` and downloads by `src/_private/fetch-file.ts`.
 
+The file `index.html` with `public/vite.svg` is a simple static landing page of the project, served by `pnpm dev` (Vite dev server). It is not part of the library build or the published package.
+
 The build keeps one output file per source module in `dist`. The entry file is `dist/elrh-cosca.mjs` and type declarations go to `dist/types`. The `files` field in `package.json` lists only `dist` and `CHANGELOG.md` for publishing.
 
 ## Key Directories
@@ -56,6 +58,8 @@ elrh-cosca/
 │   ├── cosca-test-setup.ts  # Vitest global setup
 │   ├── cosca-test-utils.ts  # Shared test helpers and mocks
 │   └── cosca-test.js     # Manual test script
+├── index.html            # Landing page shown by `pnpm dev`
+├── public/               # Static assets of the landing page (vite.svg)
 ├── .env                  # Dummy values for the manual test script
 ├── dist/                 # Build output (not in git)
 └── coverage/             # Vitest coverage report (not in git)
@@ -87,3 +91,4 @@ elrh-cosca/
 | Test with coverage                                      | `pnpm test`       |
 | Build (runs install, tests, `tsc` and `vite build`)     | `pnpm build`      |
 | Manual test of built `dist` (interactive, changes files in `test`) | `pnpm test-cosca` |
+| Landing page dev server                                 | `pnpm dev`        |

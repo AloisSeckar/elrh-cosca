@@ -22,7 +22,6 @@
   "scripts": {
     "dev": "vite",
     "build": "pnpm install && vitest run && tsc && vite build",
-    "preview": "vite preview",
     "prepublishOnly": "pnpm build",
     "test": "vitest run --coverage",
     "test-cosca": "node test/cosca-test.js"
