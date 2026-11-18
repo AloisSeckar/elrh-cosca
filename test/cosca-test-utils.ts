@@ -9,7 +9,7 @@ import * as promptModule from '../src/terminal/prompt-user'
  * Reads a (text) file into the string array.
  * @param dir path to directory
  * @param file name of the (text) file (must exist in `dir`)
- * @returns array of read lines 
+ * @returns file contents with normalized line endings
  */
 export function readNormalizedFile(dir: string, file: string): string {
   const source = join(dir, file)

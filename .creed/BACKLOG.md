@@ -9,4 +9,3 @@ This file holds pending tasks only, as a numbered list. Resolved items are delet
 <!-- ↑↑↑ agentcreed ↑↑↑ -->
 
 1. Root `.env` holds dummy values for `test/cosca-test.js` and is tracked in git. Consider moving it into `test/fixtures`, so it does not collide with the `.env` rules in `SECURITY.md`.
-2. Wrong JSDoc of `readNormalizedFile` in `test/cosca-test-utils.ts`: it says the function returns an array of lines, but it returns a single string.
