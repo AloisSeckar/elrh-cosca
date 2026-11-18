@@ -2,6 +2,23 @@
 
 Overview of the newest features in COSCA.
 
+## 0.5.2
+
+`2026-11-18`
+
+- feat: add support for flat keys with dots in JSON and YAML files (#35)
+- feat: `promptUser` also accepts `linesBefore` and `linesAfter` opts
+- feat: allow `showX` terminal functions to override output target
+- feat: allow output text color to be chosen in all terminal functions
+- test: move test-related `.env` file to `test/fixtures`
+- test: apply some refactors to reduce code-duplications and ineffectivity
+- docs: fixed some inconsistencies in JSDoc comments
+- build: include CHANGELOG in released package
+- build: omit internal test-related types from the released package
+- build: bump deps (`vite`, `vitest`, `vite-plugin-dts`)
+- chore: cleanup of Vite template leftovers
+- chore: started using experimental [Agent Creed](https://github.com/AloisSeckar/AgentCreed) methodology for AI-assisted development
+
 ## 0.5.1
 
 `2026-11-10`
