@@ -1,6 +1,4 @@
 # local runtime files
-./vite
-./cache
 dist/
 node_modules/
 
