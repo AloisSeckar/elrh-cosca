@@ -34,11 +34,12 @@ async function main() {
   await promptUser({ question: 'Is it today?', linesBefore: 1, linesAfter: 1, color: 'cyan' })
 
   console.log('Test getEnvValue')
-  const a = getEnvValue({ key: 'A' })
-  const b = getEnvValue({ key: 'B' })
-  const c = getEnvValue({ key: 'C' })
-  const d = getEnvValue({ key: 'D' })
-  const e = getEnvValue({ key: 'E' })
+  const envFilePath = 'test/fixtures/.env'
+  const a = getEnvValue({ key: 'A', envFilePath })
+  const b = getEnvValue({ key: 'B', envFilePath })
+  const c = getEnvValue({ key: 'C', envFilePath })
+  const d = getEnvValue({ key: 'D', envFilePath })
+  const e = getEnvValue({ key: 'E', envFilePath })
   console.log(a, b, c, d, e)
 
   console.log('Test promptUser')

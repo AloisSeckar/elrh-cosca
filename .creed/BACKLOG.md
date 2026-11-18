@@ -7,5 +7,3 @@ This file is used to collect tasks for the project codebase discovered during de
 This file holds pending tasks only, as a numbered list. Resolved items are deleted, never marked as done. When resolved items are deleted, the remaining items are renumbered.
 
 <!-- ↑↑↑ agentcreed ↑↑↑ -->
-
-1. Root `.env` holds dummy values for `test/cosca-test.js` and is tracked in git. Consider moving it into `test/fixtures`, so it does not collide with the `.env` rules in `SECURITY.md`.

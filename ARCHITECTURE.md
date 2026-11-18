@@ -60,7 +60,6 @@ elrh-cosca/
 │   └── cosca-test.js     # Manual test script
 ├── index.html            # Landing page shown by `pnpm dev`
 ├── public/               # Static assets of the landing page (vite.svg)
-├── .env                  # Dummy values for the manual test script
 ├── dist/                 # Build output (not in git)
 └── coverage/             # Vitest coverage report (not in git)
 ```
@@ -85,10 +84,10 @@ elrh-cosca/
 
 ## Quick Commands
 
-| Action                                                  | Command           |
-| ------------------------------------------------------- | ----------------- |
-| Install                                                 | `pnpm install`    |
-| Test with coverage                                      | `pnpm test`       |
-| Build (runs install, tests, `tsc` and `vite build`)     | `pnpm build`      |
-| Manual test of built `dist` (interactive, changes files in `test`) | `pnpm test-cosca` |
-| Landing page dev server                                 | `pnpm dev`        |
+| Action                                                                | Command           |
+| --------------------------------------------------------------------- | ----------------- |
+| Install                                                               | `pnpm install`    |
+| Test with coverage                                                    | `pnpm test`       |
+| Build (runs install, tests, `tsc` and `vite build`)                   | `pnpm build`      |
+| Manual test of built `dist` (interactive, changes files in `test`)    | `pnpm test-cosca` |
+| Landing page dev server                                               | `pnpm dev`        |

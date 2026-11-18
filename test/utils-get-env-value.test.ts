@@ -11,14 +11,20 @@ describe('Test getEnvValue util function', () => {
   })
 
   test('should return value for existing keys', () => {
-    const valueA = getEnvValue({ key: 'A' })
-    expect(valueA).toBe('1')
-    const valueB = getEnvValue({ key: 'B' })
-    expect(valueB).toBe('2')
-    const valueC = getEnvValue({ key: 'C' })
-    expect(valueC).toBe('3')
-    const valueD = getEnvValue({ key: 'D' })
-    expect(valueD).toBe('4.56')
+    // default path is `.env` in CWD, which points to the copy of fixtures
+    const cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue(process.env.WORKSPACE_DIR!)
+    try {
+      const valueA = getEnvValue({ key: 'A' })
+      expect(valueA).toBe('ABC')
+      const valueB = getEnvValue({ key: 'B' })
+      expect(valueB).toBe('2')
+      const valueC = getEnvValue({ key: 'C' })
+      expect(valueC).toBe('3')
+      const valueD = getEnvValue({ key: 'D' })
+      expect(valueD).toBe('4.56')
+    } finally {
+      cwdSpy.mockRestore()
+    }
   })
 
   test('should return value for existing value in custom .env file', () => {
@@ -28,9 +34,9 @@ describe('Test getEnvValue util function', () => {
 
   test('should resolve the default .env path at call time', () => {
     const directory = mkdtempSync(join(tmpdir(), 'cosca-env-'))
-    const cwdSpy = vi.spyOn(process, 'cwd')
+    const cwdSpy = vi.spyOn(process, 'cwd').mockReturnValue(process.env.WORKSPACE_DIR!)
     try {
-      expect(getEnvValue({ key: 'A' })).toBe('1')
+      expect(getEnvValue({ key: 'A' })).toBe('ABC')
       writeFileSync(join(directory, '.env'), 'A=changed\n')
       cwdSpy.mockReturnValue(directory)
       expect(getEnvValue({ key: 'A' })).toBe('changed')
