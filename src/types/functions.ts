@@ -38,7 +38,7 @@ export interface CreateFileFromTemplateOptions extends FileOperationOptions {
 }
 
 export interface CreateFileFromWebTemplateOptions extends FileOperationOptions {
-	/** The URL of the template file (must be accessible via `node:https.get`; content is copied byte-for-byte; HTTPS redirects are followed (up to 5 times); responses over 10 MiB and requests taking over 30 s are aborted). */
+	/** The URL of the template file (must be accessible via `node:https.get`; content is copied byte-for-byte; HTTPS redirects are followed (up to 5 times by default, env `COSCA_FETCH_REDIRECTS`); responses over 10 MiB (env `COSCA_FETCH_SIZE`, bytes) and requests taking over 30 s (env `COSCA_FETCH_TIMEOUT`, milliseconds) are aborted). */
 	url: string
 }
 
