@@ -4,10 +4,15 @@ import { isDeepStrictEqual } from 'node:util'
 import {
   confirmAction, prepareTargetFile, PROTOTYPE_POLLUTION_KEYS, writeUpdatedFile,
 } from '../_private/file-helpers.js'
+import type { JsoncArray, JsoncDocument, JsoncObject } from '../_private/jsonc.js'
+import {
+  createJsoncNode, getObjectNode, isJsoncArray, isJsoncObject, isJsoncPrimitive,
+  jsoncToValue, parseJsoncDocument, setObjectNode, stringifyJsoncDocument,
+} from '../_private/jsonc.js'
 import { parseKey } from '../_private/parse-key.js'
 
 /**
- * Updates a JSON file by setting a key with new value(s). The key can be nested and can alter between primitives to objects and arrays as needed.
+ * Updates a JSON/JSONC file by setting a key with new value(s). The key can be nested and can alter between primitives to objects and arrays as needed. Existing comments are preserved.
  * 
  * @param {string} opts.targetPath - The path to the file or directory to work with (relative to CWD).
  * @param {string} opts.jsonKey - The key in the JSON file to update (can be new or existing; may use dot notation for nested keys, escape a literal dot as `\.` and a literal backslash as `\\` - missing or non-object intermediate levels are replaced with objects).
@@ -18,7 +23,7 @@ import { parseKey } from '../_private/parse-key.js'
  * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
  * @param {boolean} [opts.silent] - If true, suppresses all console log output (default: false).
  * @returns {Promise<void>} A promise that resolves when the operation is finished or skipped.
- * @throws Will throw an error if the path or the key is invalid, the file does not exist (and `createMissing` is not set), cannot be parsed as JSON or its root is not an object.
+ * @throws Will throw an error if the path or the key is invalid, the file does not exist (and `createMissing` is not set), cannot be parsed as JSON/JSONC or its root is not an object.
  */
 export async function updateJsonFile(opts: UpdateJsonFileOptions): Promise<void> {
   const { targetPath, jsonKey, patch, overwriteArrays = false, silent = false } = opts
@@ -30,7 +35,7 @@ export async function updateJsonFile(opts: UpdateJsonFileOptions): Promise<void>
   if (keys.some(key => key === '' || PROTOTYPE_POLLUTION_KEYS.has(key))) {
     throw new Error(`Invalid JSON key '${jsonKey}'.`)
   }
-  if (isJsonObject(patch) && Object.keys(patch as object).some(key => PROTOTYPE_POLLUTION_KEYS.has(key))) {
+  if (isPlainObject(patch) && Object.keys(patch).some(key => PROTOTYPE_POLLUTION_KEYS.has(key))) {
     throw new Error(`Invalid JSON key in patch of '${jsonKey}'.`)
   }
 
@@ -40,70 +45,84 @@ export async function updateJsonFile(opts: UpdateJsonFileOptions): Promise<void>
   }
 
   const jsonRaw = target.content ?? '{}'
-  let json
+  let doc: JsoncDocument
   try {
-    json = JSON.parse(jsonRaw)
+    doc = parseJsoncDocument(jsonRaw)
   } catch (err) {
     throw new Error(`Could not parse '${targetPath}' — cannot update its contents.\n${err}`)
   }
 
-  if (!isJsonObject(json)) {
+  if (!isJsoncObject(doc.root)) {
     throw new Error(`Root of '${targetPath}' is not a JSON object — cannot update its contents.`)
   }
 
   let modified = target.created
 
   const targetKey = keys.pop()!
-  let parent = json
+  let parent: JsoncObject = doc.root
   for (const key of keys) {
-    const nested = parent[key]
-    if (!isJsonObject(nested)) {
-      parent[key] = {}
+    const nested = getObjectNode(parent, key)
+    if (isJsoncObject(nested)) {
+      parent = nested
+    } else {
+      const obj = createJsoncNode({}) as JsoncObject
+      setObjectNode(parent, key, obj)
+      parent = obj
       modified = true
     }
-    parent = parent[key]
   }
 
-  if (patch === null || typeof patch !== 'object' || Array.isArray(patch)) {
+  if (!isPlainObject(patch)) {
     modified = setValue(parent, targetKey, patch, overwriteArrays) || modified
   } else {
-    if (!isJsonObject(parent[targetKey])) {
+    let targetNode = getObjectNode(parent, targetKey)
+    if (!isJsoncObject(targetNode)) {
       // non-object values cannot be merged into, so they are replaced
-      parent[targetKey] = {}
+      targetNode = createJsoncNode({}) as JsoncObject
+      setObjectNode(parent, targetKey, targetNode)
       modified = true
     }
     for (const [key, value] of Object.entries(patch)) {
-      modified = setValue(parent[targetKey], key, value, overwriteArrays) || modified
+      modified = setValue(targetNode, key, value, overwriteArrays) || modified
     }
   }
 
-  writeUpdatedFile(targetPath, target.fullPath, JSON.stringify(json, null, 2) + '\n', modified, target.created, silent)
+  writeUpdatedFile(targetPath, target.fullPath, modified ? stringifyJsoncDocument(doc) : '', modified, target.created, silent)
 }
 
-function setValue(obj: Record<string, unknown>, key: string, value: DataValue, overwriteArrays: boolean): boolean {
-  const exists = Object.prototype.hasOwnProperty.call(obj, key)
-  const current = obj[key]
-  if (!overwriteArrays && Array.isArray(value) && exists && current !== null) {
-    const items = Array.isArray(current) ? current : [current]
-    let added = false
+function setValue(obj: JsoncObject, key: string, value: DataValue, overwriteArrays: boolean): boolean {
+  const current = getObjectNode(obj, key)
+  if (!overwriteArrays && Array.isArray(value) && current !== undefined && !(isJsoncPrimitive(current) && current.value === null)) {
+    const items: unknown[] = isJsoncArray(current) ? (jsoncToValue(current) as unknown[]) : [jsoncToValue(current)]
+    const added: DataValue[] = []
     for (const item of value) {
       if (!items.some(existing => isDeepStrictEqual(existing, item))) {
         items.push(item)
-        added = true
+        added.push(item)
       }
     }
-    if (added) {
-      obj[key] = items
+    if (added.length === 0) {
+      return false
     }
-    return added
+    let arr: JsoncArray
+    if (isJsoncArray(current)) {
+      arr = current
+    } else {
+      arr = { kind: 'array', items: [current] }
+      setObjectNode(obj, key, arr)
+    }
+    for (const item of added) {
+      arr.items.push(createJsoncNode(item))
+    }
+    return true
   }
-  if (exists && isDeepStrictEqual(current, value)) {
+  if (current !== undefined && isDeepStrictEqual(jsoncToValue(current), value)) {
     return false
   }
-  obj[key] = value
+  setObjectNode(obj, key, createJsoncNode(value))
   return true
 }
 
-function isJsonObject(value: unknown): boolean {
+function isPlainObject(value: unknown): value is Record<string, DataValue> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
 }

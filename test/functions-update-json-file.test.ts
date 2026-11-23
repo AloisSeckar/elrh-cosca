@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, expectTypeOf, test, vi } from 'vitest'
-import { existsSync, writeFileSync } from 'node:fs'
+import { copyFileSync, existsSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { updateJsonFile } from '../src/main'
 import type { UpdateJsonFileOptions } from '../src/main'
@@ -343,6 +343,33 @@ describe('Test updateJsonFile function', () => {
     const promptSpy = getPromptUserSpy()
     await updateJsonFile({ targetPath: `${wd}/json-file.json`, jsonKey: 'cosca3', patch: ['value1', 'value2'], force: true })
     expect(promptSpy).not.toHaveBeenCalled()
+  })
+
+  test('should update JSONC file with comments and trailing comma while preserving comments', async () => {
+    const file = join(wd, 'update-json-with-comments.jsonc')
+    copyFileSync(join(wd, 'json-with-comments.jsonc'), file)
+
+    // no-op update leaves file untouched
+    spy.mockClear()
+    await updateJsonFile({ targetPath: file, jsonKey: 'key1', patch: 'value', force: true })
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
+
+    // update existing key and add new key
+    await updateJsonFile({ targetPath: file, jsonKey: 'key1', patch: 'updated', force: true })
+    await updateJsonFile({ targetPath: file, jsonKey: 'cosca', patch: { nested: true }, force: true })
+
+    expect(readNormalizedFile(wd, 'update-json-with-comments.jsonc')).toBe([
+      '{',
+      '  // is not allowed in JSON, but it is here anyway',
+      '  "key1": "updated",',
+      '  /* is not allowed in JSON, but it is here anyway including the trailing comma */',
+      '  "key2": "value2",',
+      '  "cosca": {',
+      '    "nested": true',
+      '  }',
+      '}',
+      '',
+    ].join('\n'))
   })
 
 })

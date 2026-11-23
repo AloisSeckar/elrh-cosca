@@ -1,0 +1,6 @@
+{
+    // is not allowed in JSON, but it is here anyway
+    "key1": "value",
+    /* is not allowed in JSON, but it is here anyway including the trailing comma */
+    "key2": "value2",
+}

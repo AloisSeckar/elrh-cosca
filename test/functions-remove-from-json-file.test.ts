@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import { readFileSync, writeFileSync } from 'node:fs'
+import { copyFileSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { removeFromJsonFile } from '../src/main'
 import { checkPath } from '../src/_private/check-path'
@@ -149,6 +149,28 @@ describe('Test removeFromJsonFile function', () => {
     const uSpy = getPromptUserSpy()
     await removeFromJsonFile({ targetPath: `a`, jsonKey: 'b', force: false, prompt: "Custom prompt" })
     expect(uSpy).toHaveBeenCalledWith({ question: expect.stringMatching(/Custom prompt/) })
+  })
+
+  test('should remove key from JSONC file while preserving comments on remaining keys', async () => {
+    const file = join(wd, 'remove-json-with-comments.jsonc')
+    copyFileSync(join(wd, 'json-with-comments.jsonc'), file)
+
+    // removing non-existent key leaves file untouched
+    spy.mockClear()
+    await removeFromJsonFile({ targetPath: file, jsonKey: 'missing', force: true })
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file already up to date/))
+
+    // removing key1 preserves key2 and its block comment
+    await removeFromJsonFile({ targetPath: file, jsonKey: 'key1', force: true })
+    expect(spy).toHaveBeenCalledWith(expect.stringMatching(/file updated/))
+
+    expect(readNormalizedFile(wd, 'remove-json-with-comments.jsonc')).toBe([
+      '{',
+      '  /* is not allowed in JSON, but it is here anyway including the trailing comma */',
+      '  "key2": "value2"',
+      '}',
+      '',
+    ].join('\n'))
   })
 
 })

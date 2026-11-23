@@ -33,7 +33,7 @@ Public functions are split into four groups by purpose (`functions`, `checks`, `
 
 - Every `targetPath` is validated by `checkPath` from `src/_private/check-path.ts` before use.
 - File-manipulation functions share helpers from `src/_private/file-helpers.ts`. All of them first confirm the action with the user (`confirmAction`). Update and remove functions then read or prepare the target file, change the content and write it back (`readTargetFile`, `prepareTargetFile`, `writeUpdatedFile`). Create functions write the new file via `writeCreatedFile`. `deletePath` removes the path directly.
-- The library uses no third-party parsers. YAML files are handled by `src/_private/yaml.ts`, JS/TS config files by `src/_private/merge-config.ts` and downloads by `src/_private/fetch-file.ts`.
+- The library uses no third-party parsers. JSON/JSONC files are handled by `src/_private/jsonc.ts`, YAML files by `src/_private/yaml.ts`, JS/TS config files by `src/_private/merge-config.ts` and downloads by `src/_private/fetch-file.ts`.
 
 The file `index.html` with `public/vite.svg` is a simple static landing page of the project, served by `pnpm dev` (Vite dev server). It is not part of the library build or the published package.
 

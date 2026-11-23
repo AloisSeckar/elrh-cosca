@@ -1,10 +1,13 @@
 import type { RemoveFromJsonFileOptions } from '../types/functions.js'
-import type { DataObject } from '../types/data.js'
 import { confirmAction, readTargetFile, writeUpdatedFile } from '../_private/file-helpers.js'
+import {
+  deleteObjectKey, getObjectNode, isJsoncObject,
+  parseJsoncDocument, stringifyJsoncDocument,
+} from '../_private/jsonc.js'
 import { parseKey } from '../_private/parse-key.js'
 
 /**
- * Updates a JSON file by deleting a specified key.
+ * Updates a JSON/JSONC file by deleting a specified key. Existing comments on untouched keys are preserved.
  * 
  * @param {string} opts.targetPath - The path to the file or directory to work with (relative to CWD).
  * @param {string} opts.jsonKey - The key in the JSON file to be deleted (may use dot notation for nested keys; escape a literal dot as `\.` and a literal backslash as `\\`).
@@ -12,7 +15,7 @@ import { parseKey } from '../_private/parse-key.js'
  * @param {string} [opts.prompt] - Custom text of the initial confirmation question (default: built-in question).
  * @param {boolean} [opts.silent] - If true, suppresses all console log output (default: false).
  * @returns {Promise<void>} A promise that resolves when the operation is finished or skipped.
- * @throws Will throw an error if the path is invalid, the file does not exist or cannot be parsed as JSON.
+ * @throws Will throw an error if the path is invalid, the file does not exist or cannot be parsed as JSON/JSONC.
  */
 export async function removeFromJsonFile(opts: RemoveFromJsonFileOptions): Promise<void> {
   const { targetPath, jsonKey, silent = false } = opts
@@ -21,43 +24,20 @@ export async function removeFromJsonFile(opts: RemoveFromJsonFileOptions): Promi
   }
 
   const { fullPath, content } = readTargetFile(targetPath, 'delete its keys')
-  let json
+  let doc
   try {
-    json = JSON.parse(content)
+    doc = parseJsoncDocument(content)
   } catch (err) {
     throw new Error(`Could not parse '${targetPath}' — cannot delete its keys.\n${err}`)
   }
 
-  const oldJson = JSON.stringify(json, null, 2)
-  json = removeKeyIfExists(json, parseKey(jsonKey))
-  const newJson = JSON.stringify(json, null, 2)
+  const keys = parseKey(jsonKey)
+  const targetKey = keys.pop()!
+  let parent: ReturnType<typeof getObjectNode> = doc.root
+  for (const key of keys) {
+    parent = isJsoncObject(parent) ? getObjectNode(parent, key) : undefined
+  }
 
-  writeUpdatedFile(targetPath, fullPath, newJson + '\n', oldJson !== newJson, false, silent)
-}
-
-// recursive function to remove possibly nested key if exists in given JSON
-// the key is given as already split path segments, e.g. ["a", "b", "c"]
-function removeKeyIfExists(json: DataObject, keys: string[]): DataObject {
-    // nothing to remove from null, primitive or array root
-    if (json === null || typeof json !== 'object' || Array.isArray(json)) {
-        return json
-    }
-
-    if (keys.length === 1) {
-        // try delete the bottom-most key if exists
-        if (Object.prototype.hasOwnProperty.call(json, keys[0])) {
-            delete json[keys[0]]
-        }
-    } else {
-        // dive +1 deeper if nested object exists under first part of the composite key
-        // must be an object, not a null, primitive or an array
-        if (Object.prototype.hasOwnProperty.call(json, keys[0])) {
-            const nestedValue = json[keys[0]]
-            if (nestedValue !== null && typeof nestedValue === 'object' && !Array.isArray(nestedValue)) {
-                json[keys[0]] = removeKeyIfExists(nestedValue as DataObject, keys.slice(1))
-            }
-        }
-    }
-
-    return json
+  const modified = isJsoncObject(parent) && deleteObjectKey(parent, targetKey)
+  writeUpdatedFile(targetPath, fullPath, modified ? stringifyJsoncDocument(doc) : '', modified, false, silent)
 }

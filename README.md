@@ -131,7 +131,7 @@ type DataArray = DataValue[]
 type DataValue = DataPrimitive | DataObject | DataArray
 ```
 
-Path to `targetPath` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must be a valid JSON file with an object at its root. It is parsed using plain `JSON.parse`.
+Path to `targetPath` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must be a valid JSON or JSONC file with an object at its root. It is processed using a built-in JSONC parser and serializer that supports `//` line comments, `/* ... */` block comments and trailing commas, and preserves existing comments when writing updates.
 
 The given `jsonKey` might point to a nested key using dot notation, e.g. `a.b.c` (see [key escaping](#key-escaping) for keys containing literal dots). Missing intermediate levels are created as empty objects, and existing intermediate levels that are not objects (primitives, arrays and `null`) are replaced with objects. Empty key segments (e.g. `a..b`) and the segments `__proto__`, `constructor` and `prototype` are rejected with an error (the same applies to the top-level keys of an object `patch`). If `jsonKey` does not exist, a new key is added. If `patch` is an object, its keys are shallow-merged into the existing value. If the existing value is not an object, it is replaced. If `patch` is an array and the existing value is also an array, the items of `patch` are appended to it (duplicates are skipped). If the existing non-null value is not an array, it is turned into an array with the existing value as its first item, followed by the new items. This also applies to arrays among the keys of an object `patch`. Setting `opts.overwriteArrays` to `true` results in full array replacement instead. Other values (primitives, arrays replacing a missing or `null` value and `null`) replace the existing value. The function tracks if any real change was made (values are compared deeply) and notifies the user if not.
 
@@ -226,7 +226,7 @@ async function removeFromJsonFile(opts: RemoveFromJsonFileOptions): Promise<void
 
 Takes a path to a JSON file and removes the specified `jsonKey`.
 
-Path to `targetPath` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist and be a valid JSON file. It is parsed using plain `JSON.parse`.
+Path to `targetPath` is relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist and be a valid JSON or JSONC file. It is processed using the built-in JSONC parser and serializer (supporting `//`, `/* ... */` comments and trailing commas) and preserves existing comments on untouched keys.
 
 The given `jsonKey` might point to a nested key using dot notation, e.g. `a.b.c`. Literal dots in key names can be escaped with a backslash (see [key escaping](#key-escaping)). If the key is not present, the file is left untouched and the user is notified.
 
@@ -299,7 +299,7 @@ interface HasJsonKeyOptions extends FilePathOptions {
 function hasJsonKey(opts: HasJsonKeyOptions): boolean
 ```
 
-Checks whether the given `jsonKey` exists in the JSON file located at `targetPath`. Path is resolved relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist and be a valid JSON file.
+Checks whether the given `jsonKey` exists in the JSON or JSONC file located at `targetPath`. Path is resolved relative to `process.cwd()`. Several checks are in place to prevent accidental and malicious paths from being passed in. Path traversal outside of CWD and absolute paths are disallowed. The file must exist and be a valid JSON or JSONC file (comments and trailing commas are supported).
 
 The given `jsonKey` might point to a nested key using dot notation, e.g. `a.b.c`. Literal dots in key names can be escaped with a backslash (see [key escaping](#key-escaping)). If the key is present, the function returns `true`, `false` otherwise.
 

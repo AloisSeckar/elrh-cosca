@@ -77,4 +77,11 @@ describe('Test hasJsonKey checker', () => {
     expect(hasJsonKey({ targetPath: `${wd}/json-file.json`, jsonKey: 'string-key.nested-key' })).toBe(false)
   })
 
+  test('should work with JSONC file containing comments and trailing comma', () => {
+    expect(hasJsonKey({ targetPath: `${wd}/json-with-comments.jsonc`, jsonKey: 'key1' })).toBe(true)
+    expect(hasJsonKey({ targetPath: `${wd}/json-with-comments.jsonc`, jsonKey: 'key2' })).toBe(true)
+    expect(hasJsonKey({ targetPath: `${wd}/json-with-comments.jsonc`, jsonKey: 'non-existent-key' })).toBe(false)
+    expect(hasJsonKey({ targetPath: `${wd}/json-with-comments.jsonc`, jsonKey: 'key1.nested' })).toBe(false)
+  })
+
 })
