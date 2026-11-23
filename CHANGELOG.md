@@ -2,6 +2,13 @@
 
 Overview of the newest features in COSCA.
 
+## 0.5.3
+
+`2026-11-23`
+
+- feat: add support for JSONC format in functions working with JSON files (#36)
+- feat: add multiple-choice prompt questions (#37)
+
 ## 0.5.2
 
 `2026-11-18`
