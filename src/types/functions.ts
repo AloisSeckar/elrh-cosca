@@ -111,6 +111,17 @@ export interface TerminalOutputOptions {
 export interface PromptUserOptions extends TerminalOutputOptions {
 	/** The question to ask the user. */
 	question: string
+	/** List of options for a multi-choice prompt; must contain at least one item (when omitted, a yes/no prompt is shown). */
+	multiChoice?: string[]
+}
+
+export interface PromptUserPolarOptions extends PromptUserOptions {
+	multiChoice?: undefined
+}
+
+export interface PromptUserMultiOptions extends PromptUserOptions {
+	/** List of options for a multi-choice prompt (must contain at least one item). */
+	multiChoice: string[]
 }
 
 export interface ShowMessageOptions extends TerminalOutputOptions {

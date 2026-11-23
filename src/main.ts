@@ -40,6 +40,8 @@ export type {
   UpdateTextFileOptions,
   UpdateYamlFileOptions,
   PromptUserOptions,
+  PromptUserPolarOptions,
+  PromptUserMultiOptions,
   TerminalOutputOptions,
   ShowMessageOptions,
   GetEnvValueOptions,

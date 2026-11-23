@@ -352,11 +352,22 @@ interface TerminalOutputOptions {
 }
 interface PromptUserOptions extends TerminalOutputOptions {
   question: string
+  multiChoice?: string[]
 }
-async function promptUser(opts: string | PromptUserOptions): Promise<boolean>
+interface PromptUserPolarOptions extends PromptUserOptions {
+  multiChoice?: undefined
+}
+interface PromptUserMultiOptions extends PromptUserOptions {
+  multiChoice: string[]
+}
+async function promptUser(opts: PromptUserMultiOptions): Promise<number[]>
+async function promptUser(opts: string | PromptUserPolarOptions): Promise<boolean>
+async function promptUser(opts: string | PromptUserOptions): Promise<boolean | number[]>
 ```
 
-Prints out a `question` (with ` (y/N): ` appended) to the console and waits for the input. Returns `true` when the user answers `y` or `yes` (case-insensitive) and `false` otherwise.
+When `multiChoice` is not present, prints out a `question` (presumed to be polar, with ` (y/N): ` appended) to the console and waits for the input. Returns `true` when the user answers `y` or `yes` (case-insensitive) and `false` otherwise.
+
+When `multiChoice` is provided (must contain at least one item), prints `question` followed by a 1-based numbered list of the options and prompts for comma- or space-separated numbers. Invalid entries are rejected with a re-prompt. Returns a sorted array of unique 1-based numbers (or an empty array when the input is empty).
 
 By default it uses `process.stdin` and `process.stdout` streams. To use custom NodeJS streams, pass `input` and `output` directly in `opts`, e.g. `promptUser({ question: 'Continue?', input, output })`. The optional `linesBefore` prints that many newlines before the question and `linesAfter` prints that many extra newlines after the answer is submitted (both default to `0`). When no extra options are needed, a plain string can be passed instead: `promptUser('Continue?')`.
 

@@ -42,9 +42,11 @@ async function main() {
   const e = getEnvValue({ key: 'E', envFilePath })
   console.log(a, b, c, d, e)
 
-  console.log('Test promptUser')
+  console.log('\nTest promptUser')
   const input = await promptUser({ question: 'Is it today?' })
   console.log('User input:', input)
+  const inputMulti = await promptUser({ question: 'What day is it?', multiChoice: ['Yesterday', 'Today', 'Tomorrow'] })
+  console.log('User input:', inputMulti)
 
   console.log('\nTest createFileFromTemplate')
   await createFileFromTemplate({ templateFile: 'vitest:README.md', targetPath: 'test/snapshots/test.file1' })

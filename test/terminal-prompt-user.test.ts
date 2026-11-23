@@ -2,7 +2,7 @@ import readline from 'node:readline'
 import { PassThrough } from 'node:stream'
 import { describe, expect, expectTypeOf, test, vi } from 'vitest'
 import { promptUser } from '../src/main'
-import type { PromptUserOptions } from '../src/main'
+import type { PromptUserMultiOptions, PromptUserOptions, PromptUserPolarOptions } from '../src/main'
 import { setPromptSpy } from './cosca-test-utils'
 
 describe('Test promptUser terminal helper', () => {
@@ -17,11 +17,19 @@ describe('Test promptUser terminal helper', () => {
   })
 
   test('should accept one options object with a required question', () => {
-    expectTypeOf(promptUser).parameters.toEqualTypeOf<[opts: string | PromptUserOptions]>()
+    expectTypeOf(promptUser).toBeCallableWith('Continue?')
+    expectTypeOf(promptUser).toBeCallableWith({ question: 'Continue?' })
+    expectTypeOf(promptUser).toBeCallableWith({ question: 'Pick:', multiChoice: ['A', 'B'] })
     expectTypeOf<{}>().not.toExtend<PromptUserOptions>()
     expectTypeOf<{ question: string }>().toExtend<PromptUserOptions>()
     expectTypeOf<{ message: string }>().not.toExtend<PromptUserOptions>()
     expectTypeOf<{ question: string, linesBefore: number, linesAfter: number }>().toExtend<PromptUserOptions>()
+    expectTypeOf<{ question: string, multiChoice: string[] }>().toExtend<PromptUserMultiOptions>()
+    expectTypeOf<{ question: string }>().toExtend<PromptUserPolarOptions>()
+    expectTypeOf((opts: string) => promptUser(opts)).returns.toEqualTypeOf<Promise<boolean>>()
+    expectTypeOf((opts: PromptUserPolarOptions) => promptUser(opts)).returns.toEqualTypeOf<Promise<boolean>>()
+    expectTypeOf((opts: PromptUserMultiOptions) => promptUser(opts)).returns.toEqualTypeOf<Promise<number[]>>()
+    expectTypeOf((opts: PromptUserOptions) => promptUser(opts)).returns.toEqualTypeOf<Promise<boolean | number[]>>()
   })
 
   test('should use default input and output streams', async () => {
@@ -136,5 +144,22 @@ describe('Test promptUser terminal helper', () => {
       input.destroy()
       output.destroy()
     }
+  })
+
+  test('should divert to multi-choice prompt when multiChoice is provided', async () => {
+    const input = new PassThrough()
+    const output = new PassThrough()
+    try {
+      setPromptSpy(['2, 1'])
+      expect(await promptUser({ question: 'Pick:', multiChoice: ['Alpha', 'Beta'], input, output })).toEqual([1, 2])
+    } finally {
+      input.destroy()
+      output.destroy()
+    }
+  })
+
+  test('should throw when multiChoice is an empty array', async () => {
+    await expect(promptUser({ question: 'Pick:', multiChoice: [] }))
+      .rejects.toThrow('multiChoice must contain at least one option')
   })
 })
