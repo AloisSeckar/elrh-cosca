@@ -14,7 +14,7 @@ Run `npm install elrh-cosca` to include it in your project.
 
 ### Options objects
 
-All functions with arguments take a single required `opts` object with one or more properties. Each options type is exported from `elrh-cosca` and defined in [src/types/functions.ts](src/types/functions.ts).
+All functions with arguments take a single required `opts` object with one or more properties (terminal helpers also accept a plain string instead of an options object). Each options type is exported from `elrh-cosca` and defined in [src/types/functions.ts](src/types/functions.ts).
 
 ### Path safety
 
@@ -143,7 +143,7 @@ By default the function asks for confirmation before attempting to alter the `ta
 
 The same rules apply to `jsonKey` and `yamlKey` of all update, remove and check functions.
 
-A dot in a key is a nesting separator by default. To address a flat keys that contain a literal dot (e.g. in VS Code settings), escape each such dot with a backslash. Because of  JavaScript, backslashes must be doubled in string literals. So the syntax to preserve flat keys with a dot is e.g. `'flat\\.key'`.
+A dot in a key is a nesting separator by default. To address flat keys that contain a literal dot (e.g. in VS Code settings), escape each such dot with a backslash. Because of JavaScript, backslashes must be doubled in string literals. So the syntax to preserve flat keys with a dot is e.g. `'flat\\.key'`.
 
 A backslash escapes only a following dot or another backslash, so a literal backslash must be written as `\\` when it precedes a dot or another backslash. Any other backslash (including a trailing one) is kept as is.
 
@@ -188,9 +188,9 @@ Advanced YAML features outside this subset are currently not supported and will 
 - complex collection keys (e.g. `[a, b]: 1`)
 - tab characters in indentation
 
-Please [report](https://github.com/AloisSeckar/elrh-cosca/issues) any logical flaws and issues of the process. Open new feature request if your usecase requires support of advanced YAML features.
+Please [report](https://github.com/AloisSeckar/elrh-cosca/issues) any logical flaws and issues of the process. Open a new feature request if your use case requires support of advanced YAML features.
 
-The given `yamlKey` might point to a nested key using dot notation, e.g. `a.b.c`. Literal dots in key names can be escaped with a backslash (see [key escaping](#key-escaping). Missing intermediate levels are created as empty maps, and existing intermediate levels that are not maps (scalars and sequences) are replaced with maps. Empty key segments (e.g. `a..b`) and the segments `__proto__`, `constructor` and `prototype` are rejected with an error (the same applies to the top-level keys of an object `patch`). If `yamlKey` does not exist, a new key is added. If `patch` is an object, its keys are shallow-merged into the existing value. If the existing value is not a map, it is replaced. If `patch` is an array and the existing value is a sequence, the items of `patch` are appended to it (duplicates are skipped). If the existing non-null value is not a sequence, it is turned into a sequence with the existing value as its first item, followed by the new items. Comments of the existing value are preserved in both cases. This also applies to arrays among the keys of an object `patch`. Setting `opts.overwriteArrays` to `true` results in full array replacement instead. Other values (primitives, arrays replacing a missing or `null` value and `null`) replace the existing value. The function tracks if any real change was made (values are compared deeply) and notifies the user if not.
+The given `yamlKey` might point to a nested key using dot notation, e.g. `a.b.c`. Literal dots in key names can be escaped with a backslash (see [key escaping](#key-escaping)). Missing intermediate levels are created as empty maps, and existing intermediate levels that are not maps (scalars and sequences) are replaced with maps. Empty key segments (e.g. `a..b`) and the segments `__proto__`, `constructor` and `prototype` are rejected with an error (the same applies to the top-level keys of an object `patch`). If `yamlKey` does not exist, a new key is added. If `patch` is an object, its keys are shallow-merged into the existing value. If the existing value is not a map, it is replaced. If `patch` is an array and the existing value is a sequence, the items of `patch` are appended to it (duplicates are skipped). If the existing non-null value is not a sequence, it is turned into a sequence with the existing value as its first item, followed by the new items. Comments of the existing value are preserved in both cases. This also applies to arrays among the keys of an object `patch`. Setting `opts.overwriteArrays` to `true` results in full array replacement instead. Other values (primitives, arrays replacing a missing or `null` value and `null`) replace the existing value. The function tracks if any real change was made (values are compared deeply) and notifies the user if not.
 
 If `targetPath` does not exist, the function throws an error by default. Setting `opts.createMissing` to `true` will instead create the file (including missing directories) as an empty YAML map with `patch` applied. The user is asked to confirm the creation unless `opts.force` is `true`.
 

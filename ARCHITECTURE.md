@@ -55,8 +55,9 @@ elrh-cosca/
 │   ├── *.test.ts         # Vitest suites
 │   ├── fixtures/         # Input files for the tests
 │   ├── snapshots/        # Expected file contents
+│   ├── cosca-test-mocks.ts  # Shared Vitest module mocks
 │   ├── cosca-test-setup.ts  # Vitest global setup
-│   ├── cosca-test-utils.ts  # Shared test helpers and mocks
+│   ├── cosca-test-utils.ts  # Shared test helpers and spies
 │   └── cosca-test.js     # Manual test script
 ├── index.html            # Landing page shown by `pnpm dev`
 ├── public/               # Static assets of the landing page (vite.svg)
@@ -74,7 +75,7 @@ elrh-cosca/
 
 - Each public function is defined in its own TypeScript file in `src/functions`, `src/checks`, `src/terminal` or `src/utils`.
 - Name of the function is camel-cased, file names are kebab-cased.
-- Function should contain JSDoc comments.
+- Public functions contain JSDoc comments.
 - Functions are made available via re-export in `src/main.ts`. The same applies to option types.
 - Functions with arguments take a single `opts` object. Its interface is defined in `src/types/functions.ts`. Terminal helpers also accept a plain string.
 - Each function has its Vitest test suite in `test` named `<folder>-<file-name>.test.ts` (e.g. `functions-update-text-file.test.ts`). Suites for `src/_private` modules use the `private-` prefix.

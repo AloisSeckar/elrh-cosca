@@ -45,8 +45,8 @@ Rules for both files:
 
 <!-- ↑↑↑ agentcreed ↑↑↑ -->
 
-When adding/changing function, it should be documented in `README.md` accordingly.
+When adding/changing a function, it should be documented in `README.md` accordingly.
 
-Option fields are documented twice: as `@param opts.*` tags in the function's JSDoc and as JSDoc comments on the matching interface fields in `src/types/functions.ts`. When adding/changing an option, always update both places so the texts stay aligned. Note that blind copying comment word-by-word from one place to another is not always desirable, as the function context is sometimes narrower than the general type (i.e. description of `color` option in terminal functions).
+Option fields are documented twice: as `@param opts.*` tags in the function's JSDoc and as JSDoc comments on the matching interface fields in `src/types/functions.ts`. When adding/changing an option, always update both places so the texts stay aligned. Note that blindly copying a comment word-by-word from one place to another is not always desirable, as the function context is sometimes narrower than the general type (e.g. description of the `color` option in terminal functions).
 
 To accept changes, `pnpm build` must pass.
