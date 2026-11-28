@@ -10,30 +10,26 @@ import {
 } from '../dist/elrh-cosca.mjs'
 
 async function main() {
-  console.log('Test showMessage')
+  console.log('\nTest showMessage')
   showMessage({ message: 'Hello!' })
   showMessage({ message: 'Hello!', color: 'cyan' })
-  console.log('Test showInfo')
+  console.log('\nTest showInfo')
   showInfo({ message: 'Info...' })
   showInfo({ message: 'Info...', color: 'cyan' })
-  console.log('Test showDebug')
+  console.log('\nTest showDebug')
   showDebug({ message: 'Debug...' })
   showDebug({ message: 'Debug...', color: 'cyan' })
-  console.log('Test showSuccess')
+  console.log('\nTest showSuccess')
   showSuccess({ message: 'OK!' })
   showSuccess({ message: 'OK!', color: 'cyan' })
-  console.log('Test showWarning')
+  console.log('\nTest showWarning')
   showWarning({ message: 'WARN!' })
   showWarning({ message: 'WARN!', color: 'cyan' })
-  console.log('Test showError')
+  console.log('\nTest showError')
   showError({ message: 'ERROR!' })
   showError({ message: 'ERROR!', color: 'cyan' })
 
-  console.log('\nTest lines before and after')
-  showMessage({ message: 'Hello!', linesBefore: 1, linesAfter: 1 })
-  await promptUser({ question: 'Is it today?', linesBefore: 1, linesAfter: 1, color: 'cyan' })
-
-  console.log('Test getEnvValue')
+  console.log('\nTest getEnvValue')
   const envFilePath = 'test/fixtures/.env'
   const a = getEnvValue({ key: 'A', envFilePath })
   const b = getEnvValue({ key: 'B', envFilePath })

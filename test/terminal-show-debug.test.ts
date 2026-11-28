@@ -1,3 +1,4 @@
+import { PassThrough } from 'node:stream'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { showMessage } from '../src/terminal/show-message'
 import { showDebug } from '../src/main'
@@ -20,8 +21,13 @@ describe('Test showDebug terminal helper', () => {
   })
 
   test('should call showMessage with gray color and pass other options', () => {
-    showDebug({ message: 'Hello!', linesBefore: 1, linesAfter: 2 })
-    expect(showMessage).toHaveBeenCalledWith({ message: 'Hello!', linesBefore: 1, linesAfter: 2, color: 'gray' })
+    const output = new PassThrough()
+    try {
+      showDebug({ message: 'Hello!', output })
+      expect(showMessage).toHaveBeenCalledWith({ message: 'Hello!', output, color: 'gray' })
+    } finally {
+      output.destroy()
+    }
   })
 
   test('should prefer custom color over the default one', () => {

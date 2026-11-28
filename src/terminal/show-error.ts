@@ -1,24 +1,15 @@
-import { styleText } from 'node:util'
+import { log } from '@clack/prompts'
 import type { ShowMessageOptions } from '../types/functions.js'
+import { writeLog } from '../_private/terminal-helpers.js'
 
 /**
- * Prints error message into stderr followed by a newline and optional extra newlines.
- * 
+ * Prints an error message to stderr using Clack's `log.error`.
+ *
  * @param {string | ShowMessageOptions} opts - The message as a plain string, or an options object.
  * @param {string} opts.message - The error message text to display.
- * @param {number} [opts.linesBefore] - The number of newlines to print before the output (default: 0).
- * @param {number} [opts.linesAfter] - The number of extra newlines to print after the output (default: 0).
- * @param {NodeJS.WritableStream} [opts.output] - Custom output stream (default: process.stdout; process.stderr for `showError`).
- * @param {InspectColor} [opts.color] - The color/style of the text, as accepted by `styleText` from `node:util` (default: red).
+ * @param {Writable} [opts.output] - Custom output stream (default: process.stderr).
+ * @param {InspectColor} [opts.color] - Optional color/style for the text, as accepted by `styleText` from `node:util` (default: red).
  */
 export function showError(opts: string | ShowMessageOptions): void {
-  const { message, linesBefore = 0, linesAfter = 0, output = process.stderr, color = 'red' }: ShowMessageOptions = typeof opts === 'string' ? { message: opts } : opts
-  for (let i = 0; i < linesBefore; i++) {
-    output.write('\n')
-  }
-  output.write(styleText(color, message, { stream: output as NodeJS.WriteStream }))
-  output.write('\n')
-  for (let i = 0; i < linesAfter; i++) {
-    output.write('\n')
-  }
+  writeLog(log.error, opts, { output: process.stderr, color: 'red' })
 }

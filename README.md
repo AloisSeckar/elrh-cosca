@@ -8,7 +8,7 @@ The **"COSCA"** abbreviation stands for **CO**de **SCA**ffolding, which points o
 
 ## How to use
 
-**NOTE:** The library is **ESM only** and it requires at least **Node 22.13** (when using [terminal helpers](#list-of-terminal-helpers) that rely on `styleText`).
+**NOTE:** The library is **ESM only** and it requires at least **Node 22.13**.
 
 Run `npm install elrh-cosca` to include it in your project.
 
@@ -22,7 +22,7 @@ Every `targetPath` is validated before use. Absolute paths and traversal outside
 
 ### Bundle size
 
-The library has no runtime dependencies and no bundled third-party parsers. The build keeps one output file per source module (`dist/elrh-cosca.mjs` is the entry file that re-exports them) and the package is marked as `"sideEffects": false`, so unused functions can be tree-shaken when bundled into your own code.
+The library has one runtime dependency (`@clack/prompts`) and no bundled third-party parsers. The build keeps one output file per source module (`dist/elrh-cosca.mjs` is the entry file that re-exports them) and the package is marked as `"sideEffects": false`, so unused functions can be tree-shaken when bundled into your own code.
 
 ### List of file-manipulation functions
 
@@ -340,14 +340,14 @@ Tries to detect the package manager (or runtime) used in the current environment
 
 ### List of terminal helpers
 
+Terminal helpers are built on [`@clack/prompts`](https://bomb.sh/docs/clack/packages/prompts/).
+
 #### `promptUser`
 
 ```ts
 interface TerminalOutputOptions {
-  linesBefore?: number
-  linesAfter?: number
-  input?: NodeJS.ReadableStream
-  output?: NodeJS.WritableStream
+  input?: Readable
+  output?: Writable
   color?: InspectColor
 }
 interface PromptUserOptions extends TerminalOutputOptions {
@@ -365,13 +365,15 @@ async function promptUser(opts: string | PromptUserPolarOptions): Promise<boolea
 async function promptUser(opts: string | PromptUserOptions): Promise<boolean | number[]>
 ```
 
-When `multiChoice` is not present, prints out a `question` (presumed to be polar, with ` (y/N): ` appended) to the console and waits for the input. Returns `true` when the user answers `y` or `yes` (case-insensitive) and `false` otherwise.
+When `multiChoice` is not present, prompts the user with a yes/no confirmation via Clack `confirm` (defaulting to yes) and returns `true` or `false`.
 
-When `multiChoice` is provided (must contain at least one item), prints `question` followed by a 1-based numbered list of the options and prompts for comma- or space-separated numbers. Invalid entries are rejected with a re-prompt. Returns a sorted array of unique 1-based numbers (or an empty array when the input is empty).
+When `multiChoice` is provided (must contain at least one item), renders an interactive multi-select list via Clack `multiselect` (empty selection allowed) and returns a sorted array of unique 1-based option numbers (or an empty array when nothing is selected).
 
-By default it uses `process.stdin` and `process.stdout` streams. To use custom NodeJS streams, pass `input` and `output` directly in `opts`, e.g. `promptUser({ question: 'Continue?', input, output })`. The optional `linesBefore` prints that many newlines before the question and `linesAfter` prints that many extra newlines after the answer is submitted (both default to `0`). When no extra options are needed, a plain string can be passed instead: `promptUser('Continue?')`.
+If the user cancels a prompt (e.g. via Ctrl+C), a cancellation message will be printed and the whole process exits with code `0`.
 
-When `color` is set, the question is printed in that color via the `styleText` function from the `node:util` module (default: no color).
+By default it uses `process.stdin` and `process.stdout` streams. To use custom NodeJS streams, pass `input` and `output` directly in `opts`, e.g. `promptUser({ question: 'Continue?', input, output })`. When no extra options are needed, a plain string can be passed instead: `promptUser('Continue?')`.
+
+When `color` is set, the question is styled via `styleText` from `node:util` (default: no color).
 
 #### `showMessage`
 
@@ -382,9 +384,9 @@ interface ShowMessageOptions extends TerminalOutputOptions {
 function showMessage(opts: string | ShowMessageOptions): void
 ```
 
-Prints out a `message` to `process.stdout` (or the custom `output` stream) followed by a newline, optionally preceded by `linesBefore` newlines and followed by `linesAfter` extra newlines (both default to 0). A plain string can be passed instead of the object, e.g. `showMessage('Done')`.
+Prints `message` to `process.stdout` (or the custom `output` stream) using Clack `log.message`. A plain string can be passed instead of the object, e.g. `showMessage('Done')`.
 
-The message is printed out in `color` (default: no color) via the `styleText` function from the `node:util` module.
+When `color` is set, the message text is styled via `styleText` from `node:util` (default: no color).
 
 #### `showError`
 
@@ -392,9 +394,9 @@ The message is printed out in `color` (default: no color) via the `styleText` fu
 function showError(opts: string | ShowMessageOptions): void
 ```
 
-Prints out a `message` to `process.stderr` (or the custom `output` stream) followed by a newline, optionally preceded by `linesBefore` newlines and followed by `linesAfter` extra newlines (both default to 0). A plain string can be passed instead of the object, e.g. `showError('Failed')`.
+Prints `message` to `process.stderr` (or the custom `output` stream) using Clack `log.error`. A plain string can be passed instead of the object, e.g. `showError('Failed')`.
 
-By default, the message is printed out in red via the `styleText` function from the `node:util` module. Custom `color` can be provided as override.
+When `color` is set, the message text is styled via `styleText` from `node:util` (default: red).
 
 #### `showInfo`, `showSuccess`, `showWarning`, `showDebug`
 
@@ -405,7 +407,7 @@ function showWarning(opts: string | ShowMessageOptions): void
 function showDebug(opts: string | ShowMessageOptions): void
 ```
 
-Shortcuts for `showMessage` with a default `color`: `showInfo` prints in white, `showSuccess` in green, `showWarning` in yellow and `showDebug` in gray. Custom `color` can still be provided as override.
+Log helpers backed by Clack: `showInfo` uses `log.info` (white by default), `showSuccess` uses `log.success` (green), `showWarning` uses `log.warn` (yellow), and `showDebug` delegates to `showMessage` with gray text. Custom `color` can be provided to style the message text via `styleText`.
 
 All terminal helpers share the `TerminalOutputOptions` fields; `input` is only used by `promptUser` and ignored by the `show*` helpers.
 

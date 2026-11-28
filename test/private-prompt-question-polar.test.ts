@@ -1,64 +1,85 @@
-import readline from 'node:readline'
 import { PassThrough } from 'node:stream'
-import { describe, expect, test, vi } from 'vitest'
+import { CANCEL_SYMBOL, cancel, confirm } from '@clack/prompts'
+import { afterEach, describe, expect, test, vi } from 'vitest'
 import { promptQuestionPolar } from '../src/_private/prompt-question-polar'
-import { setPromptSpy } from './cosca-test-utils'
+
+vi.mock('@clack/prompts', async () => {
+  const actual = await vi.importActual<typeof import('@clack/prompts')>('@clack/prompts')
+  return {
+    ...actual,
+    confirm: vi.fn(),
+    cancel: vi.fn(),
+  }
+})
 
 describe('Test private promptQuestionPolar helper', () => {
 
-  test('should use default input and output streams', async () => {
-    const createInterfaceSpy = vi.spyOn(readline, 'createInterface')
-    try {
-      setPromptSpy(['y'])
-      expect(await promptQuestionPolar({ question: 'Continue?' })).toBe(true)
-      expect(createInterfaceSpy).toHaveBeenCalledWith({ input: process.stdin, output: process.stdout })
-    } finally {
-      createInterfaceSpy.mockRestore()
-    }
+  afterEach(() => {
+    vi.clearAllMocks()
   })
 
-  test('should return true for yes variants and false otherwise', async () => {
-    setPromptSpy(['y'])
+  test('should call Clack confirm with initialValue true and return boolean answer', async () => {
+    vi.mocked(confirm).mockResolvedValueOnce(true)
     expect(await promptQuestionPolar({ question: 'Continue?' })).toBe(true)
-    setPromptSpy(['YES'])
-    expect(await promptQuestionPolar({ question: 'Continue?' })).toBe(true)
-    setPromptSpy(['n'])
-    expect(await promptQuestionPolar({ question: 'Continue?' })).toBe(false)
-    setPromptSpy([''])
+    expect(confirm).toHaveBeenCalledWith({
+      message: 'Continue?',
+      initialValue: true,
+      input: undefined,
+      output: undefined,
+    })
+
+    vi.mocked(confirm).mockResolvedValueOnce(false)
     expect(await promptQuestionPolar({ question: 'Continue?' })).toBe(false)
   })
 
-  test('should print linesBefore and linesAfter to output', async () => {
+  test('should forward custom input and output streams to Clack confirm', async () => {
     const input = new PassThrough()
     const output = new PassThrough()
-    const writeSpy = vi.spyOn(output, 'write')
     try {
-      setPromptSpy(['y'])
-      expect(await promptQuestionPolar({ question: 'Continue?', input, output, linesBefore: 1, linesAfter: 2 })).toBe(true)
-      expect(writeSpy).toHaveBeenCalledWith('\n')
-      expect(writeSpy).toHaveBeenCalledWith('\n\n')
+      vi.mocked(confirm).mockResolvedValueOnce(true)
+      expect(await promptQuestionPolar({ question: 'Continue?', input, output })).toBe(true)
+      expect(confirm).toHaveBeenCalledWith({
+        message: 'Continue?',
+        initialValue: true,
+        input,
+        output,
+      })
     } finally {
       input.destroy()
       output.destroy()
     }
   })
 
-  test('should close the interface upon SIGINT', () => {
-    const input = new PassThrough()
-    const output = new PassThrough()
-    const createInterfaceSpy = vi.spyOn(readline, 'createInterface')
-    const questionSpy = vi.spyOn(readline.Interface.prototype, 'question').mockImplementation(() => {})
+  test('should style the question when color is set', async () => {
+    const previous = process.env.FORCE_COLOR
+    process.env.FORCE_COLOR = '1'
     try {
-      createInterfaceSpy.mockClear()
-      void promptQuestionPolar({ question: 'Continue?', input, output })
-      const rl = createInterfaceSpy.mock.results[0].value as readline.Interface
-      const closeSpy = vi.spyOn(rl, 'close')
-      rl.emit('SIGINT')
-      expect(closeSpy).toHaveBeenCalled()
+      vi.mocked(confirm).mockResolvedValueOnce(true)
+      expect(await promptQuestionPolar({ question: 'Continue?', color: 'red' })).toBe(true)
+      expect(confirm).toHaveBeenCalledWith({
+        message: '\u001b[31mContinue?\u001b[39m',
+        initialValue: true,
+        input: undefined,
+        output: undefined,
+      })
     } finally {
-      questionSpy.mockRestore()
-      createInterfaceSpy.mockRestore()
-      input.destroy()
+      if (previous === undefined) delete process.env.FORCE_COLOR
+      else process.env.FORCE_COLOR = previous
+    }
+  })
+
+  test('should cancel and exit with code 0 when prompt is cancelled', async () => {
+    const output = new PassThrough()
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {
+      throw new Error('process.exit')
+    }) as never)
+    try {
+      vi.mocked(confirm).mockResolvedValueOnce(CANCEL_SYMBOL)
+      await expect(promptQuestionPolar({ question: 'Continue?', output })).rejects.toThrow('process.exit')
+      expect(cancel).toHaveBeenCalledWith('User abort', { output })
+      expect(exitSpy).toHaveBeenCalledWith(0)
+    } finally {
+      exitSpy.mockRestore()
       output.destroy()
     }
   })

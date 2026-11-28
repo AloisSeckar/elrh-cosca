@@ -15,12 +15,12 @@ export default defineConfig({
     },
     rolldownOptions: {
       external: [
+          '@clack/prompts',
           'node:fs',
           'node:https',
           'node:module',
           'node:os',
           'node:path',
-          'node:readline',
           'node:stream',
           'node:url',
           'node:util',

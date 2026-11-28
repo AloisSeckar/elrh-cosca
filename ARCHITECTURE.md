@@ -21,7 +21,7 @@ The public API is documented in [README.md](./README.md).
 | Build                | Vite (library mode), `vite-plugin-dts` for type declarations  |
 | Testing              | Vitest, coverage by `@vitest/coverage-v8`                     |
 | Package manager      | pnpm                                                          |
-| Runtime dependencies | None, only `node:` built-in modules                           |
+| Runtime dependencies | `@clack/prompts` (terminal prompts and logs) + some `node:` built-ins |
 
 The project has no linter, formatter, git hooks or CI configuration.
 

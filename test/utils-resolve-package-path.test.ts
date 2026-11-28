@@ -38,8 +38,8 @@ describe('Test resolvePackagePath util function', () => {
   test('should throw for non-existent package', () => {
     const spy = getStderrSpy()
     expect(() => resolvePackagePath({ packageName: 'non-existent-package' })).toThrow(/Cannot find package "non-existent-package"/)
-    // one error message (+ its newline)
-    expect(spy).toHaveBeenCalledTimes(2)
+    // one error message
+    expect(spy).toHaveBeenCalledTimes(1)
     spy.mockRestore()
   })
 
@@ -49,8 +49,8 @@ describe('Test resolvePackagePath util function', () => {
     const spy = getStderrSpy()
     try {
       expect(() => resolvePackagePath({ packageName: 'vitest' })).toThrow(/Cannot find package "vitest"/)
-      // two error messages (+ newlines)
-      expect(spy).toHaveBeenCalledTimes(4)
+      // two error messages
+      expect(spy).toHaveBeenCalledTimes(2)
     } finally {
       spy.mockRestore()
       cwdSpy.mockRestore()

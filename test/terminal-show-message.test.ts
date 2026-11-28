@@ -1,71 +1,55 @@
 import { PassThrough } from 'node:stream'
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { log } from '@clack/prompts'
+import { afterEach, describe, expect, test, vi } from 'vitest'
 import { showMessage } from '../src/main'
 import { getStdoutSpy } from './cosca-test-utils'
 
 describe('Test showMessage terminal helper', () => {
 
-  let spy: any
-  beforeEach(() => {
-    spy = getStdoutSpy()
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
-  afterEach(() => {
-    vi.clearAllMocks()
-  })
-  
   test('should be defined', () => {
     expect(showMessage).toBeDefined()
   })
 
-  test('should write message + ONE newline', () => {
+  test('should write message to stdout via Clack log.message', () => {
+    const logSpy = vi.spyOn(log, 'message')
+    const stdoutSpy = getStdoutSpy()
     showMessage({ message: 'Hello!' })
-    expect(spy.mock.calls.map((c: any[]) => c[0])).toEqual(['Hello!', '\n'])
+    expect(logSpy).toHaveBeenCalledWith('Hello!', { output: process.stdout })
+    expect(stdoutSpy).toHaveBeenCalledWith(expect.stringContaining('Hello!'))
   })
 
   test('should accept a plain string', () => {
+    const logSpy = vi.spyOn(log, 'message')
+    getStdoutSpy()
     showMessage('Hello!')
-    expect(spy.mock.calls.map((c: any[]) => c[0])).toEqual(['Hello!', '\n'])
-  })
-
-  test('should write message + TWO newlines', () => {
-    showMessage({ message: 'Hello!', linesAfter: 1 })
-    expect(spy.mock.calls.map((c: any[]) => c[0])).toEqual(['Hello!', '\n', '\n'])
-  })
-
-  test('should write newlines BEFORE the message', () => {
-    showMessage({ message: 'Hello!', linesBefore: 2 })
-    expect(spy.mock.calls.map((c: any[]) => c[0])).toEqual(['\n', '\n', 'Hello!', '\n'])
+    expect(logSpy).toHaveBeenCalledWith('Hello!', { output: process.stdout })
   })
 
   test('should style the message when color is set', () => {
     const previous = process.env.FORCE_COLOR
     process.env.FORCE_COLOR = '1'
+    const logSpy = vi.spyOn(log, 'message')
+    getStdoutSpy()
     try {
       showMessage({ message: 'Hello!', color: 'red' })
     } finally {
       if (previous === undefined) delete process.env.FORCE_COLOR
       else process.env.FORCE_COLOR = previous
     }
-    expect(spy.mock.calls.map((c: any[]) => c[0])).toEqual(['\u001b[31mHello!\u001b[39m', '\n'])
-  })
-
-  test.each([0, -1])('should write no leading newlines when linesBefore is %i', (linesBefore) => {
-    showMessage({ message: 'Hello!', linesBefore })
-    expect(spy.mock.calls.map((c: any[]) => c[0])).toEqual(['Hello!', '\n'])
-  })
-
-  test.each([0, -1])('should write message + ONE newline when linesAfter is %i', (linesAfter) => {
-    showMessage({ message: 'Hello!', linesAfter })
-    expect(spy.mock.calls.map((c: any[]) => c[0])).toEqual(['Hello!', '\n'])
+    expect(logSpy).toHaveBeenCalledWith('\u001b[31mHello!\u001b[39m', { output: process.stdout })
   })
 
   test('should write to a custom output stream instead of stdout', () => {
+    const stdoutSpy = getStdoutSpy()
     const output = new PassThrough()
     try {
-      showMessage({ message: 'Hello!', linesBefore: 1, linesAfter: 1, output })
-      expect(output.read().toString()).toBe('\nHello!\n\n')
-      expect(spy).not.toHaveBeenCalled()
+      showMessage({ message: 'Hello!', output })
+      expect(output.read().toString()).toContain('Hello!')
+      expect(stdoutSpy).not.toHaveBeenCalled()
     } finally {
       output.destroy()
     }

@@ -1,3 +1,4 @@
+import type { Readable, Writable } from 'node:stream'
 import type { InspectColor } from 'node:util'
 import type { DataValue } from './data.js'
 
@@ -96,15 +97,11 @@ export interface UpdateTextFileOptions extends FileOperationOptions {
 }
 
 export interface TerminalOutputOptions {
-	/** The number of newlines to print before the output (default: 0). */
-	linesBefore?: number
-	/** The number of extra newlines to print after the output (default: 0). */
-	linesAfter?: number
 	/** Custom input stream (default: process.stdin). */
-	input?: NodeJS.ReadableStream
+	input?: Readable
 	/** Custom output stream (default: process.stdout; process.stderr for `showError`). */
-	output?: NodeJS.WritableStream
-	/** The color/style of the text, as accepted by `styleText` from `node:util` (default: no color; `showError` defaults to red, `showInfo` to white, `showSuccess` to green, `showWarning` to yellow and `showDebug` to gray). */
+	output?: Writable
+	/** Optional color/style for the text, as accepted by `styleText` from `node:util` (default: no color; `showError` defaults to red, `showInfo` to white, `showSuccess` to green, `showWarning` to yellow and `showDebug` to gray). */
 	color?: InspectColor
 }
 

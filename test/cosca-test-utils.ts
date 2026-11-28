@@ -1,8 +1,8 @@
-import readline from 'node:readline'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { vi } from 'vitest'
 
+import * as promptPolarModule from '../src/_private/prompt-question-polar'
 import * as promptModule from '../src/terminal/prompt-user'
 
 /**
@@ -18,18 +18,15 @@ export function readNormalizedFile(dir: string, file: string): string {
 }
 
 /**
- * Mocks user input(s) for the `readline.question` method.
- * @param input array of 1+ expected values from the user
- * @returns mocked terminal input
+ * Mocks user input(s) for polar confirmation prompts.
+ * @param inputs array of 1+ expected values from the user (`y`/`yes` resolves to `true`, anything else to `false`)
+ * @returns mocked polar prompt function
  */
 export function setPromptSpy(inputs: string[]) {
   let call = 0
-  vi.spyOn(readline.Interface.prototype, 'question')
-  .mockImplementation((_, cb) => { 
-    const fn = cb as (answer: string) => void // explicit typecast required
-    fn(inputs[call++])
-    // @ts-expect-error should add proper type
-    return this
+  return vi.spyOn(promptPolarModule, 'promptQuestionPolar').mockImplementation(async () => {
+    const answer = (inputs[call++] ?? '').trim().toLowerCase()
+    return /^y(es)?$/.test(answer)
   })
 }
 

@@ -1,19 +1,38 @@
-import readline from 'node:readline'
 import { PassThrough } from 'node:stream'
-import { describe, expect, expectTypeOf, test, vi } from 'vitest'
+import { CANCEL_SYMBOL, cancel, confirm, multiselect } from '@clack/prompts'
+import { afterEach, describe, expect, expectTypeOf, test, vi } from 'vitest'
 import { promptUser } from '../src/main'
 import type { PromptUserMultiOptions, PromptUserOptions, PromptUserPolarOptions } from '../src/main'
-import { setPromptSpy } from './cosca-test-utils'
+
+vi.mock('@clack/prompts', async () => {
+  const actual = await vi.importActual<typeof import('@clack/prompts')>('@clack/prompts')
+  return {
+    ...actual,
+    confirm: vi.fn(),
+    multiselect: vi.fn(),
+    cancel: vi.fn(),
+  }
+})
 
 describe('Test promptUser terminal helper', () => {
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
 
   test('should be defined', () => {
     expect(promptUser).toBeDefined()
   })
 
   test('should accept a plain question string', async () => {
-    setPromptSpy(['y'])
+    vi.mocked(confirm).mockResolvedValueOnce(true)
     expect(await promptUser('Continue?')).toBe(true)
+    expect(confirm).toHaveBeenCalledWith({
+      message: 'Continue?',
+      initialValue: true,
+      input: undefined,
+      output: undefined,
+    })
   })
 
   test('should accept one options object with a required question', () => {
@@ -23,7 +42,6 @@ describe('Test promptUser terminal helper', () => {
     expectTypeOf<{}>().not.toExtend<PromptUserOptions>()
     expectTypeOf<{ question: string }>().toExtend<PromptUserOptions>()
     expectTypeOf<{ message: string }>().not.toExtend<PromptUserOptions>()
-    expectTypeOf<{ question: string, linesBefore: number, linesAfter: number }>().toExtend<PromptUserOptions>()
     expectTypeOf<{ question: string, multiChoice: string[] }>().toExtend<PromptUserMultiOptions>()
     expectTypeOf<{ question: string }>().toExtend<PromptUserPolarOptions>()
     expectTypeOf((opts: string) => promptUser(opts)).returns.toEqualTypeOf<Promise<boolean>>()
@@ -32,117 +50,61 @@ describe('Test promptUser terminal helper', () => {
     expectTypeOf((opts: PromptUserOptions) => promptUser(opts)).returns.toEqualTypeOf<Promise<boolean | number[]>>()
   })
 
-  test('should use default input and output streams', async () => {
-    const createInterfaceSpy = vi.spyOn(readline, 'createInterface')
-    try {
-      setPromptSpy(['y'])
-      expect(await promptUser({ question: 'Continue?' })).toBe(true)
-      expect(createInterfaceSpy).toHaveBeenCalledWith({ input: process.stdin, output: process.stdout })
-    } finally {
-      createInterfaceSpy.mockRestore()
-    }
-  })
-
-  test('should accept custom input and output directly in opts', async () => {
+  test('should forward custom input and output directly in opts', async () => {
     const input = new PassThrough()
     const output = new PassThrough()
-    const createInterfaceSpy = vi.spyOn(readline, 'createInterface')
     try {
-      setPromptSpy(['yes'])
+      vi.mocked(confirm).mockResolvedValueOnce(true)
       const opts: PromptUserOptions = { question: 'Continue?', input, output }
       expect(await promptUser(opts)).toBe(true)
-      expect(createInterfaceSpy).toHaveBeenCalledWith({ input, output })
-    } finally {
-      createInterfaceSpy.mockRestore()
-      input.destroy()
-      output.destroy()
-    }
-  })
-
-  test('should prompt the user for input and return true', async () => {
-    setPromptSpy(['y'])
-    expect(await promptUser({ question: 'Is it today?' })).toBe(true)
-  })
-  
-  
-  test('should prompt the user for input and return false', async () => {
-    setPromptSpy(['n'])
-    expect(await promptUser({ question: 'Is it today?' })).toBe(false)
-  })
-
-  test('should accept different variants of yes', async () => {
-    setPromptSpy(['Y'])
-    expect(await promptUser({ question: 'Is it today?' })).toBe(true)
-    setPromptSpy(['yes'])
-    expect(await promptUser({ question: 'Is it today?' })).toBe(true)
-    setPromptSpy(['Yes'])
-    expect(await promptUser({ question: 'Is it today?' })).toBe(true)
-    setPromptSpy(['YES'])
-    expect(await promptUser({ question: 'Is it today?' })).toBe(true)
-    // should not accept those though
-    setPromptSpy(['Ye'])
-    expect(await promptUser({ question: 'Is it today?' })).toBe(false)
-    setPromptSpy(['Yess'])
-    expect(await promptUser({ question: 'Is it today?' })).toBe(false)
-  })
-
-  test('should print linesBefore and linesAfter to output', async () => {
-    const input = new PassThrough()
-    const output = new PassThrough()
-    const writeSpy = vi.spyOn(output, 'write')
-    try {
-      setPromptSpy(['y'])
-      expect(await promptUser({ question: 'Continue?', input, output, linesBefore: 2, linesAfter: 3 })).toBe(true)
-      expect(writeSpy).toHaveBeenCalledWith('\n\n')
-      expect(writeSpy).toHaveBeenCalledWith('\n\n\n')
+      expect(confirm).toHaveBeenCalledWith({
+        message: 'Continue?',
+        initialValue: true,
+        input,
+        output,
+      })
     } finally {
       input.destroy()
       output.destroy()
     }
+  })
+
+  test('should prompt the user for input and return true or false', async () => {
+    vi.mocked(confirm).mockResolvedValueOnce(true)
+    expect(await promptUser({ question: 'Is it today?' })).toBe(true)
+    vi.mocked(confirm).mockResolvedValueOnce(false)
+    expect(await promptUser({ question: 'Is it today?' })).toBe(false)
   })
 
   test('should print the question in the given color', async () => {
     const previous = process.env.FORCE_COLOR
     process.env.FORCE_COLOR = '1'
-    const questionSpy = vi.spyOn(readline.Interface.prototype, 'question').mockImplementation(((_: string, cb: (answer: string) => void) => cb('y')) as any)
     try {
+      vi.mocked(confirm).mockResolvedValueOnce(true)
       expect(await promptUser({ question: 'Continue?', color: 'red' })).toBe(true)
-      expect(questionSpy).toHaveBeenCalledWith('\u001b[31mContinue? (y/N): \u001b[39m', expect.any(Function))
+      expect(confirm).toHaveBeenCalledWith({
+        message: '\u001b[31mContinue?\u001b[39m',
+        initialValue: true,
+        input: undefined,
+        output: undefined,
+      })
     } finally {
-      questionSpy.mockRestore()
       if (previous === undefined) delete process.env.FORCE_COLOR
       else process.env.FORCE_COLOR = previous
     }
   })
 
-  test('should print the question without styling when no color is given', async () => {
-    const questionSpy = vi.spyOn(readline.Interface.prototype, 'question').mockImplementation(((_: string, cb: (answer: string) => void) => cb('y')) as any)
+  test('should cancel and exit with code 0 when cancelled', async () => {
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {
+      throw new Error('process.exit')
+    }) as never)
     try {
-      expect(await promptUser('Continue?')).toBe(true)
-      expect(questionSpy).toHaveBeenCalledWith('Continue? (y/N): ', expect.any(Function))
+      vi.mocked(confirm).mockResolvedValueOnce(CANCEL_SYMBOL)
+      await expect(promptUser({ question: 'Continue?' })).rejects.toThrow('process.exit')
+      expect(cancel).toHaveBeenCalledWith('User abort', { output: undefined })
+      expect(exitSpy).toHaveBeenCalledWith(0)
     } finally {
-      questionSpy.mockRestore()
-    }
-  })
-
-  test('should close the interface upon SIGINT', () => {
-    const input = new PassThrough()
-    const output = new PassThrough()
-    const createInterfaceSpy = vi.spyOn(readline, 'createInterface')
-    const questionSpy = vi.spyOn(readline.Interface.prototype, 'question').mockImplementation(() => {})
-    try {
-      createInterfaceSpy.mockClear()
-      // the promise stays pending as the question is never answered
-      void promptUser({ question: 'Continue?', input, output })
-      const rl = createInterfaceSpy.mock.results[0].value as readline.Interface
-      const closeSpy = vi.spyOn(rl, 'close')
-      rl.emit('SIGINT')
-      expect(closeSpy).toHaveBeenCalled()
-    } finally {
-      questionSpy.mockRestore()
-      createInterfaceSpy.mockRestore()
-      input.destroy()
-      output.destroy()
+      exitSpy.mockRestore()
     }
   })
 
@@ -150,8 +112,18 @@ describe('Test promptUser terminal helper', () => {
     const input = new PassThrough()
     const output = new PassThrough()
     try {
-      setPromptSpy(['2, 1'])
+      vi.mocked(multiselect).mockResolvedValueOnce([2, 1])
       expect(await promptUser({ question: 'Pick:', multiChoice: ['Alpha', 'Beta'], input, output })).toEqual([1, 2])
+      expect(multiselect).toHaveBeenCalledWith({
+        message: 'Pick:',
+        options: [
+          { value: 1, label: 'Alpha' },
+          { value: 2, label: 'Beta' },
+        ],
+        required: false,
+        input,
+        output,
+      })
     } finally {
       input.destroy()
       output.destroy()
