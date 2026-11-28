@@ -2,6 +2,12 @@
 
 Overview of the newest features in COSCA.
 
+## 0.6.0-alpha.1
+
+`2026-11-28`
+
+- **BREAKING:** start using [Clack Prompts](https://bomb.sh/docs/clack/packages/prompts/) for terminal interactions (#38) 
+
 ## 0.5.3
 
 `2026-11-23`
